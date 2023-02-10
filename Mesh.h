@@ -18,19 +18,26 @@ namespace da
 		uint32_t m_FieldHeight;
 
 		uint16_t m_AdditionalNumberForFileName;
+		uint64_t* m_ploopEnd;
+
+		std::string m_FilePrefix;
+
 	public:
-		Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, uint16_t AdditionalNumber);
+		Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, uint64_t* loopEnd);
 		~Mesh();
+
+		uint16_t GetFileNumber();
 
 		sf::Color* GetColor(uint32_t x, uint32_t y);
 		void SetColor(uint32_t x, uint32_t y, sf::Color* c);
 		void SetColor(uint32_t x, uint32_t y, sf::Color c);
+		void SetFilePrefix(const std::string & s);
 
 		da::PointUI32 GetCenterPoint();
 		void DrawMesh();
 		void InitFieldColor(sf::Color c);
 
-		void DumpToFileAndExit();
+		void DumpToFile();
 
 	private:
 		uint32_t TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y);

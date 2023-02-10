@@ -2,9 +2,14 @@
 
 #include <vector>
 
+#define TURN_MASK			16
+
 sf::Color* da::FileParser::CreateColorArray(const std::string& data)
 {
+    m_VectorforParsedValues.clear();
     getNumberFromString(data);
+
+    m_AntCurrentPathString.clear();
 
     m_ColorCount    = std::stoi(m_VectorforParsedValues[0]);
     m_pColorArray   = new sf::Color[m_ColorCount];
@@ -17,14 +22,37 @@ sf::Color* da::FileParser::CreateColorArray(const std::string& data)
             ,std::stoi(m_VectorforParsedValues[i * 4 + 3])
             ,std::stoi(m_VectorforParsedValues[i * 4 + 4])
         );
+
+        char c = ((TURN_MASK & m_pColorArray[i].a) == 16) ? 'R' : 'L';
+        m_AntCurrentPathString.push_back(c);
     }
-	return m_pColorArray;
+    std::string AntiString = m_AntCurrentPathString;
+
+    for (size_t i = 0; i < m_AntCurrentPathString.length(); i++)
+    {
+        switch (AntiString[i])
+        {
+            case 'R': AntiString[i] = 'L'; break;
+            case 'L': AntiString[i] = 'R'; break;
+        }
+    }
+
+    if (m_SetOfPaths.end() == m_SetOfPaths.find(AntiString))
+    {
+        m_SetOfPaths.insert(m_AntCurrentPathString);
+        return m_pColorArray;
+    }
+    else 
+    {
+        return nullptr;
+    }
 }
 
 void da::FileParser::DeleteColorArray()
 {
-    delete[] m_pColorArray;
+    if(m_pColorArray !=nullptr) delete[] m_pColorArray;
 }
+
 
 void da::FileParser::getNumberFromString(const std::string& s)
 {
@@ -40,5 +68,7 @@ void da::FileParser::getNumberFromString(const std::string& s)
 sf::Color* da::FileParser::m_pColorArray = nullptr;
 uint32_t da::FileParser::m_ColorCount = 0;
 std::vector<std::string> da::FileParser::m_VectorforParsedValues = std::vector<std::string>();
+std::string da::FileParser::m_AntCurrentPathString = std::string();
+std::unordered_set<std::string> da::FileParser::m_SetOfPaths = std::unordered_set<std::string>();
 
 
