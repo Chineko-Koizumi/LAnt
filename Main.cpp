@@ -151,13 +151,17 @@ int main(int argc, char* argv[])
                             {
                                 switch (event.key.code)
                                 {
-                                case sf::Keyboard::Escape:
-                                {
-                                    mesh.DumpToFile();
-                                    da::KeyboardMethods::m_RenderStepCount = 0;
-                                    Progress = 0;
-                                    continue;
-                                }break;
+                                    case sf::Keyboard::Escape:
+                                    {
+                                        mesh.DumpToFile();
+                                        da::KeyboardMethods::m_RenderStepCount = 0;
+                                        Progress = 0;
+                                        continue;
+                                    }break;
+                                    case sf::Keyboard::Enter: 
+                                    {
+                                        mesh.DumpToFileAndContinue();
+                                    }break;
                                 }
                             }break;
                         }

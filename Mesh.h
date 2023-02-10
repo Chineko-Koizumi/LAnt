@@ -38,6 +38,7 @@ namespace da
 		void InitFieldColor(sf::Color c);
 
 		void DumpToFile();
+		void DumpToFileAndContinue();
 
 	private:
 		uint32_t TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y);

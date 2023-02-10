@@ -98,6 +98,27 @@ void da::Mesh::DumpToFile()
 	*m_ploopEnd = 0;
 }
 
+void da::Mesh::DumpToFileAndContinue()
+{
+	m_pWindow->clear();
+	DrawMesh();
+	m_pWindow->display();
+	DrawMesh();
+	m_pWindow->display();
+
+	sf::Texture texture;
+	texture.create(m_pWindow->getSize().x, m_pWindow->getSize().y);
+	texture.update(*m_pWindow);
+
+	sf::Image img = texture.copyToImage();
+
+	std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_Snap_Shot_Of" + std::to_string(m_AdditionalNumberForFileName) + ".png");
+	img.saveToFile(FileName);
+
+	std::cout << "screenshot saved as " << FileName << std::endl;
+
+}
+
 void da::Mesh::InitFieldPossition()
 {
 	for (size_t y = 0; y < m_FieldHeight; y++)
