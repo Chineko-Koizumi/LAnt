@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
                             }
                         }
                         m->lock();
-                        std::cout<<"Thread ID"<< thread_id << " File number:[" << mesh.GetFileNumber() << "] Ant moves: " << (Progress++) * LambdaRenderStepCount << std::endl;
+                            std::cout<<"Thread ID"<< thread_id << " File number:[" << mesh.GetFileNumber() << "] Ant moves: " << (Progress++) * LambdaRenderStepCount << std::endl;
                         m->unlock();
                         for (size_t i = 0; i < LambdaRenderStepCount; i++) ant.NextMove();
 
@@ -224,8 +224,6 @@ int main(int argc, char* argv[])
             std::cout << "Unknown argument: " + atoi(argv[3])<<std::endl;
         } break;
     }
-    
-
 #pragma endregion
 	return 0;
 }
