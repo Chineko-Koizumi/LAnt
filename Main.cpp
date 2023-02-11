@@ -5,8 +5,8 @@
 #include <thread>         
 #include <mutex> 
 
-static uint32_t  WINDOW_WIDTH  = 0;
-static uint32_t  WINDOW_HEIGHT = 0;
+static uint64_t  WINDOW_WIDTH  = 0;
+static uint64_t  WINDOW_HEIGHT = 0;
 
 static const uint8_t  LEFT     = 0;
 static const uint8_t  RIGHT    = 16;
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
     WINDOW_HEIGHT   = atoi(argv[2]);
 
     uint8_t GenerationType              = atoi(argv[3]);
-    uint32_t SimulationStepsThreshold   = atoi(argv[4]);
+    uint64_t SimulationStepsThreshold   = atoi(argv[4]);
     
 #pragma region Window
     
@@ -117,11 +117,12 @@ int main(int argc, char* argv[])
             std::mutex mtx;
             std::thread* threads;
 
-            const uint16_t processor_count = std::thread::hardware_concurrency();
+            uint16_t processor_count = std::thread::hardware_concurrency();
+            if (WINDOW_WIDTH * WINDOW_HEIGHT > 100000000U)processor_count = 4;
 
             threads = new std::thread[processor_count];
            
-            auto LambdaThread = []( std::ifstream* OpenFile, uint32_t SimulationStepsThresholdFromArgument, std::mutex* m)
+            auto LambdaThread = []( std::ifstream* OpenFile, uint64_t SimulationStepsThresholdFromArgument, std::mutex* m)
             {
                 uint64_t LambdaRenderStepCount = 0;
                 std::thread::id thread_id = std::this_thread::get_id();
@@ -167,8 +168,10 @@ int main(int argc, char* argv[])
                     {
                         if (Progress > SimulationStepsThresholdFromArgument)
                         {
-                            std::cout << double(SimulationStepsThresholdFromArgument + 1) / 100 << " Bilion moves reached, cycle implied on file number[" << mesh.GetFileNumber() << "]" << std::endl;
-                            mesh.DumpToFile();
+                            m->lock();
+                                std::cout << double(SimulationStepsThresholdFromArgument + 1) / 100 << " Bilion moves reached, cycle implied on file number[" << mesh.GetFileNumber() << "]" << std::endl;
+                            m->unlock();
+                                mesh.DumpToFile();
                             LambdaRenderStepCount = 0;
                             Progress = 0;
                             break;
@@ -207,6 +210,7 @@ int main(int argc, char* argv[])
                 window.close();
             };
 
+            
             for (size_t i = 0; i < processor_count; i++)
             {
                 threads[i] = std::thread(LambdaThread, &infile, SimulationStepsThreshold, &mtx);

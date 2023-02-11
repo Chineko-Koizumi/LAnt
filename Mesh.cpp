@@ -8,7 +8,7 @@ using namespace std::chrono;
 
 #pragma region Mesh
 
-da::Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, uint64_t* loopEnd)
+da::Mesh::Mesh(uint64_t width, uint64_t height, sf::RenderWindow* window, uint64_t* loopEnd)
 	:m_FieldWidth(width)
 	,m_FieldHeight(height)
 	,m_pWindow(window)
@@ -70,7 +70,7 @@ void da::Mesh::DrawMesh()
 
 void da::Mesh::InitFieldColor(sf::Color c)
 {
-	for (size_t i = 0; i < m_FieldWidth * m_FieldHeight; i++)
+	for (uint64_t i = 0; i < m_FieldWidth * m_FieldHeight; i++)
 	{
 		m_pfield->operator[](i).color = c;
 	}
@@ -121,9 +121,9 @@ void da::Mesh::DumpToFileAndContinue()
 
 void da::Mesh::InitFieldPossition()
 {
-	for (size_t y = 0; y < m_FieldHeight; y++)
+	for (uint32_t y = 0; y < m_FieldHeight; y++)
 	{
-		for (size_t x = 0; x < m_FieldWidth; x++)
+		for (uint32_t x = 0; x < m_FieldWidth; x++)
 		{
 			m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).position = sf::Vector2f(float(x), float(y));
 		}

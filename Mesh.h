@@ -14,8 +14,8 @@ namespace da
 		sf::VertexArray *m_pfield;
 		sf::Vertex* m_pVertexAccesPointer;
 
-		uint32_t m_FieldWidth;
-		uint32_t m_FieldHeight;
+		uint64_t m_FieldWidth;
+		uint64_t m_FieldHeight;
 
 		uint16_t m_AdditionalNumberForFileName;
 		uint64_t* m_ploopEnd;
@@ -23,7 +23,7 @@ namespace da
 		std::string m_FilePrefix;
 
 	public:
-		Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, uint64_t* loopEnd);
+		Mesh(uint64_t width, uint64_t height, sf::RenderWindow* window, uint64_t* loopEnd);
 		~Mesh();
 
 		uint16_t GetFileNumber();
