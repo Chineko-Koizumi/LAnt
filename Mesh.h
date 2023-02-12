@@ -1,6 +1,8 @@
 #include <SFML/Graphics.hpp>
 #include "VertexDefinitions.h"
 
+#include <thread>         
+#include <mutex>
 #include <iostream>
 
 namespace da
@@ -11,6 +13,8 @@ namespace da
 		sf::RenderWindow* m_pWindow;
 
 	private:
+		std::mutex* m_pmtx;
+
 		sf::VertexArray *m_pfield;
 		sf::Vertex* m_pVertexAccesPointer;
 
@@ -23,26 +27,28 @@ namespace da
 		std::string m_FilePrefix;
 
 	public:
-		Mesh(uint64_t width, uint64_t height, sf::RenderWindow* window, uint64_t* loopEnd);
+		Mesh(uint64_t width, uint64_t height, sf::RenderWindow* window, std::mutex* mtx, uint64_t* loopEnd);
 		~Mesh();
 
 		uint16_t GetFileNumber();
 
-		sf::Color* GetColor(uint32_t x, uint32_t y);
-		void SetColor(uint32_t x, uint32_t y, sf::Color* c);
-		void SetColor(uint32_t x, uint32_t y, sf::Color c);
+		sf::Color* GetColor(uint64_t x, uint64_t y);
+		void SetColor(uint64_t x, uint64_t y, sf::Color* c);
+		void SetColor(uint64_t x, uint64_t y, sf::Color c);
 		void SetFilePrefix(const std::string & s);
 
-		da::PointUI32 GetCenterPoint();
+		da::PointUI64 GetCenterPoint();
 		void DrawMesh();
 		void InitFieldColor(sf::Color c);
 
 		void DumpToFile();
 		void DumpToFileAndContinue();
+		void DumpToFileBig();
 
 	private:
-		uint32_t TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y);
+		uint64_t TwoDimensionalIndextoOneDimensionalIndex(uint64_t x, uint64_t y);
 		void InitFieldPossition();
+		void ThreadSafeDumpToFile();
 	};
 
 	class Ant
@@ -55,11 +61,11 @@ namespace da
 		uint8_t		m_IteratorSize;
 		uint8_t		m_IteratorIndex;
 
-		int32_t		m_x;
-		int32_t		m_y;
+		int64_t		m_x;
+		int64_t		m_y;
 
-		int32_t		m_Width;
-		int32_t		m_Height;
+		int64_t		m_Width;
+		int64_t		m_Height;
 
 		int8_t		m_Facing;
 		uint8_t		m_NextTurn;
@@ -68,12 +74,12 @@ namespace da
 		uint8_t		m_CurrentColorIndex;
 
 	public:
-		Ant(Mesh* mesh, sf::Color* ColorTransitionArray, uint32_t Width, uint32_t Height);
+		Ant(Mesh* mesh, sf::Color* ColorTransitionArray, uint64_t Width, uint64_t Height);
 		~Ant();
 
 		void NextMove();
-		void SetOffset(uint32_t x, uint32_t y);
-		void SetOffset(PointUI32 p);
+		void SetOffset(uint64_t x, uint64_t y);
+		void SetOffset(PointUI64 p);
 
 	private:
 

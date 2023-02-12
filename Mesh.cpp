@@ -1,19 +1,20 @@
 #include "Mesh.h"
 
+#include <fstream>
 #include <chrono>
-using namespace std::chrono;
 
 #define COLOR_INDEX_MASK	15
 #define TURN_MASK			16
 
 #pragma region Mesh
 
-da::Mesh::Mesh(uint64_t width, uint64_t height, sf::RenderWindow* window, uint64_t* loopEnd)
+da::Mesh::Mesh(uint64_t width, uint64_t height, sf::RenderWindow* window, std::mutex* mtx, uint64_t* loopEnd)
 	:m_FieldWidth(width)
 	,m_FieldHeight(height)
 	,m_pWindow(window)
 	,m_pVertexAccesPointer(nullptr)
 	,m_AdditionalNumberForFileName(0)
+	,m_pmtx(mtx)
 	,m_ploopEnd(loopEnd)
 	,m_FilePrefix(std::string("NoPrefixSet_"))
 {
@@ -32,17 +33,17 @@ uint16_t da::Mesh::GetFileNumber()
 	return m_AdditionalNumberForFileName;
 }
 
-uint32_t da::Mesh::TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y)
+uint64_t da::Mesh::TwoDimensionalIndextoOneDimensionalIndex(uint64_t x, uint64_t y)
 {
 	return (y * m_FieldWidth + x);
 }
 
-sf::Color* da::Mesh::GetColor(uint32_t x, uint32_t y)
+sf::Color* da::Mesh::GetColor(uint64_t x, uint64_t y)
 {
 	return &(m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).color);
 }
 
-void da::Mesh::SetColor(uint32_t x, uint32_t y, sf::Color c) 
+void da::Mesh::SetColor(uint64_t x, uint64_t y, sf::Color c) 
 {
 	m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).color = c;
 }
@@ -53,17 +54,17 @@ void da::Mesh::SetFilePrefix(const std::string& s)
 	m_FilePrefix.push_back('_');
 }
 
-void da::Mesh::SetColor(uint32_t x, uint32_t y, sf::Color* c)
+void da::Mesh::SetColor(uint64_t x, uint64_t y, sf::Color* c)
 {
 	memcpy((void*)&m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)), (void*)c, sizeof(sf::Color));
 }
 
-da::PointUI32 da::Mesh::GetCenterPoint()
+da::PointUI64 da::Mesh::GetCenterPoint()
 {
-	return da::PointUI32{ m_FieldWidth / 2, m_FieldHeight / 2 };
+	return da::PointUI64{ m_FieldWidth / 2, m_FieldHeight / 2 };
 }
 
-void da::Mesh::DrawMesh()
+void da::Mesh::DrawMesh()//unsafe for generating without Window
 {
 	m_pWindow->draw(*m_pfield);
 }
@@ -75,16 +76,55 @@ void da::Mesh::InitFieldColor(sf::Color c)
 		m_pfield->operator[](i).color = c;
 	}
 }
+void da::Mesh::ThreadSafeDumpToFile()
+{
+	sf::Texture texture;
+
+	m_pmtx->lock();
+		m_pWindow->setActive(true);
+
+		m_pWindow->clear();
+		DrawMesh();
+		m_pWindow->display();
+		DrawMesh();
+		m_pWindow->display();
+
+		texture.create(m_pWindow->getSize().x, m_pWindow->getSize().y);
+		texture.update(*m_pWindow);
+
+		m_pWindow->setActive(false);
+	m_pmtx->unlock();
+
+	sf::Image img = texture.copyToImage();
+
+	std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_" + std::to_string(m_AdditionalNumberForFileName) + ".png");
+	img.saveToFile(FileName);
+
+	m_pmtx->lock();
+		std::cout << "screenshot saved as " << FileName << std::endl;
+	m_pmtx->unlock();
+
+	m_AdditionalNumberForFileName++;
+	*m_ploopEnd = 0;
+}
 
 void da::Mesh::DumpToFile()
 {
+	sf::Texture texture;
+
+	if (m_pWindow == nullptr)return;
+	if (m_pmtx != nullptr) 
+	{
+		ThreadSafeDumpToFile();
+		return;
+	}
+
 	m_pWindow->clear();
 	DrawMesh();
 	m_pWindow->display();
 	DrawMesh();
 	m_pWindow->display();
-
-	sf::Texture texture;
+	
 	texture.create(m_pWindow->getSize().x, m_pWindow->getSize().y);
 	texture.update(*m_pWindow);
 
@@ -94,12 +134,15 @@ void da::Mesh::DumpToFile()
 	img.saveToFile(FileName);
 
 	std::cout << "screenshot saved as " << FileName << std::endl;
+	
 	m_AdditionalNumberForFileName++;
 	*m_ploopEnd = 0;
 }
 
 void da::Mesh::DumpToFileAndContinue()
 {
+	if (m_pWindow == nullptr)return;
+
 	m_pWindow->clear();
 	DrawMesh();
 	m_pWindow->display();
@@ -119,11 +162,59 @@ void da::Mesh::DumpToFileAndContinue()
 
 }
 
+void da::Mesh::DumpToFileBig()
+{
+	std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_" + std::to_string(m_AdditionalNumberForFileName) + ".ppm");
+
+	std::ofstream SSDump;
+	SSDump.open(FileName);
+	
+	SSDump << "P3" << std::endl;
+	SSDump << m_FieldWidth << " " << m_FieldHeight << std::endl;
+	SSDump << 255 << std::endl;
+
+	auto start = std::chrono::high_resolution_clock::now();
+	std::cout << "Dumping started:" << std::endl;
+
+	uint64_t VectorSize = m_pfield->getVertexCount();
+	std::string DumpSplitter = "";
+
+	for (uint64_t i = 0; i < VectorSize; i++)
+	{
+		DumpSplitter += std::to_string(m_pfield->operator[](i).color.r);
+		DumpSplitter += " ";
+		DumpSplitter += std::to_string(m_pfield->operator[](i).color.g);
+		DumpSplitter += " ";
+		DumpSplitter += std::to_string(m_pfield->operator[](i).color.b);
+		DumpSplitter += " ";
+		if ((i % 1000) == 0) 
+		{
+			SSDump << DumpSplitter;
+			DumpSplitter = "";
+			if ((i % 100000000) == 0)std::cout << "done in %: " << double(i)/ double(VectorSize) * 100.0f <<std::endl;
+		}
+	}
+	if (DumpSplitter.compare( std::string("")) != 0) 
+	{
+		SSDump << DumpSplitter;
+	}
+
+	auto stop = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+
+	SSDump.close();
+
+	std::cout<<"File generated in: "<< duration.count() << "[s] screenshot saved as " << FileName << std::endl;
+	m_AdditionalNumberForFileName++;
+	*m_ploopEnd = 0;
+
+}
+
 void da::Mesh::InitFieldPossition()
 {
-	for (uint32_t y = 0; y < m_FieldHeight; y++)
+	for (uint64_t y = 0; y < m_FieldHeight; y++)
 	{
-		for (uint32_t x = 0; x < m_FieldWidth; x++)
+		for (uint64_t x = 0; x < m_FieldWidth; x++)
 		{
 			m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).position = sf::Vector2f(float(x), float(y));
 		}
@@ -133,7 +224,7 @@ void da::Mesh::InitFieldPossition()
 #pragma endregion
 
 #pragma region Ant
-da::Ant::Ant(Mesh* mesh, sf::Color* ColorTransitionArray, uint32_t Width, uint32_t Height)
+da::Ant::Ant(Mesh* mesh, sf::Color* ColorTransitionArray, uint64_t Width, uint64_t Height)
 	:m_x(0)
 	,m_y(0)
 	,m_Height(Height)
@@ -167,13 +258,13 @@ void da::Ant::NextMove()
 	CheckBounds();
 }
 
-void da::Ant::SetOffset(uint32_t x, uint32_t y)
+void da::Ant::SetOffset(uint64_t x, uint64_t y)
 {
 	m_x = x;
 	m_y = y;
 }
 
-void da::Ant::SetOffset(PointUI32 p)
+void da::Ant::SetOffset(PointUI64 p)
 {
 	m_x = p.x;
 	m_y = p.y;
@@ -189,12 +280,15 @@ void da::Ant::CheckBounds()
 	if (m_x > m_Width - 1 || m_x < 0) 
 	{
 		std::cout << std::endl << "ant reached border: x > Width || x < 0" << std::endl;
-		m_pMesh->DumpToFile();
+		
+		if (m_pMesh->m_pWindow == nullptr)m_pMesh->DumpToFileBig();
+		else m_pMesh->DumpToFile();
 	}
 	if(m_y > m_Height - 1 || m_y < 0)
 	{
 		std::cout << std::endl << "ant reached border: y > Height || y < 0" << std::endl;
-		m_pMesh->DumpToFile();
+		if (m_pMesh->m_pWindow == nullptr)m_pMesh->DumpToFileBig();
+		else m_pMesh->DumpToFile();
 	}
 }
 

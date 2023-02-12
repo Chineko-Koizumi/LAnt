@@ -2,8 +2,7 @@
 #include "FileParser.h" // main function argument parrser
 
 #include <fstream>
-#include <thread>         
-#include <mutex> 
+ 
 
 static uint64_t  WINDOW_WIDTH  = 0;
 static uint64_t  WINDOW_HEIGHT = 0;
@@ -40,8 +39,9 @@ namespace da
 
     enum MenuOptions
     {
-        ANT_GUI = 0,
-        ANT_NOGUI_FILE = 1,
+        ANT_GUI                 = 0,
+        ANT_NOGUI_FILE          = 1,
+        ANT_NOGUI_LARGE_FILE    = 2,
         EXIT = 100
     };
 }
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
         {
             sf::Event event; // for windows event pool
             sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", true);
-            da::Mesh mesh(WINDOW_WIDTH, WINDOW_HEIGHT, &window, &da::KeyboardMethods::m_RenderStepCount);
+            da::Mesh mesh(WINDOW_WIDTH, WINDOW_HEIGHT, &window, nullptr, &da::KeyboardMethods::m_RenderStepCount);
 
             std::ifstream infile("data.txt");
             std::string line;
@@ -122,19 +122,22 @@ int main(int argc, char* argv[])
 
             threads = new std::thread[processor_count];
            
-            auto LambdaThread = []( std::ifstream* OpenFile, uint64_t SimulationStepsThresholdFromArgument, std::mutex* m)
+            sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", true);
+            window.setActive(false);
+
+            auto LambdaThread = []( std::ifstream* OpenFile, uint64_t SimulationStepsThresholdFromArgument, std::mutex* m, sf::RenderWindow* w)
             {
+                //sf::Context context;
+                //w->setActive(true);
+
                 uint64_t LambdaRenderStepCount = 0;
                 std::thread::id thread_id = std::this_thread::get_id();
 
-                sf::Event event; // for windows event pool
-                sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", true);
-                da::Mesh mesh(WINDOW_WIDTH, WINDOW_HEIGHT, &window, &LambdaRenderStepCount);
+                da::Mesh mesh(WINDOW_WIDTH, WINDOW_HEIGHT, w, m, &LambdaRenderStepCount);
                 std::string line;
 
                 uint64_t Progress = 0;
 
-                window.setActive(true);
                 while (true)
                 {
                     m->lock();
@@ -155,7 +158,7 @@ int main(int argc, char* argv[])
                         sf::Color* colors = da::FileParser::CreateColorArray(line);
                         if (colors == nullptr)
                         {
-                            std::cout << "AntiString detected skiping image generation: " << line << std::endl;
+                            std::cout << "In Thread:["<< thread_id <<"] AntiString detected skiping image generation" << std::endl;
                             m->unlock();
                             continue;
                         }
@@ -176,52 +179,65 @@ int main(int argc, char* argv[])
                             Progress = 0;
                             break;
                         }
-                        if (window.pollEvent(event))
-                        {
-                            switch (event.type)
-                            {
-                            case sf::Event::KeyPressed:
-                            {
-                                switch (event.key.code)
-                                {
-                                case sf::Keyboard::Escape:
-                                {
-                                    mesh.DumpToFile();
-                                    LambdaRenderStepCount = 0;
-                                    Progress = 0;
-                                    continue;
-                                }break;
-                                case sf::Keyboard::Enter:
-                                {
-                                    mesh.DumpToFileAndContinue();
-                                }break;
-                                }
-                            }break;
-                            }
-                        }
+                        
                         m->lock();
-                            std::cout<<"Thread ID"<< thread_id << " File number:[" << mesh.GetFileNumber() << "] Ant moves: " << (Progress++) * LambdaRenderStepCount << std::endl;
+                            std::cout<<"Thread ID["<< thread_id << "] File number:[" << mesh.GetFileNumber() << "] Ant moves: " << (Progress++) * LambdaRenderStepCount << std::endl;
                         m->unlock();
                         for (size_t i = 0; i < LambdaRenderStepCount; i++) ant.NextMove();
 
                     }
                     delete[]colors;
                 }
-                window.close();
             };
 
-            
             for (size_t i = 0; i < processor_count; i++)
             {
-                threads[i] = std::thread(LambdaThread, &infile, SimulationStepsThreshold, &mtx);
+                threads[i] = std::thread(LambdaThread, &infile, SimulationStepsThreshold, &mtx, &window);
             }
 
             for (size_t i = 0; i < processor_count; i++)
             {
                 threads[i].join();
             }
-            
+            delete[] threads;
+
+            //window.close();
+
         }break;
+
+         case da::ANT_NOGUI_LARGE_FILE:
+         {
+             std::ifstream infile("data.txt");
+             std::string line;
+             std::getline(infile, line);
+
+             da::Mesh mesh(WINDOW_WIDTH, WINDOW_HEIGHT, nullptr, nullptr, &da::KeyboardMethods::m_RenderStepCount);
+             
+             sf::Color* colors = da::FileParser::CreateColorArray(line); // parsed colors for mesh from arguments
+             mesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
+
+             uint64_t Progress = 0;
+
+             da::Ant ant(&mesh, colors, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+             da::KeyboardMethods::m_RenderStepCount = 10000000;
+             while (da::KeyboardMethods::m_RenderStepCount != 0)
+             {
+                 if (Progress > SimulationStepsThreshold)
+                 {
+                     std::cout << double(SimulationStepsThreshold + 1) / 100 << " Bilion moves reached, cycle implied on file number[" << mesh.GetFileNumber() << "]" << std::endl;
+
+                     mesh.DumpToFileBig();
+                     da::KeyboardMethods::m_RenderStepCount = 0;
+                     break;
+                 }
+                 std::cout << " Ant moves: " << (Progress++) * da::KeyboardMethods::m_RenderStepCount << " Simulation threshold in %: " << double(Progress) / double(SimulationStepsThreshold) <<  std::endl;
+                
+                 for (size_t i = 0; i < da::KeyboardMethods::m_RenderStepCount; i++) ant.NextMove();
+
+             }
+             da::FileParser::DeleteColorArray();
+         }break;
 
         default: 
         {

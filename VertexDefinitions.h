@@ -14,6 +14,12 @@ namespace da
         uint32_t x;
         uint32_t y;
     };
+
+    struct PointUI64
+    {
+        uint64_t x;
+        uint64_t y;
+    };
     
     struct Color
     {
