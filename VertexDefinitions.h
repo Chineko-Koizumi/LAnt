@@ -1,8 +1,11 @@
-#include <cstdint>
 #include <SFML/Graphics/Color.hpp>
+
+
 
 namespace da 
 {
+    const static uint32_t SIZE_OF_VERTEX = 20;
+
     struct PointF
     {
         float x;
@@ -33,5 +36,11 @@ namespace da
     {
         Color       c;
         uint8_t     i;
+    };
+
+    struct DaVertex 
+    {
+        PointUI32 position;
+        Color color;
     };
 }

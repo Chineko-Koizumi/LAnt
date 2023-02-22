@@ -153,11 +153,13 @@
     <ClCompile Include="FileParser.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="WindowsFeatures.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileParser.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="VertexDefinitions.h" />
+    <ClInclude Include="WindowsFeatures.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

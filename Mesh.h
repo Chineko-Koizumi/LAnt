@@ -11,12 +11,13 @@ namespace da
 	{
 	public:
 		sf::RenderWindow* m_pWindow;
+		std::mutex* m_pMutexCout;
 
 	private:
-		std::mutex* m_pmtx;
+		
+		std::mutex* m_pMutexDumpFile;
 
 		sf::VertexArray *m_pfield;
-		sf::Vertex* m_pVertexAccesPointer;
 
 		uint64_t m_FieldWidth;
 		uint64_t m_FieldHeight;
@@ -27,7 +28,7 @@ namespace da
 		std::string m_FilePrefix;
 
 	public:
-		Mesh(uint64_t width, uint64_t height, sf::RenderWindow* window, std::mutex* mtx, uint64_t* loopEnd);
+		Mesh(uint64_t width, uint64_t height, sf::RenderWindow* window, std::mutex* mtxCout, std::mutex* mtxDumpFile, uint64_t* loopEnd);
 		~Mesh();
 
 		uint16_t GetFileNumber();
@@ -41,14 +42,14 @@ namespace da
 		void DrawMesh();
 		void InitFieldColor(sf::Color c);
 
-		void DumpToFile();
+		void DumpToFile(const std::string& s);
 		void DumpToFileAndContinue();
 		void DumpToFileBig();
 
 	private:
 		uint64_t TwoDimensionalIndextoOneDimensionalIndex(uint64_t x, uint64_t y);
 		void InitFieldPossition();
-		void ThreadSafeDumpToFile();
+		void ThreadSafeDumpToFile(const std::string& s);
 	};
 
 	class Ant

@@ -8,13 +8,13 @@
 
 #pragma region Mesh
 
-da::Mesh::Mesh(uint64_t width, uint64_t height, sf::RenderWindow* window, std::mutex* mtx, uint64_t* loopEnd)
+da::Mesh::Mesh(uint64_t width, uint64_t height, sf::RenderWindow* window, std::mutex* mtxCout, std::mutex* mtxDumpFile, uint64_t* loopEnd)
 	:m_FieldWidth(width)
 	,m_FieldHeight(height)
 	,m_pWindow(window)
-	,m_pVertexAccesPointer(nullptr)
 	,m_AdditionalNumberForFileName(0)
-	,m_pmtx(mtx)
+	,m_pMutexCout(mtxCout)
+	,m_pMutexDumpFile(mtxDumpFile)
 	,m_ploopEnd(loopEnd)
 	,m_FilePrefix(std::string("NoPrefixSet_"))
 {
@@ -76,11 +76,11 @@ void da::Mesh::InitFieldColor(sf::Color c)
 		m_pfield->operator[](i).color = c;
 	}
 }
-void da::Mesh::ThreadSafeDumpToFile()
+void da::Mesh::ThreadSafeDumpToFile(const std::string& s)
 {
 	sf::Texture texture;
 
-	m_pmtx->lock();
+	m_pMutexDumpFile->lock();
 		m_pWindow->setActive(true);
 
 		m_pWindow->clear();
@@ -93,29 +93,29 @@ void da::Mesh::ThreadSafeDumpToFile()
 		texture.update(*m_pWindow);
 
 		m_pWindow->setActive(false);
-	m_pmtx->unlock();
+	m_pMutexDumpFile->unlock();
 
 	sf::Image img = texture.copyToImage();
 
 	std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_" + std::to_string(m_AdditionalNumberForFileName) + ".png");
 	img.saveToFile(FileName);
 
-	m_pmtx->lock();
-		std::cout << "screenshot saved as " << FileName << std::endl;
-	m_pmtx->unlock();
+	m_pMutexCout->lock();
+		std::cout << s <<" screenshot saved as " << FileName << std::endl;
+	m_pMutexCout->unlock();
 
 	m_AdditionalNumberForFileName++;
 	*m_ploopEnd = 0;
 }
 
-void da::Mesh::DumpToFile()
+void da::Mesh::DumpToFile(const std::string& s)
 {
 	sf::Texture texture;
 
 	if (m_pWindow == nullptr)return;
-	if (m_pmtx != nullptr) 
+	if (m_pMutexCout != nullptr) 
 	{
-		ThreadSafeDumpToFile();
+		ThreadSafeDumpToFile(s);
 		return;
 	}
 
@@ -133,7 +133,7 @@ void da::Mesh::DumpToFile()
 	std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth)+"x" + std::to_string(m_FieldHeight) + "_" + std::to_string(m_AdditionalNumberForFileName) + ".png");
 	img.saveToFile(FileName);
 
-	std::cout << "screenshot saved as " << FileName << std::endl;
+	std::cout << s << " screenshot saved as " << FileName << std::endl;
 	
 	m_AdditionalNumberForFileName++;
 	*m_ploopEnd = 0;
@@ -159,7 +159,6 @@ void da::Mesh::DumpToFileAndContinue()
 	img.saveToFile(FileName);
 
 	std::cout << "screenshot saved as " << FileName << std::endl;
-
 }
 
 void da::Mesh::DumpToFileBig()
@@ -204,7 +203,7 @@ void da::Mesh::DumpToFileBig()
 
 	SSDump.close();
 
-	std::cout<<"File generated in: "<< duration.count() << "[s] screenshot saved as " << FileName << std::endl;
+	std::cout<<" File generated in: "<< duration.count() << "[s] screenshot saved as " << FileName << std::endl;
 	m_AdditionalNumberForFileName++;
 	*m_ploopEnd = 0;
 
@@ -277,18 +276,26 @@ void da::Ant::SetColorIndexSize(uint8_t i)
 
 void da::Ant::CheckBounds()
 {
-	if (m_x > m_Width - 1 || m_x < 0) 
+	if (m_x > m_Width - 1) 
 	{
-		std::cout << std::endl << "ant reached border: x > Width || x < 0" << std::endl;
-		
 		if (m_pMesh->m_pWindow == nullptr)m_pMesh->DumpToFileBig();
-		else m_pMesh->DumpToFile();
+		else m_pMesh->DumpToFile(std::string(" ant reached border: x > Width,"));
 	}
-	if(m_y > m_Height - 1 || m_y < 0)
+	else if(m_x < 0)
 	{
-		std::cout << std::endl << "ant reached border: y > Height || y < 0" << std::endl;
 		if (m_pMesh->m_pWindow == nullptr)m_pMesh->DumpToFileBig();
-		else m_pMesh->DumpToFile();
+		else m_pMesh->DumpToFile(std::string(" ant reached border: x < 0,"));
+	}
+
+	if(m_y > m_Height - 1)
+	{
+		if (m_pMesh->m_pWindow == nullptr)m_pMesh->DumpToFileBig();
+		else m_pMesh->DumpToFile(std::string(" ant reached border: y > Height,"));
+	}
+	else if (m_y < 0)
+	{
+		if (m_pMesh->m_pWindow == nullptr)m_pMesh->DumpToFileBig();
+		else m_pMesh->DumpToFile(std::string(" ant reached border: y < 0,"));
 	}
 }
 
