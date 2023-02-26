@@ -1,5 +1,4 @@
 #include <SFML/Graphics.hpp>
-#include "VertexDefinitions.h"
 
 #include <thread>         
 #include <mutex>

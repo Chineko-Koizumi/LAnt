@@ -1,6 +1,3 @@
-#include <SFML/Graphics/Color.hpp>
-
-
 
 namespace da 
 {
@@ -32,11 +29,6 @@ namespace da
         uint8_t a; ///< Alpha (opacity) component
     };
 
-    struct ColorIndex 
-    {
-        Color       c;
-        uint8_t     i;
-    };
 
     struct DaVertex 
     {
