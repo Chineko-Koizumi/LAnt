@@ -18,7 +18,7 @@ namespace da
 		static std::unordered_set<std::string> m_SetOfPaths;
 
 	private:
-		
+		static bool CheckAndInsert();
 	
 	public:
 		static sf::Color* CreateColorArray(const std::string& data);
