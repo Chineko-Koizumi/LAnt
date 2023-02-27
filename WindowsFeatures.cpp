@@ -40,3 +40,20 @@ uint32_t da::WindowsFeatures::GetThreadCount(uint64_t windowWidth, uint64_t wind
 
 	return processor_count;
 }
+
+bool da::WindowsFeatures::IsEnoughFreeMemory(uint64_t windowWidth, uint64_t windowHeight, uint64_t sizeOfItem)
+{
+	uint64_t TakenMemory = uint64_t(windowWidth) * uint64_t(windowHeight) * sizeOfItem / da::KB;
+	if (TakenMemory > da::WindowsFeatures::GetFreeMemoryInKB())
+	{
+		std::cout << " Not enough free memory for this mesh size" << std::endl;
+		std::cout << " Free memory in KB: " << da::WindowsFeatures::GetFreeMemoryInKB() << std::endl;
+		std::cout << " Memory to be allocated in KB: " << TakenMemory << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+
+

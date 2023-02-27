@@ -266,6 +266,8 @@ void da::MegaMesh::DumpToFileBig()
 			if ((i % 100000000) == 0)std::cout << "done in %: " << double(i) / double(VectorSize) * 100.0f << std::endl;
 		}
 	}
+	std::cout << "done in %: 100" << std::endl;
+
 	if (DumpSplitter.compare(std::string("")) != 0)
 	{
 		SSDump << DumpSplitter;
@@ -278,7 +280,6 @@ void da::MegaMesh::DumpToFileBig()
 
 	std::cout << " File generated in: " << duration.count() << "[s] screenshot saved as " << FileName << std::endl;
 	*m_ploopEnd = 0;
-
 }
 
 #pragma endregion

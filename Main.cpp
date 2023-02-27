@@ -62,15 +62,8 @@ int main(int argc, char* argv[])
     {
         case da::ANT_GUI:
         {
-            uint64_t TakenMemory = uint64_t(WINDOW_WIDTH) * uint64_t(WINDOW_HEIGHT) * da::SIZE_OF_VERTEX / da::KB;
-            if (TakenMemory > da::WindowsFeatures::GetFreeMemoryInKB())
-            {
-                std::cout << " Not enough free memory for this mesh size" << std::endl;
-                std::cout << " Free memory in KB: " << da::WindowsFeatures::GetFreeMemoryInKB() << std::endl;
-                std::cout << " Memory to be allocated in KB: " << TakenMemory << std::endl;
-                return 0;
-            }
-
+            if ( !da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_VERTEX) ) return 0;
+            
             sf::Event event; // for windows event pool
             sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::Default);
             da::Mesh mesh(WINDOW_WIDTH, WINDOW_HEIGHT, &window, nullptr, nullptr, &da::KeyboardMethods::m_RenderStepCount);
@@ -120,18 +113,12 @@ int main(int argc, char* argv[])
                 for (size_t i = 0; i < da::KeyboardMethods::m_RenderStepCount; i++)ant.NextMove();   
             }
             da::FileParser::DeleteColorArray();
+
         }break;
 
         case da::ANT_NOGUI_FILE: 
         {
-            uint64_t TakenMemory = uint64_t(WINDOW_WIDTH) * uint64_t(WINDOW_HEIGHT) * da::SIZE_OF_VERTEX / da::KB;
-            if (TakenMemory > da::WindowsFeatures::GetFreeMemoryInKB())
-            {
-                std::cout << " Not enough free memory for this mesh size" << std::endl;
-                std::cout << " Free memory in KB: " << da::WindowsFeatures::GetFreeMemoryInKB() << std::endl;
-                std::cout << " Memory to be allocated in KB: " << TakenMemory << std::endl;
-                return 0;
-            }
+            if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_VERTEX)) return 0;
 
             std::ifstream infile("data.txt");
             std::mutex mtxCout, mtxDumpFile;
@@ -208,6 +195,7 @@ int main(int argc, char* argv[])
 
                     }
                     delete[]colors;
+
                 }
                 thrStatus[threadIndex] = false;
             };
@@ -250,21 +238,14 @@ int main(int argc, char* argv[])
                 if (IsAllDetached)window.close();
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
-
             delete[] threads;
             delete[] threadsStatus;
+
         }break;
 
          case da::ANT_NOGUI_LARGE_FILE:
          {
-             uint64_t TakenMemory = uint64_t(WINDOW_WIDTH) * uint64_t(WINDOW_HEIGHT) * sizeof(da::DaVertex) / da::KB;
-             if (TakenMemory > da::WindowsFeatures::GetFreeMemoryInKB())
-             {
-                 std::cout << " Not enough free memory for this mesh size" << std::endl;
-                 std::cout << " Free memory in KB: " << da::WindowsFeatures::GetFreeMemoryInKB() << std::endl;
-                 std::cout << " Memory to be allocated in KB: " << TakenMemory << std::endl;
-                 return 0;
-             }
+             if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_DAVERTEX)) return 0;
 
              auto start = std::chrono::high_resolution_clock::now();
 
@@ -274,15 +255,8 @@ int main(int argc, char* argv[])
 
              da::MegaMesh megamesh(WINDOW_WIDTH, WINDOW_HEIGHT, &da::KeyboardMethods::m_RenderStepCount);
              
-             sf::Color* colors = da::FileParser::CreateColorArray(line); // parsed colors for mesh from arguments
-             da::Color* daColors = new da::Color[da::FileParser::m_ColorCount];
-             for (size_t i = 0; i < da::FileParser::m_ColorCount; i++)
-             {
-                 daColors[i].r = colors[i].r;
-                 daColors[i].g = colors[i].g;
-                 daColors[i].b = colors[i].b;
-                 daColors[i].a = colors[i].a;
-             }
+             da::Color* daColors = da::FileParser::CreateDaColorArray(line); // parsed colors for mesh from arguments
+     
              megamesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
 
              uint64_t Progress = 0;
@@ -305,9 +279,7 @@ int main(int argc, char* argv[])
                  for (size_t i = 0; i < da::KeyboardMethods::m_RenderStepCount; i++) ant.NextMegaMove();
 
              }
-
-             da::FileParser::DeleteColorArray();
-             delete[] daColors;
+             da::FileParser::DeleteDaColorArray();
 
              auto stop = std::chrono::high_resolution_clock::now();
              auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);

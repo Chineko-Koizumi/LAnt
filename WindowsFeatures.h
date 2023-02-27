@@ -10,6 +10,7 @@ namespace da
 	public:
 		static uint64_t GetFreeMemoryInKB();
 		static uint32_t GetThreadCount(uint64_t windowWidth, uint64_t windowHeight);
+		static bool IsEnoughFreeMemory(uint64_t windowWidth, uint64_t windowHeight, uint64_t sizeOfItem);
 
 	private:
 		WindowsFeatures();
