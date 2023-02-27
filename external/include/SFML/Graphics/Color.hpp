@@ -97,11 +97,6 @@ public:
     Uint8 g; ///< Green component
     Uint8 b; ///< Blue component
     Uint8 a; ///< Alpha (opacity) component
-
-    operator da::Color() 
-    {
-        return da::Color{r,g,b,a};
-    }
 };
 
 ////////////////////////////////////////////////////////////

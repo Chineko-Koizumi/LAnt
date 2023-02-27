@@ -8,7 +8,7 @@
 
 #pragma region Mesh
 
-da::Mesh::Mesh(uint64_t width, uint64_t height, sf::RenderWindow* window, std::mutex* mtxCout, std::mutex* mtxDumpFile, uint64_t* loopEnd)
+da::Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, std::mutex* mtxCout, std::mutex* mtxDumpFile, uint64_t* loopEnd)
 	:m_FieldWidth(width)
 	,m_FieldHeight(height)
 	,m_pWindow(window)
@@ -18,7 +18,7 @@ da::Mesh::Mesh(uint64_t width, uint64_t height, sf::RenderWindow* window, std::m
 	,m_ploopEnd(loopEnd)
 	,m_FilePrefix(std::string("NoPrefixSet_"))
 {
-	m_pfield = new sf::VertexArray(sf::Points, height * width);
+	m_pfield = new sf::VertexArray(sf::Points, uint64_t(height) * uint64_t(width));
 
 	InitFieldPossition();
 }
@@ -33,17 +33,17 @@ uint16_t da::Mesh::GetFileNumber()
 	return m_AdditionalNumberForFileName;
 }
 
-uint64_t da::Mesh::TwoDimensionalIndextoOneDimensionalIndex(uint64_t x, uint64_t y)
+uint64_t da::Mesh::TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y)
 {
-	return (y * m_FieldWidth + x);
+	return (uint64_t(y) * uint64_t(m_FieldWidth) + uint64_t(x));
 }
 
-sf::Color* da::Mesh::GetColor(uint64_t x, uint64_t y)
+sf::Color* da::Mesh::GetColor(uint32_t x, uint32_t y)
 {
 	return &(m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).color);
 }
 
-void da::Mesh::SetColor(uint64_t x, uint64_t y, sf::Color c) 
+void da::Mesh::SetColor(uint32_t x, uint32_t y, sf::Color c) 
 {
 	m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).color = c;
 }
@@ -54,14 +54,9 @@ void da::Mesh::SetFilePrefix(const std::string& s)
 	m_FilePrefix.push_back('_');
 }
 
-void da::Mesh::SetColor(uint64_t x, uint64_t y, sf::Color* c)
+da::PointUI32 da::Mesh::GetCenterPoint()
 {
-	memcpy((void*)&m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)), (void*)c, sizeof(sf::Color));
-}
-
-da::PointUI64 da::Mesh::GetCenterPoint()
-{
-	return da::PointUI64{ m_FieldWidth / 2, m_FieldHeight / 2 };
+	return da::PointUI32{ m_FieldWidth / 2, m_FieldHeight / 2 };
 }
 
 void da::Mesh::DrawMesh()//unsafe for generating without Window
@@ -71,11 +66,14 @@ void da::Mesh::DrawMesh()//unsafe for generating without Window
 
 void da::Mesh::InitFieldColor(sf::Color c)
 {
-	for (uint64_t i = 0; i < m_FieldWidth * m_FieldHeight; i++)
+	uint64_t fieldrenge = uint64_t(m_FieldWidth) * uint64_t(m_FieldHeight);
+
+	for (uint64_t i = 0; i < fieldrenge; i++)
 	{
 		m_pfield->operator[](i).color = c;
 	}
 }
+
 void da::Mesh::ThreadSafeDumpToFile(const std::string& s)
 {
 	sf::Texture texture;
@@ -110,8 +108,6 @@ void da::Mesh::ThreadSafeDumpToFile(const std::string& s)
 
 void da::Mesh::DumpToFile(const std::string& s)
 {
-	sf::Texture texture;
-
 	if (m_pWindow == nullptr)return;
 	if (m_pMutexCout != nullptr) 
 	{
@@ -119,6 +115,7 @@ void da::Mesh::DumpToFile(const std::string& s)
 		return;
 	}
 
+	sf::Texture texture;
 	m_pWindow->clear();
 	DrawMesh();
 	m_pWindow->display();
@@ -161,13 +158,89 @@ void da::Mesh::DumpToFileAndContinue()
 	std::cout << "screenshot saved as " << FileName << std::endl;
 }
 
-void da::Mesh::DumpToFileBig()
+void da::Mesh::InitFieldPossition()
 {
-	std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_" + std::to_string(m_AdditionalNumberForFileName) + ".ppm");
+	for (uint32_t y = 0; y < m_FieldHeight; y++)
+	{
+		for (uint32_t x = 0; x < m_FieldWidth; x++)
+		{
+			m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).position = sf::Vector2f(float(x), float(y));
+		}
+	}
+}
+
+#pragma endregion
+
+#pragma region MegaMesh
+
+da::MegaMesh::MegaMesh(uint32_t width, uint32_t height, uint64_t* loopEnd)
+	:m_FieldWidth(width)
+	,m_FieldHeight(height)
+	,m_ploopEnd(loopEnd)
+{
+	m_pfield = new std::vector<da::DaVertex>(uint64_t(height) * uint64_t(width));
+
+	InitFieldPossition();
+}
+
+da::MegaMesh::~MegaMesh()
+{
+	delete m_pfield;
+}
+
+void da::MegaMesh::SetFilePrefix(const std::string& s)
+{
+	m_FilePrefix = s;
+	m_FilePrefix.push_back('_');
+}
+
+da::PointUI32 da::MegaMesh::GetCenterPoint()
+{
+	return da::PointUI32{ m_FieldWidth / 2, m_FieldHeight / 2 };
+}
+
+void da::MegaMesh::InitFieldPossition()
+{
+	for (uint32_t y = 0; y < m_FieldHeight; y++)
+	{
+		for (uint32_t x = 0; x < m_FieldWidth; x++)
+		{
+			m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).position = da::PointUI32{ x , y };
+		}
+	}
+}
+
+uint64_t da::MegaMesh::TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y)
+{
+	return (uint64_t(y) * uint64_t(m_FieldWidth) + uint64_t(x));
+}
+
+void da::MegaMesh::InitFieldColor(da::Color c)
+{
+	uint64_t fieldrenge = uint64_t(m_FieldWidth) * uint64_t(m_FieldHeight);
+	for (uint64_t i = 0; i < fieldrenge; i++)
+	{
+		m_pfield->operator[](i).color = c;
+	}
+}
+
+void da::MegaMesh::SetColor(uint32_t x, uint32_t y, da::Color c)
+{
+	m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).color = c;
+}
+
+da::Color* da::MegaMesh::GetColor(uint32_t x, uint32_t y)
+{
+	return &(m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).color);
+}
+
+void da::MegaMesh::DumpToFileBig()
+{
+	std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_" + ".ppm");
 
 	std::ofstream SSDump;
 	SSDump.open(FileName);
-	
+
 	SSDump << "P3" << std::endl;
 	SSDump << m_FieldWidth << " " << m_FieldHeight << std::endl;
 	SSDump << 255 << std::endl;
@@ -175,7 +248,7 @@ void da::Mesh::DumpToFileBig()
 	auto start = std::chrono::high_resolution_clock::now();
 	std::cout << "Dumping started:" << std::endl;
 
-	uint64_t VectorSize = m_pfield->getVertexCount();
+	uint64_t VectorSize = m_pfield->size();
 	std::string DumpSplitter = "";
 
 	for (uint64_t i = 0; i < VectorSize; i++)
@@ -186,14 +259,14 @@ void da::Mesh::DumpToFileBig()
 		DumpSplitter += " ";
 		DumpSplitter += std::to_string(m_pfield->operator[](i).color.b);
 		DumpSplitter += " ";
-		if ((i % 1000) == 0) 
+		if ((i % 1000) == 0)
 		{
 			SSDump << DumpSplitter;
 			DumpSplitter = "";
-			if ((i % 100000000) == 0)std::cout << "done in %: " << double(i)/ double(VectorSize) * 100.0f <<std::endl;
+			if ((i % 100000000) == 0)std::cout << "done in %: " << double(i) / double(VectorSize) * 100.0f << std::endl;
 		}
 	}
-	if (DumpSplitter.compare( std::string("")) != 0) 
+	if (DumpSplitter.compare(std::string("")) != 0)
 	{
 		SSDump << DumpSplitter;
 	}
@@ -203,27 +276,16 @@ void da::Mesh::DumpToFileBig()
 
 	SSDump.close();
 
-	std::cout<<" File generated in: "<< duration.count() << "[s] screenshot saved as " << FileName << std::endl;
-	m_AdditionalNumberForFileName++;
+	std::cout << " File generated in: " << duration.count() << "[s] screenshot saved as " << FileName << std::endl;
 	*m_ploopEnd = 0;
 
 }
 
-void da::Mesh::InitFieldPossition()
-{
-	for (uint64_t y = 0; y < m_FieldHeight; y++)
-	{
-		for (uint64_t x = 0; x < m_FieldWidth; x++)
-		{
-			m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).position = sf::Vector2f(float(x), float(y));
-		}
-	}
-}
-
 #pragma endregion
 
+
 #pragma region Ant
-da::Ant::Ant(Mesh* mesh, sf::Color* ColorTransitionArray, uint64_t Width, uint64_t Height)
+da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da::Color* DaColorTransitionArray, uint32_t Width, uint32_t Height)
 	:m_x(0)
 	,m_y(0)
 	,m_Height(Height)
@@ -231,12 +293,22 @@ da::Ant::Ant(Mesh* mesh, sf::Color* ColorTransitionArray, uint64_t Width, uint64
 	,m_Facing(0)
 	,m_NextTurn(0)
 	,m_pMesh(mesh)
+	,m_pMegaMesh(megaMesh)
 	,m_pColorTransitionArray(ColorTransitionArray)
+	,m_pDaColorTransitionArray(DaColorTransitionArray)
 	,m_pCurrentAntColor(nullptr)
-	,m_CurrentColorIndex(0)
+	,m_pCurrentAntDaColor(nullptr)
 {
-	SetOffset(mesh->GetCenterPoint());
-	m_pMesh->InitFieldColor(*m_pColorTransitionArray);
+	if (m_pMesh != nullptr) 
+	{
+		SetOffset(m_pMesh->GetCenterPoint());
+		m_pMesh->InitFieldColor(*m_pColorTransitionArray);
+	}
+	else 
+	{
+		SetOffset(m_pMegaMesh->GetCenterPoint());
+		m_pMegaMesh->InitFieldColor(*m_pDaColorTransitionArray);
+	}
 }
 
 da::Ant::~Ant(){}
@@ -251,19 +323,35 @@ void da::Ant::NextMove()
 
 	switch (m_NextTurn)
 	{
-		case 0:		MoveLeft();		break;
-		case 16:	MoveRight();	break;
+	case 0:		MoveLeft();		break;
+	case 16:	MoveRight();	break;
 	}
 	CheckBounds();
 }
 
-void da::Ant::SetOffset(uint64_t x, uint64_t y)
+void da::Ant::NextMegaMove()
+{
+	m_pCurrentAntDaColor = m_pMegaMesh->GetColor(m_x, m_y);
+
+	m_NextTurn = TURN_MASK & m_pCurrentAntDaColor->a;
+
+	m_pMegaMesh->SetColor(m_x, m_y, m_pDaColorTransitionArray[COLOR_INDEX_MASK & m_pCurrentAntDaColor->a]);
+
+	switch (m_NextTurn)
+	{
+	case 0:		MoveLeft();		break;
+	case 16:	MoveRight();	break;
+	}
+	CheckMegaBounds();
+}
+
+void da::Ant::SetOffset(uint32_t x, uint32_t y)
 {
 	m_x = x;
 	m_y = y;
 }
 
-void da::Ant::SetOffset(PointUI64 p)
+void da::Ant::SetOffset(da::PointUI32 p)
 {
 	m_x = p.x;
 	m_y = p.y;
@@ -278,37 +366,41 @@ void da::Ant::CheckBounds()
 {
 	if (m_x > m_Width - 1) 
 	{
-		if (m_pMesh->m_pWindow == nullptr)m_pMesh->DumpToFileBig();
-		else m_pMesh->DumpToFile(std::string(" ant reached border: x > Width,"));
+		m_pMesh->DumpToFile(std::string(" ant reached border: x > Width,"));
 	}
 	else if(m_x < 0)
 	{
-		if (m_pMesh->m_pWindow == nullptr)m_pMesh->DumpToFileBig();
-		else m_pMesh->DumpToFile(std::string(" ant reached border: x < 0,"));
+		m_pMesh->DumpToFile(std::string(" ant reached border: x < 0,"));
 	}
 
 	if(m_y > m_Height - 1)
 	{
-		if (m_pMesh->m_pWindow == nullptr)m_pMesh->DumpToFileBig();
-		else m_pMesh->DumpToFile(std::string(" ant reached border: y > Height,"));
+		m_pMesh->DumpToFile(std::string(" ant reached border: y > Height,"));
 	}
 	else if (m_y < 0)
 	{
-		if (m_pMesh->m_pWindow == nullptr)m_pMesh->DumpToFileBig();
-		else m_pMesh->DumpToFile(std::string(" ant reached border: y < 0,"));
+		m_pMesh->DumpToFile(std::string(" ant reached border: y < 0,"));
 	}
 }
 
-uint8_t da::Ant::GetNextIndex()
+void da::Ant::CheckMegaBounds()
 {
-	if (m_IteratorIndex < m_IteratorSize) 
+	if (m_x > m_Width - 1)
 	{
-		return ++m_IteratorIndex;
+		m_pMegaMesh->DumpToFileBig();
 	}
-	else
+	else if (m_x < 0)
 	{
-		m_IteratorIndex = 0;
-		return m_IteratorIndex;
+		m_pMegaMesh->DumpToFileBig();
+	}
+
+	if (m_y > m_Height - 1)
+	{
+		m_pMegaMesh->DumpToFileBig();
+	}
+	else if (m_y < 0)
+	{
+		m_pMegaMesh->DumpToFileBig();
 	}
 }
 

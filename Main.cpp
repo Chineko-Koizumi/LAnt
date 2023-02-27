@@ -1,12 +1,14 @@
 #include "Mesh.h"               // field for ant and ant itself
 #include "FileParser.h"         // main function argument parrser
 #include "WindowsFeatures.h"    // for Windows winapi features
-
 #include <fstream>
  
 
-static uint64_t  WINDOW_WIDTH  = 0;
-static uint64_t  WINDOW_HEIGHT = 0;
+static uint32_t WINDOW_WIDTH                = 0;
+static uint32_t WINDOW_HEIGHT               = 0;
+static uint64_t SIMULATION_STEPS_THRESHOLD  = 0;
+static uint8_t GENERATION_TYPE              = 0;
+
 
 static const uint8_t  LEFT     = 0;
 static const uint8_t  RIGHT    = 16;
@@ -49,8 +51,10 @@ namespace da
 
 int main(int argc, char* argv[])
 {
-    WINDOW_WIDTH    = atoi(argv[1]);
-    WINDOW_HEIGHT   = atoi(argv[2]);
+    WINDOW_WIDTH               = atoi(argv[1]);
+    WINDOW_HEIGHT              = atoi(argv[2]);
+    GENERATION_TYPE            = atoi(argv[3]);
+    SIMULATION_STEPS_THRESHOLD = atoi(argv[4]);
 
     uint64_t TakenMemory = WINDOW_WIDTH * WINDOW_HEIGHT * da::SIZE_OF_VERTEX / da::KB;
     if (TakenMemory > da::WindowsFeatures::GetFreeMemoryInKB()) 
@@ -61,12 +65,9 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    uint8_t GenerationType              = atoi(argv[3]);
-    uint64_t SimulationStepsThreshold   = atoi(argv[4]);
-    
 #pragma region Window
     
-    switch (GenerationType)
+    switch (GENERATION_TYPE)
     {
         case da::ANT_GUI:
         {
@@ -81,7 +82,7 @@ int main(int argc, char* argv[])
             sf::Color* colors = da::FileParser::CreateColorArray(line); // parsed colors for mesh from arguments
             mesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
 
-            da::Ant ant(&mesh, colors, WINDOW_WIDTH, WINDOW_HEIGHT);
+            da::Ant ant(&mesh, nullptr, colors, nullptr, WINDOW_WIDTH, WINDOW_HEIGHT);
 
             uint64_t Progress = 0;
 
@@ -176,7 +177,7 @@ int main(int argc, char* argv[])
                         mesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
                     mc->unlock();
 
-                    da::Ant ant(&mesh, colors, WINDOW_WIDTH, WINDOW_HEIGHT);
+                    da::Ant ant(&mesh, nullptr, colors, nullptr, WINDOW_WIDTH, WINDOW_HEIGHT);
 
                     while (LambdaRenderStepCount != 0)
                     {
@@ -206,7 +207,7 @@ int main(int argc, char* argv[])
             {
                 threadsStatus[i] = true;
 
-                threads[i] = std::thread(LambdaThread, i, threadsStatus, &infile, SimulationStepsThreshold, &mtxCout, &mtxDumpFile, &window);
+                threads[i] = std::thread(LambdaThread, i, threadsStatus, &infile, SIMULATION_STEPS_THRESHOLD, &mtxCout, &mtxDumpFile, &window);
                 threads[i].detach();
             }
 
@@ -247,36 +248,54 @@ int main(int argc, char* argv[])
 
          case da::ANT_NOGUI_LARGE_FILE:
          {
+             auto start = std::chrono::high_resolution_clock::now();
+
              std::ifstream infile("data.txt");
              std::string line;
              std::getline(infile, line);
 
-             da::Mesh mesh(WINDOW_WIDTH, WINDOW_HEIGHT, nullptr, nullptr, nullptr, &da::KeyboardMethods::m_RenderStepCount);
+             da::MegaMesh megamesh(WINDOW_WIDTH, WINDOW_HEIGHT, &da::KeyboardMethods::m_RenderStepCount);
              
              sf::Color* colors = da::FileParser::CreateColorArray(line); // parsed colors for mesh from arguments
-             mesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
+             da::Color* daColors = new da::Color[da::FileParser::m_ColorCount];
+             for (size_t i = 0; i < da::FileParser::m_ColorCount; i++)
+             {
+                 daColors[i].r = colors[i].r;
+                 daColors[i].g = colors[i].g;
+                 daColors[i].b = colors[i].b;
+                 daColors[i].a = colors[i].a;
+             }
+             megamesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
 
              uint64_t Progress = 0;
 
-             da::Ant ant(&mesh, colors, WINDOW_WIDTH, WINDOW_HEIGHT);
+             da::Ant ant(nullptr, &megamesh, nullptr, daColors, WINDOW_WIDTH, WINDOW_HEIGHT);
 
              da::KeyboardMethods::m_RenderStepCount = 10000000;
              while (da::KeyboardMethods::m_RenderStepCount != 0)
              {
-                 if (Progress > SimulationStepsThreshold)
+                 if (Progress > SIMULATION_STEPS_THRESHOLD)
                  {
-                     std::cout << double(SimulationStepsThreshold) / 100 << " Bilion moves, reached simulation limit" << std::endl;
+                     std::cout << double(SIMULATION_STEPS_THRESHOLD) / 100 << " Bilion moves, reached simulation limit" << std::endl;
 
-                     mesh.DumpToFileBig();
+                     megamesh.DumpToFileBig();
                      da::KeyboardMethods::m_RenderStepCount = 0;
                      break;
                  }
-                 std::cout << " Ant moves: " << (Progress++) * da::KeyboardMethods::m_RenderStepCount << " Simulation threshold in %: " << (double(Progress) / double(SimulationStepsThreshold)) * 100.0f <<  std::endl;
+                 std::cout << " Ant moves: " << (Progress++) * da::KeyboardMethods::m_RenderStepCount << " Simulation threshold in %: " << (double(Progress) / double(SIMULATION_STEPS_THRESHOLD)) * 100.0f <<  std::endl;
                 
-                 for (size_t i = 0; i < da::KeyboardMethods::m_RenderStepCount; i++) ant.NextMove();
+                 for (size_t i = 0; i < da::KeyboardMethods::m_RenderStepCount; i++) ant.NextMegaMove();
 
              }
+
              da::FileParser::DeleteColorArray();
+             delete[] daColors;
+
+             auto stop = std::chrono::high_resolution_clock::now();
+             auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+
+             std::cout << " whole operation took: " << duration.count() << "[s]" << std::endl;
+
          }break;
 
         default: 
