@@ -56,21 +56,21 @@ int main(int argc, char* argv[])
     GENERATION_TYPE            = atoi(argv[3]);
     SIMULATION_STEPS_THRESHOLD = atoi(argv[4]);
 
-    uint64_t TakenMemory = WINDOW_WIDTH * WINDOW_HEIGHT * da::SIZE_OF_VERTEX / da::KB;
-    if (TakenMemory > da::WindowsFeatures::GetFreeMemoryInKB()) 
-    {
-        std::cout << " Not enough free memory for this mesh size" << std::endl;
-        std::cout << " Free memory in KB: " << da::WindowsFeatures::GetFreeMemoryInKB() <<std::endl;
-        std::cout << " Memory to be allocated in KB: " << TakenMemory << std::endl;
-        return 0;
-    }
-
 #pragma region Window
     
     switch (GENERATION_TYPE)
     {
         case da::ANT_GUI:
         {
+            uint64_t TakenMemory = uint64_t(WINDOW_WIDTH) * uint64_t(WINDOW_HEIGHT) * da::SIZE_OF_VERTEX / da::KB;
+            if (TakenMemory > da::WindowsFeatures::GetFreeMemoryInKB())
+            {
+                std::cout << " Not enough free memory for this mesh size" << std::endl;
+                std::cout << " Free memory in KB: " << da::WindowsFeatures::GetFreeMemoryInKB() << std::endl;
+                std::cout << " Memory to be allocated in KB: " << TakenMemory << std::endl;
+                return 0;
+            }
+
             sf::Event event; // for windows event pool
             sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::Default);
             da::Mesh mesh(WINDOW_WIDTH, WINDOW_HEIGHT, &window, nullptr, nullptr, &da::KeyboardMethods::m_RenderStepCount);
@@ -124,6 +124,15 @@ int main(int argc, char* argv[])
 
         case da::ANT_NOGUI_FILE: 
         {
+            uint64_t TakenMemory = uint64_t(WINDOW_WIDTH) * uint64_t(WINDOW_HEIGHT) * da::SIZE_OF_VERTEX / da::KB;
+            if (TakenMemory > da::WindowsFeatures::GetFreeMemoryInKB())
+            {
+                std::cout << " Not enough free memory for this mesh size" << std::endl;
+                std::cout << " Free memory in KB: " << da::WindowsFeatures::GetFreeMemoryInKB() << std::endl;
+                std::cout << " Memory to be allocated in KB: " << TakenMemory << std::endl;
+                return 0;
+            }
+
             std::ifstream infile("data.txt");
             std::mutex mtxCout, mtxDumpFile;
             std::thread* threads;
@@ -248,6 +257,15 @@ int main(int argc, char* argv[])
 
          case da::ANT_NOGUI_LARGE_FILE:
          {
+             uint64_t TakenMemory = uint64_t(WINDOW_WIDTH) * uint64_t(WINDOW_HEIGHT) * sizeof(da::DaVertex) / da::KB;
+             if (TakenMemory > da::WindowsFeatures::GetFreeMemoryInKB())
+             {
+                 std::cout << " Not enough free memory for this mesh size" << std::endl;
+                 std::cout << " Free memory in KB: " << da::WindowsFeatures::GetFreeMemoryInKB() << std::endl;
+                 std::cout << " Memory to be allocated in KB: " << TakenMemory << std::endl;
+                 return 0;
+             }
+
              auto start = std::chrono::high_resolution_clock::now();
 
              std::ifstream infile("data.txt");
@@ -294,7 +312,7 @@ int main(int argc, char* argv[])
              auto stop = std::chrono::high_resolution_clock::now();
              auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
 
-             std::cout << " whole operation took: " << duration.count() << "[s]" << std::endl;
+             std::cout << " Whole operation took: " << duration.count() << "[s]" << std::endl;
 
          }break;
 
