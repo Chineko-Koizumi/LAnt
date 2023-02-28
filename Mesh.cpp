@@ -178,14 +178,15 @@ da::MegaMesh::MegaMesh(uint32_t width, uint32_t height, uint64_t* loopEnd)
 	,m_FieldHeight(height)
 	,m_ploopEnd(loopEnd)
 {
-	m_pfield = new std::vector<da::DaVertex>(uint64_t(height) * uint64_t(width));
+	m_fieldSize = uint64_t(height) * uint64_t(width);
+	m_pfield	= new da::DaVertex[m_fieldSize];
 
 	InitFieldPossition();
 }
 
 da::MegaMesh::~MegaMesh()
 {
-	delete m_pfield;
+	delete[] m_pfield;
 }
 
 void da::MegaMesh::SetFilePrefix(const std::string& s)
@@ -205,7 +206,7 @@ void da::MegaMesh::InitFieldPossition()
 	{
 		for (uint32_t x = 0; x < m_FieldWidth; x++)
 		{
-			m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).position = da::PointUI32{ x , y };
+			m_pfield[TwoDimensionalIndextoOneDimensionalIndex(x, y)].position = da::PointUI32{ x , y };
 		}
 	}
 }
@@ -220,18 +221,18 @@ void da::MegaMesh::InitFieldColor(da::Color c)
 	uint64_t fieldrenge = uint64_t(m_FieldWidth) * uint64_t(m_FieldHeight);
 	for (uint64_t i = 0; i < fieldrenge; i++)
 	{
-		m_pfield->operator[](i).color = c;
+		m_pfield[i].color = c;
 	}
 }
 
 void da::MegaMesh::SetColor(uint32_t x, uint32_t y, da::Color c)
 {
-	m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).color = c;
+	m_pfield[TwoDimensionalIndextoOneDimensionalIndex(x, y)].color = c;
 }
 
 da::Color* da::MegaMesh::GetColor(uint32_t x, uint32_t y)
 {
-	return &(m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).color);
+	return &(m_pfield[TwoDimensionalIndextoOneDimensionalIndex(x, y)].color);
 }
 
 void da::MegaMesh::DumpToFileBig()
@@ -248,22 +249,21 @@ void da::MegaMesh::DumpToFileBig()
 	auto start = std::chrono::high_resolution_clock::now();
 	std::cout << "Dumping started:" << std::endl;
 
-	uint64_t VectorSize = m_pfield->size();
 	std::string DumpSplitter = "";
 
-	for (uint64_t i = 0; i < VectorSize; i++)
+	for (uint64_t i = 0; i < m_fieldSize; i++)
 	{
-		DumpSplitter += std::to_string(m_pfield->operator[](i).color.r);
+		DumpSplitter += std::to_string(m_pfield[i].color.r);
 		DumpSplitter += " ";
-		DumpSplitter += std::to_string(m_pfield->operator[](i).color.g);
+		DumpSplitter += std::to_string(m_pfield[i].color.g);
 		DumpSplitter += " ";
-		DumpSplitter += std::to_string(m_pfield->operator[](i).color.b);
+		DumpSplitter += std::to_string(m_pfield[i].color.b);
 		DumpSplitter += " ";
 		if ((i % 1000) == 0)
 		{
 			SSDump << DumpSplitter;
 			DumpSplitter = "";
-			if ((i % 100000000) == 0)std::cout << "done in %: " << double(i) / double(VectorSize) * 100.0f << std::endl;
+			if ((i % 100000000) == 0)std::cout << "done in %: " << double(i) / double(m_fieldSize) * 100.0f << std::endl;
 		}
 	}
 	std::cout << "done in %: 100" << std::endl;

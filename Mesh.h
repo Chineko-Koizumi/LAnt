@@ -55,7 +55,8 @@ namespace da
 
 	private:
 
-		std::vector<da::DaVertex>* m_pfield;
+		da::DaVertex*				m_pfield;
+		uint64_t					m_fieldSize;
 
 		uint32_t m_FieldWidth;
 		uint32_t m_FieldHeight;
