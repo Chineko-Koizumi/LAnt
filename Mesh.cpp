@@ -179,9 +179,8 @@ da::MegaMesh::MegaMesh(uint32_t width, uint32_t height, uint64_t* loopEnd)
 	,m_ploopEnd(loopEnd)
 {
 	m_fieldSize = uint64_t(height) * uint64_t(width);
-	m_pfield	= new da::DaVertex[m_fieldSize];
+	m_pfield	= new da::Color[m_fieldSize];
 
-	InitFieldPossition();
 }
 
 da::MegaMesh::~MegaMesh()
@@ -200,17 +199,6 @@ da::PointUI32 da::MegaMesh::GetCenterPoint()
 	return da::PointUI32{ m_FieldWidth / 2, m_FieldHeight / 2 };
 }
 
-void da::MegaMesh::InitFieldPossition()
-{
-	for (uint32_t y = 0; y < m_FieldHeight; y++)
-	{
-		for (uint32_t x = 0; x < m_FieldWidth; x++)
-		{
-			m_pfield[TwoDimensionalIndextoOneDimensionalIndex(x, y)].position = da::PointUI32{ x , y };
-		}
-	}
-}
-
 uint64_t da::MegaMesh::TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y)
 {
 	return (uint64_t(y) * uint64_t(m_FieldWidth) + uint64_t(x));
@@ -221,18 +209,18 @@ void da::MegaMesh::InitFieldColor(da::Color c)
 	uint64_t fieldrenge = uint64_t(m_FieldWidth) * uint64_t(m_FieldHeight);
 	for (uint64_t i = 0; i < fieldrenge; i++)
 	{
-		m_pfield[i].color = c;
+		m_pfield[i] = c;
 	}
 }
 
 void da::MegaMesh::SetColor(uint32_t x, uint32_t y, da::Color c)
 {
-	m_pfield[TwoDimensionalIndextoOneDimensionalIndex(x, y)].color = c;
+	m_pfield[TwoDimensionalIndextoOneDimensionalIndex(x, y)] = c;
 }
 
 da::Color* da::MegaMesh::GetColor(uint32_t x, uint32_t y)
 {
-	return &(m_pfield[TwoDimensionalIndextoOneDimensionalIndex(x, y)].color);
+	return &(m_pfield[TwoDimensionalIndextoOneDimensionalIndex(x, y)]);
 }
 
 void da::MegaMesh::DumpToFileBig()
@@ -253,11 +241,11 @@ void da::MegaMesh::DumpToFileBig()
 
 	for (uint64_t i = 0; i < m_fieldSize; i++)
 	{
-		DumpSplitter += std::to_string(m_pfield[i].color.r);
+		DumpSplitter += std::to_string(m_pfield[i].r);
 		DumpSplitter += " ";
-		DumpSplitter += std::to_string(m_pfield[i].color.g);
+		DumpSplitter += std::to_string(m_pfield[i].g);
 		DumpSplitter += " ";
-		DumpSplitter += std::to_string(m_pfield[i].color.b);
+		DumpSplitter += std::to_string(m_pfield[i].b);
 		DumpSplitter += " ";
 		if ((i % 1000) == 0)
 		{

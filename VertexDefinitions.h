@@ -1,8 +1,9 @@
 
 namespace da 
 {
-    const static uint32_t SIZE_OF_VERTEX = 20;
+    const static uint32_t SIZE_OF_VERTEX   = 20;
     const static uint32_t SIZE_OF_DAVERTEX = 12;
+    const static uint32_t SIZE_OF_DACOLOR  = 4;
 
     struct PointF
     {

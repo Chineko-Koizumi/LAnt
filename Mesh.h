@@ -55,7 +55,7 @@ namespace da
 
 	private:
 
-		da::DaVertex*				m_pfield;
+		da::Color*				    m_pfield;
 		uint64_t					m_fieldSize;
 
 		uint32_t m_FieldWidth;
@@ -79,7 +79,6 @@ namespace da
 
 	private:
 		uint64_t TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y);
-		void InitFieldPossition();
 	};
 
 
