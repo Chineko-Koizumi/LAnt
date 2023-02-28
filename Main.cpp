@@ -282,9 +282,9 @@ int main(int argc, char* argv[])
              da::FileParser::DeleteDaColorArray();
 
              auto stop = std::chrono::high_resolution_clock::now();
-             auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-             std::cout << " Whole operation took: " << duration.count() << "[s]" << std::endl;
+             std::cout << " Whole operation took: " << duration.count() << "[ms]" << std::endl;
 
          }break;
 

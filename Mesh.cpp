@@ -274,11 +274,11 @@ void da::MegaMesh::DumpToFileBig()
 	}
 
 	auto stop = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
 	SSDump.close();
 
-	std::cout << " File generated in: " << duration.count() << "[s] screenshot saved as " << FileName << std::endl;
+	std::cout << " File generated in: " << duration.count() << "[ms] screenshot saved as " << FileName << std::endl;
 	*m_ploopEnd = 0;
 }
 
