@@ -9,8 +9,9 @@ namespace da
 	class FileParser
 	{
 	public:
-		static sf::Color*	m_pColorArray;
-		static da::Color*	m_pDaColorArray;
+		static sf::Color*		m_pColorArray;
+		static da::Color*		m_pDaColorArray;
+		static da::GreenColor*	m_pDaGreenColorArray;
 		static uint32_t		m_ColorCount; // Count of all numbers provaided as argument
 
 		static std::vector<std::string> m_VectorforParsedValues;
@@ -26,6 +27,9 @@ namespace da
 
 		static da::Color* CreateDaColorArray(const std::string& data);
 		static void	DeleteDaColorArray();
+
+		static da::GreenColor* CreateDaGreenColorArray(const std::string& data);
+		static void	DeleteDaGreenColorArray();
 
 	private:
 		FileParser() {};

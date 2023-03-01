@@ -1,9 +1,10 @@
 
 namespace da 
 {
-    const static uint32_t SIZE_OF_VERTEX   = 20;
-    const static uint32_t SIZE_OF_DAVERTEX = 12;
-    const static uint32_t SIZE_OF_DACOLOR  = 4;
+    const static uint32_t SIZE_OF_VERTEX        = 20;
+    const static uint32_t SIZE_OF_DAVERTEX      = 12;
+    const static uint32_t SIZE_OF_DACOLOR       = 4;
+    const static uint32_t SIZE_OF_DAGREENCOLOR  = 2;
 
     struct PointF
     {
@@ -31,6 +32,11 @@ namespace da
         uint8_t a; ///< Alpha (opacity) component
     };
 
+    struct GreenColor
+    {
+        uint8_t g; ///< Green component
+        uint8_t a; ///< Alpha (opacity) component
+    };
 
     struct DaVertex 
     {

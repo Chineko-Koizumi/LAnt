@@ -245,7 +245,7 @@ int main(int argc, char* argv[])
 
          case da::ANT_NOGUI_LARGE_FILE:
          {
-             if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_DACOLOR)) return 0;
+             if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_DAGREENCOLOR)) return 0;
 
              auto start = std::chrono::high_resolution_clock::now();
 
@@ -255,20 +255,20 @@ int main(int argc, char* argv[])
 
              da::MegaMesh megamesh(WINDOW_WIDTH, WINDOW_HEIGHT, &da::KeyboardMethods::m_RenderStepCount);
              
-             da::Color* daColors = da::FileParser::CreateDaColorArray(line); // parsed colors for mesh from arguments
+             da::GreenColor* daGreenColors = da::FileParser::CreateDaGreenColorArray(line); // parsed colors for mesh from arguments
      
              megamesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
 
              uint64_t Progress = 0;
 
-             da::Ant ant(nullptr, &megamesh, nullptr, daColors, WINDOW_WIDTH, WINDOW_HEIGHT);
+             da::Ant ant(nullptr, &megamesh, nullptr, daGreenColors, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-             da::KeyboardMethods::m_RenderStepCount = 10000000;
+             da::KeyboardMethods::m_RenderStepCount = 100000000;
              while (da::KeyboardMethods::m_RenderStepCount != 0)
              {
                  if (Progress > SIMULATION_STEPS_THRESHOLD)
                  {
-                     std::cout << double(SIMULATION_STEPS_THRESHOLD) / 100 << " Bilion moves, reached simulation limit" << std::endl;
+                     std::cout << double(SIMULATION_STEPS_THRESHOLD) / 10 << " Bilion moves, reached simulation limit" << std::endl;
 
                      megamesh.DumpToFileBig();
                      da::KeyboardMethods::m_RenderStepCount = 0;
@@ -276,10 +276,10 @@ int main(int argc, char* argv[])
                  }
                  std::cout << " Ant moves: " << (Progress++) * da::KeyboardMethods::m_RenderStepCount << " Simulation threshold in %: " << (double(Progress) / double(SIMULATION_STEPS_THRESHOLD)) * 100.0f <<  std::endl;
                 
-                 for (size_t i = 0; i < da::KeyboardMethods::m_RenderStepCount; i++) ant.NextMegaMove();
+                 ant.NextMegaMove(da::KeyboardMethods::m_RenderStepCount);
 
              }
-             da::FileParser::DeleteDaColorArray();
+             da::FileParser::DeleteDaGreenColorArray();
 
              auto stop = std::chrono::high_resolution_clock::now();
              auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);

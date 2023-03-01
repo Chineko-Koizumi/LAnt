@@ -3,9 +3,6 @@
 #include <fstream>
 #include <chrono>
 
-#define COLOR_INDEX_MASK	15
-#define TURN_MASK			16
-
 #pragma region Mesh
 
 da::Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, std::mutex* mtxCout, std::mutex* mtxDumpFile, uint64_t* loopEnd)
@@ -179,7 +176,7 @@ da::MegaMesh::MegaMesh(uint32_t width, uint32_t height, uint64_t* loopEnd)
 	,m_ploopEnd(loopEnd)
 {
 	m_fieldSize = uint64_t(height) * uint64_t(width);
-	m_pfield	= new da::Color[m_fieldSize];
+	m_pfield	= new da::GreenColor[m_fieldSize];
 
 }
 
@@ -199,28 +196,13 @@ da::PointUI32 da::MegaMesh::GetCenterPoint()
 	return da::PointUI32{ m_FieldWidth / 2, m_FieldHeight / 2 };
 }
 
-uint64_t da::MegaMesh::TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y)
-{
-	return (uint64_t(y) * uint64_t(m_FieldWidth) + uint64_t(x));
-}
-
-void da::MegaMesh::InitFieldColor(da::Color c)
+void da::MegaMesh::InitFieldColor(da::GreenColor c)
 {
 	uint64_t fieldrenge = uint64_t(m_FieldWidth) * uint64_t(m_FieldHeight);
 	for (uint64_t i = 0; i < fieldrenge; i++)
 	{
 		m_pfield[i] = c;
 	}
-}
-
-void da::MegaMesh::SetColor(uint32_t x, uint32_t y, da::Color c)
-{
-	m_pfield[TwoDimensionalIndextoOneDimensionalIndex(x, y)] = c;
-}
-
-da::Color* da::MegaMesh::GetColor(uint32_t x, uint32_t y)
-{
-	return &(m_pfield[TwoDimensionalIndextoOneDimensionalIndex(x, y)]);
 }
 
 void da::MegaMesh::DumpToFileBig()
@@ -241,11 +223,11 @@ void da::MegaMesh::DumpToFileBig()
 
 	for (uint64_t i = 0; i < m_fieldSize; i++)
 	{
-		DumpSplitter += std::to_string(m_pfield[i].r);
+		DumpSplitter += std::to_string(0);
 		DumpSplitter += " ";
 		DumpSplitter += std::to_string(m_pfield[i].g);
 		DumpSplitter += " ";
-		DumpSplitter += std::to_string(m_pfield[i].b);
+		DumpSplitter += std::to_string(0);
 		DumpSplitter += " ";
 		if ((i % 1000) == 0)
 		{
@@ -274,7 +256,7 @@ void da::MegaMesh::DumpToFileBig()
 
 
 #pragma region Ant
-da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da::Color* DaColorTransitionArray, uint32_t Width, uint32_t Height)
+da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da::GreenColor* DaGreenColorTransitionArray, uint32_t Width, uint32_t Height)
 	:m_x(0)
 	,m_y(0)
 	,m_Height(Height)
@@ -284,9 +266,9 @@ da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da
 	,m_pMesh(mesh)
 	,m_pMegaMesh(megaMesh)
 	,m_pColorTransitionArray(ColorTransitionArray)
-	,m_pDaColorTransitionArray(DaColorTransitionArray)
+	,m_pDaGreenColorTransitionArray(DaGreenColorTransitionArray)
 	,m_pCurrentAntColor(nullptr)
-	,m_pCurrentAntDaColor(nullptr)
+	,m_pCurrentAntDaGreenColor(nullptr)
 {
 	if (m_pMesh != nullptr) 
 	{
@@ -296,7 +278,7 @@ da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da
 	else 
 	{
 		SetOffset(m_pMegaMesh->GetCenterPoint());
-		m_pMegaMesh->InitFieldColor(*m_pDaColorTransitionArray);
+		m_pMegaMesh->InitFieldColor(*m_pDaGreenColorTransitionArray);
 	}
 }
 
@@ -316,22 +298,6 @@ void da::Ant::NextMove()
 	case 16:	MoveRight();	break;
 	}
 	CheckBounds();
-}
-
-void da::Ant::NextMegaMove()
-{
-	m_pCurrentAntDaColor = m_pMegaMesh->GetColor(m_x, m_y);
-
-	m_NextTurn = TURN_MASK & m_pCurrentAntDaColor->a;
-
-	m_pMegaMesh->SetColor(m_x, m_y, m_pDaColorTransitionArray[COLOR_INDEX_MASK & m_pCurrentAntDaColor->a]);
-
-	switch (m_NextTurn)
-	{
-	case 0:		MoveLeft();		break;
-	case 16:	MoveRight();	break;
-	}
-	CheckMegaBounds();
 }
 
 void da::Ant::SetOffset(uint32_t x, uint32_t y)
@@ -372,46 +338,5 @@ void da::Ant::CheckBounds()
 	}
 }
 
-void da::Ant::CheckMegaBounds()
-{
-	if (m_x > m_Width - 1)
-	{
-		m_pMegaMesh->DumpToFileBig();
-	}
-	else if (m_x < 0)
-	{
-		m_pMegaMesh->DumpToFileBig();
-	}
-
-	if (m_y > m_Height - 1)
-	{
-		m_pMegaMesh->DumpToFileBig();
-	}
-	else if (m_y < 0)
-	{
-		m_pMegaMesh->DumpToFileBig();
-	}
-}
-
-void da::Ant::MoveLeft()
-{
-	switch (m_Facing)
-	{
-		case 0: m_x--; m_Facing = 3; break;
-		case 1: m_y--; m_Facing = 0; break;
-		case 2: m_x++; m_Facing = 1; break;
-		case 3: m_y++; m_Facing = 2; break;
-	}
-}
-void da::Ant::MoveRight()
-{
-	switch (m_Facing)
-	{
-		case 0:m_x++; m_Facing = 1; break;
-		case 1:m_y++; m_Facing = 2; break;
-		case 2:m_x--; m_Facing = 3; break;
-		case 3:m_y--; m_Facing = 0; break;
-	}
-}
 #pragma endregion
 
