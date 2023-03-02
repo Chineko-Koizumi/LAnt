@@ -270,7 +270,6 @@ da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da
 	,m_Height(Height)
 	,m_Facing(0)
 	,m_NextTurn(0)
-
 	,m_pCurrentAntColor(nullptr)
 {
 	if (m_pMesh != nullptr) 
@@ -289,6 +288,8 @@ da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da
 		}
 
 		m_pMegaMesh->InitFieldColor(m_pColorMaskedTransitionArray[0]);
+		m_pMeshFieldCopy = m_pMegaMesh->m_pfield;
+		m_pLoopEndCopy = m_pMegaMesh->m_ploopEnd;
 	}
 }
 

@@ -54,14 +54,13 @@ static const uint8_t TURN_MASK		  = 16;
 	class MegaMesh
 	{
 	public:
-
 		uint64_t* m_ploopEnd;
+		uint8_t* m_pfield;
 
 	private:
 
-		uint8_t* m_pfield;
+		
 		uint64_t m_fieldSize;
-
 		uint32_t m_FieldWidth;
 		uint32_t m_FieldHeight;
 
@@ -73,12 +72,12 @@ static const uint8_t TURN_MASK		  = 16;
 
 		inline uint8_t GetColor(uint32_t x, uint32_t y)
 		{
-			return m_pfield[TwoDimensionalIndextoOneDimensionalIndex(x, y)];
+			return m_pfield[uint64_t(y) * uint64_t(m_FieldWidth) + uint64_t(x)];
 		}
 
 		inline void SetColor(uint32_t x, uint32_t y, uint8_t c)
 		{
-			m_pfield[TwoDimensionalIndextoOneDimensionalIndex(x, y)] = c;
+			m_pfield[uint64_t(y) * uint64_t(m_FieldWidth) + uint64_t(x)] = c;
 		}
 
 		void SetFilePrefix(const std::string& s);
@@ -89,10 +88,6 @@ static const uint8_t TURN_MASK		  = 16;
 
 	private:
 
-		inline uint64_t TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y)
-		{
-			return (uint64_t(y) * uint64_t(m_FieldWidth) + uint64_t(x));
-		}
 	};
 
 
@@ -100,6 +95,7 @@ static const uint8_t TURN_MASK		  = 16;
 	{
 	private:
 		Mesh*		m_pMesh;
+		uint8_t*	m_pMeshFieldCopy;
 		MegaMesh*	m_pMegaMesh;
 
 		sf::Color*			m_pColorTransitionArray;
@@ -112,8 +108,10 @@ static const uint8_t TURN_MASK		  = 16;
 		int32_t		m_Width;
 		int32_t		m_Height;
 
-		int8_t		m_Facing;
+		uint8_t		m_Facing;
 		uint8_t		m_NextTurn;
+
+		uint64_t* m_pLoopEndCopy;
 
 		sf::Color*			m_pCurrentAntColor;
 		uint8_t				m_CurrentAntColorMasked;
@@ -126,26 +124,57 @@ static const uint8_t TURN_MASK		  = 16;
 
 		inline void NextMegaMove(uint32_t repetition)
 		{
-			for (uint32_t i = 0; i < repetition && *m_pMegaMesh->m_ploopEnd; i++)
+			for (uint32_t i = repetition; i ; --i)
 			{
-				m_CurrentAntColorMasked = m_pMegaMesh->GetColor(m_x, m_y);
+				m_CurrentAntColorMasked = m_pMeshFieldCopy[uint64_t(m_y) * uint64_t(m_Width) + uint64_t(m_x)];
 
 				switch (TURN_MASK & m_CurrentAntColorMasked)
 				{
 				case 0:
+
 					m_CurrentAntColorMasked &= 0x0F;
 					m_CurrentAntColorMasked = (m_CurrentAntColorMasked == 13 ? 0 : ++m_CurrentAntColorMasked);
 
-					m_pMegaMesh->SetColor(m_x, m_y, m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked);
-					MoveLeft();		break;
+					m_pMeshFieldCopy[uint64_t(m_y) * uint64_t(m_Width) + uint64_t(m_x)] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
+
+					switch (m_Facing)
+					{
+						case 0: --m_x; m_Facing = 3U; break;
+						case 1: --m_y; --m_Facing; break;
+						case 2: ++m_x; --m_Facing; break;
+						case 3: ++m_y; --m_Facing; break;
+					}
+					
+					break;
+
 				case 16:
+
 					m_CurrentAntColorMasked &= 0x0F;
 					m_CurrentAntColorMasked = (m_CurrentAntColorMasked == 13 ? 0 : ++m_CurrentAntColorMasked);
 
-					m_pMegaMesh->SetColor(m_x, m_y, m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked);
-					MoveRight();	break;
+					m_pMeshFieldCopy[uint64_t(m_y) * uint64_t(m_Width) + uint64_t(m_x)] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
+					
+					switch (m_Facing)
+					{
+						case 0:++m_x; ++m_Facing; break;
+						case 1:++m_y; ++m_Facing; break;
+						case 2:--m_x; ++m_Facing; break;
+						case 3:--m_y; m_Facing = 0U; break;
+					}
+					
+					break;
 				}
-				CheckMegaBounds();
+
+				if (m_x == m_Width)	    m_pMegaMesh->DumpToFileBig(m_pDaGreenColorTransitionArray);
+				else if (m_x == -1)		m_pMegaMesh->DumpToFileBig(m_pDaGreenColorTransitionArray);
+				
+				if (m_y == m_Height)	m_pMegaMesh->DumpToFileBig(m_pDaGreenColorTransitionArray);
+				else if (m_y == -1)		m_pMegaMesh->DumpToFileBig(m_pDaGreenColorTransitionArray);
+				
+				switch (*m_pLoopEndCopy)
+				{
+					case 0: i = 1U;
+				}
 			}
 		}
 
@@ -155,27 +184,6 @@ static const uint8_t TURN_MASK		  = 16;
 	private:
 
 		void CheckBounds();
-
-		inline void CheckMegaBounds()
-		{
-			if (m_x > m_Width - 1)
-			{
-				m_pMegaMesh->DumpToFileBig(m_pDaGreenColorTransitionArray);
-			}
-			else if (m_x < 0)
-			{
-				m_pMegaMesh->DumpToFileBig(m_pDaGreenColorTransitionArray);
-			}
-
-			if (m_y > m_Height - 1)
-			{
-				m_pMegaMesh->DumpToFileBig(m_pDaGreenColorTransitionArray);
-			}
-			else if (m_y < 0)
-			{
-				m_pMegaMesh->DumpToFileBig(m_pDaGreenColorTransitionArray);
-			}
-		}
 
 		inline void MoveLeft()
 		{

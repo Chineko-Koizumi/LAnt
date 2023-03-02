@@ -105,7 +105,7 @@ int main(int argc, char* argv[])
                 mesh.DrawMesh();
                 window.display();
 
-                for (size_t i = 0; i < da::KeyboardMethods::m_RenderStepCount; i++)ant.NextMove();   
+                for (size_t i = 0; i < da::KeyboardMethods::m_RenderStepCount; ++i)ant.NextMove();   
             }
             da::FileParser::DeleteColorArray();
 
@@ -184,7 +184,7 @@ int main(int argc, char* argv[])
                             break;
                         }
 
-                        for (size_t i = 0; i < LambdaRenderStepCount; i++) ant.NextMove();
+                        for (size_t i = 0; i < LambdaRenderStepCount; ++i) ant.NextMove();
 
                         Progress++;
 
@@ -195,7 +195,7 @@ int main(int argc, char* argv[])
                 thrStatus[threadIndex] = false;
             };
 
-            for (int i = 0; i < Thread_count; i++)
+            for (int i = 0; i < Thread_count; ++i)
             {
                 threadsStatus[i] = true;
 
@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
                 }
 
                 IsAllDetached = true;
-                for (size_t i = 0; i < Thread_count; i++)
+                for (size_t i = 0; i < Thread_count; ++i)
                 {
                     if (threadsStatus[i])
                     {
@@ -258,18 +258,18 @@ int main(int argc, char* argv[])
 
              da::Ant ant(nullptr, &megamesh, nullptr, daGreenColors, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-             da::KeyboardMethods::m_RenderStepCount = 100000000;
+             da::KeyboardMethods::m_RenderStepCount = 100000000;// 0x7FFFFFFU;
              while (da::KeyboardMethods::m_RenderStepCount != 0)
              {
                  if (Progress > SIMULATION_STEPS_THRESHOLD)
                  {
-                     std::cout << double(SIMULATION_STEPS_THRESHOLD) / 10 << " Bilion moves, reached simulation limit" << std::endl;
+                     std::cout << double(SIMULATION_STEPS_THRESHOLD) * da::KeyboardMethods::m_RenderStepCount << " moves, reached simulation limit" << std::endl;
 
                      megamesh.DumpToFileBig(daGreenColors);
                      da::KeyboardMethods::m_RenderStepCount = 0;
                      break;
                  }
-                 std::cout << " Ant moves: " << (Progress++) * da::KeyboardMethods::m_RenderStepCount << " Simulation threshold in %: " << (double(Progress) / double(SIMULATION_STEPS_THRESHOLD)) * 100.0f <<  std::endl;
+                 std::cout << " Ant moves: " << (Progress) * da::KeyboardMethods::m_RenderStepCount << " Simulation threshold in %: " << (double(Progress++) / double(SIMULATION_STEPS_THRESHOLD)) * 100.0f <<  std::endl;
                 
                  ant.NextMegaMove(da::KeyboardMethods::m_RenderStepCount);
 

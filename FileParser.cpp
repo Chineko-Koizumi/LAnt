@@ -8,7 +8,7 @@ bool da::FileParser::CheckAndInsert() // checking if inside set negation of path
 {
     std::string AntiString = m_AntCurrentPathString;
 
-    for (size_t i = 0; i < m_AntCurrentPathString.length(); i++)
+    for (size_t i = 0; i < m_AntCurrentPathString.length(); ++i)
     {
         switch (AntiString[i])
         {
@@ -38,7 +38,7 @@ sf::Color* da::FileParser::CreateColorArray(const std::string& data)
     m_ColorCount    = std::stoi(m_VectorforParsedValues[0]);
     m_pColorArray   = new sf::Color[m_ColorCount];
 
-    for (size_t i = 0; i < m_ColorCount; i++)
+    for (size_t i = 0; i < m_ColorCount; ++i)
     {
         m_pColorArray[i] = sf::Color(
              std::stoi(m_VectorforParsedValues[i * 4 + 1])
@@ -70,7 +70,7 @@ da::Color* da::FileParser::CreateDaColorArray(const std::string& data)
     m_ColorCount = std::stoi(m_VectorforParsedValues[0]);
     m_pDaColorArray = new da::Color[m_ColorCount];
 
-    for (size_t i = 0; i < m_ColorCount; i++)
+    for (size_t i = 0; i < m_ColorCount; ++i)
     {
         m_pDaColorArray[i] = da::Color{
               (uint8_t)std::stoi(m_VectorforParsedValues[i * 4 + 1])
@@ -102,7 +102,7 @@ da::GreenColor* da::FileParser::CreateDaGreenColorArray(const std::string& data)
     m_ColorCount = std::stoi(m_VectorforParsedValues[0]);
     m_pDaGreenColorArray = new da::GreenColor[m_ColorCount];
 
-    for (size_t i = 0; i < m_ColorCount; i++)
+    for (size_t i = 0; i < m_ColorCount; ++i)
     {
         m_pDaGreenColorArray[i] = da::GreenColor{
               (uint8_t)std::stoi(m_VectorforParsedValues[i * 4 + 2])
