@@ -1,3 +1,6 @@
+#ifndef VERTEXDEFINITIONS_H
+#define VERTEXDEFINITIONS_H
+
 
 namespace da 
 {
@@ -5,6 +8,7 @@ namespace da
     const static uint32_t SIZE_OF_DAVERTEX      = 12;
     const static uint32_t SIZE_OF_DACOLOR       = 4;
     const static uint32_t SIZE_OF_DAGREENCOLOR  = 2;
+    const static uint32_t SIZE_OF_MASKED_COLOR  = 1;
 
     struct PointF
     {
@@ -44,3 +48,4 @@ namespace da
         Color color;
     };
 }
+#endif

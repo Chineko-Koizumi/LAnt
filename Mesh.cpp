@@ -5,13 +5,15 @@
 
 #pragma region Mesh
 
+static const uint8_t COLOR_INDEX_MASK = 15;
+
 da::Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, std::mutex* mtxCout, std::mutex* mtxDumpFile, uint64_t* loopEnd)
-	:m_FieldWidth(width)
-	,m_FieldHeight(height)
-	,m_pWindow(window)
-	,m_AdditionalNumberForFileName(0)
+	:m_pWindow(window)
 	,m_pMutexCout(mtxCout)
 	,m_pMutexDumpFile(mtxDumpFile)
+	,m_FieldWidth(width)
+	,m_FieldHeight(height)
+	,m_AdditionalNumberForFileName(0)
 	,m_ploopEnd(loopEnd)
 	,m_FilePrefix(std::string("NoPrefixSet_"))
 {
@@ -171,12 +173,13 @@ void da::Mesh::InitFieldPossition()
 #pragma region MegaMesh
 
 da::MegaMesh::MegaMesh(uint32_t width, uint32_t height, uint64_t* loopEnd)
-	:m_FieldWidth(width)
+	:m_ploopEnd(loopEnd)
+	,m_FieldWidth(width)
 	,m_FieldHeight(height)
-	,m_ploopEnd(loopEnd)
+	
 {
 	m_fieldSize = uint64_t(height) * uint64_t(width);
-	m_pfield	= new da::GreenColor[m_fieldSize];
+	m_pfield	= new uint8_t[m_fieldSize];
 
 }
 
@@ -196,7 +199,7 @@ da::PointUI32 da::MegaMesh::GetCenterPoint()
 	return da::PointUI32{ m_FieldWidth / 2, m_FieldHeight / 2 };
 }
 
-void da::MegaMesh::InitFieldColor(da::GreenColor c)
+void da::MegaMesh::InitFieldColor(uint8_t c)
 {
 	uint64_t fieldrenge = uint64_t(m_FieldWidth) * uint64_t(m_FieldHeight);
 	for (uint64_t i = 0; i < fieldrenge; i++)
@@ -205,7 +208,7 @@ void da::MegaMesh::InitFieldColor(da::GreenColor c)
 	}
 }
 
-void da::MegaMesh::DumpToFileBig()
+void da::MegaMesh::DumpToFileBig(da::GreenColor* daGreenColors)
 {
 	std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_" + ".ppm");
 
@@ -225,7 +228,7 @@ void da::MegaMesh::DumpToFileBig()
 	{
 		DumpSplitter += std::to_string(0);
 		DumpSplitter += " ";
-		DumpSplitter += std::to_string(m_pfield[i].g);
+		DumpSplitter += std::to_string(daGreenColors[0x0F & m_pfield[i]].g);
 		DumpSplitter += " ";
 		DumpSplitter += std::to_string(0);
 		DumpSplitter += " ";
@@ -257,18 +260,18 @@ void da::MegaMesh::DumpToFileBig()
 
 #pragma region Ant
 da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da::GreenColor* DaGreenColorTransitionArray, uint32_t Width, uint32_t Height)
-	:m_x(0)
-	,m_y(0)
-	,m_Height(Height)
-	,m_Width(Width)
-	,m_Facing(0)
-	,m_NextTurn(0)
-	,m_pMesh(mesh)
+	:m_pMesh(mesh)
 	,m_pMegaMesh(megaMesh)
 	,m_pColorTransitionArray(ColorTransitionArray)
 	,m_pDaGreenColorTransitionArray(DaGreenColorTransitionArray)
+	,m_x(0)
+	,m_y(0)
+	,m_Width(Width)
+	,m_Height(Height)
+	,m_Facing(0)
+	,m_NextTurn(0)
+
 	,m_pCurrentAntColor(nullptr)
-	,m_pCurrentAntDaGreenColor(nullptr)
 {
 	if (m_pMesh != nullptr) 
 	{
@@ -278,7 +281,14 @@ da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da
 	else 
 	{
 		SetOffset(m_pMegaMesh->GetCenterPoint());
-		m_pMegaMesh->InitFieldColor(*m_pDaGreenColorTransitionArray);
+
+		m_pColorMaskedTransitionArray = new uint8_t[14];
+		for (size_t i = 0; i < 14; i++)
+		{
+			m_pColorMaskedTransitionArray[i] = da::TURN_MASK & DaGreenColorTransitionArray[i].a;
+		}
+
+		m_pMegaMesh->InitFieldColor(m_pColorMaskedTransitionArray[0]);
 	}
 }
 
@@ -310,11 +320,6 @@ void da::Ant::SetOffset(da::PointUI32 p)
 {
 	m_x = p.x;
 	m_y = p.y;
-}
-
-void da::Ant::SetColorIndexSize(uint8_t i)
-{
-	m_IteratorSize = i;
 }
 
 void da::Ant::CheckBounds()

@@ -9,9 +9,6 @@ static uint32_t WINDOW_HEIGHT               = 0;
 static uint64_t SIMULATION_STEPS_THRESHOLD  = 0;
 static uint8_t GENERATION_TYPE              = 0;
 
-
-static const uint8_t  LEFT     = 0;
-static const uint8_t  RIGHT    = 16;
 namespace da
 {
     class KeyboardMethods
@@ -76,8 +73,6 @@ int main(int argc, char* argv[])
             mesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
 
             da::Ant ant(&mesh, nullptr, colors, nullptr, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-            uint64_t Progress = 0;
 
             window.setActive(true);
             while (da::KeyboardMethods::m_RenderStepCount != 0)
@@ -245,7 +240,7 @@ int main(int argc, char* argv[])
 
          case da::ANT_NOGUI_LARGE_FILE:
          {
-             if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_DAGREENCOLOR)) return 0;
+             if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_MASKED_COLOR)) return 0;
 
              auto start = std::chrono::high_resolution_clock::now();
 
@@ -270,7 +265,7 @@ int main(int argc, char* argv[])
                  {
                      std::cout << double(SIMULATION_STEPS_THRESHOLD) / 10 << " Bilion moves, reached simulation limit" << std::endl;
 
-                     megamesh.DumpToFileBig();
+                     megamesh.DumpToFileBig(daGreenColors);
                      da::KeyboardMethods::m_RenderStepCount = 0;
                      break;
                  }
@@ -290,7 +285,7 @@ int main(int argc, char* argv[])
 
         default: 
         {
-            std::cout << "Unknown argument: " + atoi(argv[3])<<std::endl;
+            std::cout << "Unknown argument: " + std::string(argv[3]) << std::endl;
         } break;
     }
 #pragma endregion

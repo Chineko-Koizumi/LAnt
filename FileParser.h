@@ -1,8 +1,9 @@
-#pragma once
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <sstream>
 #include <unordered_set>
+
+#include "VertexDefinitions.h"
 
 namespace da 
 {
