@@ -114,28 +114,29 @@ static const uint8_t TURN_MASK		  = 16;
 		uint64_t* m_pLoopEndCopy;
 
 		sf::Color*			m_pCurrentAntColor;
-		uint8_t				m_CurrentAntColorMasked;
+		uint8_t				m_CurrentAntColorMasked;		
+		uint8_t				m_CurrentAntColorMaskedCount;
 
 	public:
-		Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da::GreenColor* DaGreenColorTransitionArray, uint32_t Width, uint32_t Height);
+		Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da::GreenColor* DaGreenColorTransitionArray, uint8_t* ColorMaskedTransitionArray, uint8_t ColorMaskedCount, uint32_t Width, uint32_t Height);
 		~Ant();
 
 		void NextMove();
 
-		inline void NextMegaMove(uint32_t repetition)
+		inline __attribute__((always_inline)) void NextMegaMove(uint32_t repetition)
 		{
 			for (uint32_t i = repetition; i ; --i)
 			{
-				m_CurrentAntColorMasked = m_pMeshFieldCopy[uint64_t(m_y) * uint64_t(m_Width) + uint64_t(m_x)];
+				m_CurrentAntColorMasked = m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x];
 
 				switch (TURN_MASK & m_CurrentAntColorMasked)
 				{
 				case 0:
 
 					m_CurrentAntColorMasked &= 0x0F;
-					m_CurrentAntColorMasked = (m_CurrentAntColorMasked == 13 ? 0 : ++m_CurrentAntColorMasked);
+					m_CurrentAntColorMasked = (m_CurrentAntColorMasked == m_CurrentAntColorMaskedCount - 1 ? 0 : ++m_CurrentAntColorMasked);
 
-					m_pMeshFieldCopy[uint64_t(m_y) * uint64_t(m_Width) + uint64_t(m_x)] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
+					m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
 
 					switch (m_Facing)
 					{
@@ -150,9 +151,9 @@ static const uint8_t TURN_MASK		  = 16;
 				case 16:
 
 					m_CurrentAntColorMasked &= 0x0F;
-					m_CurrentAntColorMasked = (m_CurrentAntColorMasked == 13 ? 0 : ++m_CurrentAntColorMasked);
+					m_CurrentAntColorMasked = (m_CurrentAntColorMasked == m_CurrentAntColorMaskedCount - 1 ? 0 : ++m_CurrentAntColorMasked);
 
-					m_pMeshFieldCopy[uint64_t(m_y) * uint64_t(m_Width) + uint64_t(m_x)] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
+					m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
 					
 					switch (m_Facing)
 					{

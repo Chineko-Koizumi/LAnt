@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "WindowsFeatures.h"
 
 #include <fstream>
 #include <chrono>
@@ -211,6 +212,7 @@ void da::MegaMesh::InitFieldColor(uint8_t c)
 void da::MegaMesh::DumpToFileBig(da::GreenColor* daGreenColors)
 {
 	std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_" + ".ppm");
+	std::stringstream Progress;
 
 	std::ofstream SSDump;
 	SSDump.open(FileName);
@@ -220,7 +222,7 @@ void da::MegaMesh::DumpToFileBig(da::GreenColor* daGreenColors)
 	SSDump << 255 << std::endl;
 
 	auto start = std::chrono::high_resolution_clock::now();
-	std::cout << "Dumping started:" << std::endl;
+	std::cout << std::endl << " Dumping started" << std::endl << std::endl << std::endl;
 
 	std::string DumpSplitter = "";
 
@@ -236,10 +238,19 @@ void da::MegaMesh::DumpToFileBig(da::GreenColor* daGreenColors)
 		{
 			SSDump << DumpSplitter;
 			DumpSplitter = "";
-			if ((i % 100000000) == 0)std::cout << "done in %: " << double(i) / double(m_fieldSize) * 100.0f << std::endl;
+			if ((i % 100000000) == 0)
+			{
+				Progress.clear();
+
+				Progress << "\x1b[2k\x1b[A" << "\x1b[2k\x1b[A" << " done in: " << floor(double(i) / m_fieldSize * 100.0f) << "%      " << "\n\r" << da::WindowsFeatures::GenerateProgressBar(double(i) / m_fieldSize, 28)<<std::endl;
+				std::cout << Progress.str();
+			}
 		}
 	}
-	std::cout << "done in %: 100" << std::endl;
+
+	Progress.clear();
+	Progress << "\x1b[2k\x1b[A" << "\x1b[2k\x1b[A"<< " done in: 100%       " << "\n\r" << da::WindowsFeatures::GenerateProgressBar(1.0f, 28) << "\r";
+	std::cout << Progress.str();
 
 	if (DumpSplitter.compare(std::string("")) != 0)
 	{
@@ -251,7 +262,7 @@ void da::MegaMesh::DumpToFileBig(da::GreenColor* daGreenColors)
 
 	SSDump.close();
 
-	std::cout << " File generated in: " << duration.count() << "[ms] screenshot saved as " << FileName << std::endl;
+	std::cout << std::endl << " File generated in: " << duration.count() << "[ms] screenshot saved as " << FileName << std::endl;
 	*m_ploopEnd = 0;
 }
 
@@ -259,11 +270,12 @@ void da::MegaMesh::DumpToFileBig(da::GreenColor* daGreenColors)
 
 
 #pragma region Ant
-da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da::GreenColor* DaGreenColorTransitionArray, uint32_t Width, uint32_t Height)
+da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da::GreenColor* DaGreenColorTransitionArray, uint8_t* ColorMaskedTransitionArray, uint8_t ColorMaskedCount, uint32_t Width, uint32_t Height)
 	:m_pMesh(mesh)
 	,m_pMegaMesh(megaMesh)
 	,m_pColorTransitionArray(ColorTransitionArray)
 	,m_pDaGreenColorTransitionArray(DaGreenColorTransitionArray)
+	,m_pColorMaskedTransitionArray(ColorMaskedTransitionArray)
 	,m_x(0)
 	,m_y(0)
 	,m_Width(Width)
@@ -271,6 +283,7 @@ da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da
 	,m_Facing(0)
 	,m_NextTurn(0)
 	,m_pCurrentAntColor(nullptr)
+	,m_CurrentAntColorMaskedCount(ColorMaskedCount)
 {
 	if (m_pMesh != nullptr) 
 	{
@@ -281,8 +294,7 @@ da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da
 	{
 		SetOffset(m_pMegaMesh->GetCenterPoint());
 
-		m_pColorMaskedTransitionArray = new uint8_t[14];
-		for (size_t i = 0; i < 14; i++)
+		for (size_t i = 0; i < m_CurrentAntColorMaskedCount; i++)
 		{
 			m_pColorMaskedTransitionArray[i] = da::TURN_MASK & DaGreenColorTransitionArray[i].a;
 		}

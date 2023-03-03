@@ -48,6 +48,8 @@ namespace da
 
 int main(int argc, char* argv[])
 {
+    da::WindowsFeatures::SetConsoleModeToVTP();
+
     WINDOW_WIDTH               = atoi(argv[1]);
     WINDOW_HEIGHT              = atoi(argv[2]);
     GENERATION_TYPE            = atoi(argv[3]);
@@ -72,7 +74,7 @@ int main(int argc, char* argv[])
             sf::Color* colors = da::FileParser::CreateColorArray(line); // parsed colors for mesh from arguments
             mesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
 
-            da::Ant ant(&mesh, nullptr, colors, nullptr, WINDOW_WIDTH, WINDOW_HEIGHT);
+            da::Ant ant(&mesh, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
             window.setActive(true);
             while (da::KeyboardMethods::m_RenderStepCount != 0)
@@ -168,7 +170,7 @@ int main(int argc, char* argv[])
                         mesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
                     mc->unlock();
 
-                    da::Ant ant(&mesh, nullptr, colors, nullptr, WINDOW_WIDTH, WINDOW_HEIGHT);
+                    da::Ant ant(&mesh, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
                     while (LambdaRenderStepCount != 0)
                     {
@@ -244,6 +246,8 @@ int main(int argc, char* argv[])
 
              auto start = std::chrono::high_resolution_clock::now();
 
+             std::cout << std::endl << std::endl << std::endl;//new lines as place for ant moves and progress bar;
+
              std::ifstream infile("data.txt");
              std::string line;
              std::getline(infile, line);
@@ -256,23 +260,27 @@ int main(int argc, char* argv[])
 
              uint64_t Progress = 0;
 
-             da::Ant ant(nullptr, &megamesh, nullptr, daGreenColors, WINDOW_WIDTH, WINDOW_HEIGHT);
+             uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(da::FileParser::m_ColorCount);
 
-             da::KeyboardMethods::m_RenderStepCount = 100000000;// 0x7FFFFFFU;
+             da::Ant ant(nullptr, &megamesh, nullptr, daGreenColors, ColorMaskedTransitionArray, da::FileParser::m_ColorCount, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+             da::KeyboardMethods::m_RenderStepCount = 100000000;
              while (da::KeyboardMethods::m_RenderStepCount != 0)
              {
                  if (Progress > SIMULATION_STEPS_THRESHOLD)
                  {
-                     std::cout << double(SIMULATION_STEPS_THRESHOLD) * da::KeyboardMethods::m_RenderStepCount << " moves, reached simulation limit" << std::endl;
+                     std::cout << std::endl << " " << (long double)SIMULATION_STEPS_THRESHOLD * da::KeyboardMethods::m_RenderStepCount << " moves, reached simulation limit" << std::endl;
 
                      megamesh.DumpToFileBig(daGreenColors);
                      da::KeyboardMethods::m_RenderStepCount = 0;
                      break;
                  }
-                 std::cout << " Ant moves: " << (Progress) * da::KeyboardMethods::m_RenderStepCount << " Simulation threshold in %: " << (double(Progress++) / double(SIMULATION_STEPS_THRESHOLD)) * 100.0f <<  std::endl;
                 
+                 da::WindowsFeatures::AntMovesAndProgressBar( Progress * da::KeyboardMethods::m_RenderStepCount, (float(Progress) / SIMULATION_STEPS_THRESHOLD), 28 );
+
                  ant.NextMegaMove(da::KeyboardMethods::m_RenderStepCount);
 
+                 ++Progress;
              }
              da::FileParser::DeleteDaGreenColorArray();
 
