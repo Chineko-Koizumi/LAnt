@@ -68,7 +68,7 @@ std::string da::WindowsFeatures::GenerateProgressBar(float progress, uint8_t bar
 		m_ProgressBar.push_back(178U);
 	}
 	uint8_t temp = m_ProgressBar.length();
-	for (int i = 0; i < barLength - temp + 2; i++)
+	for (int i = 0; i < barLength - temp + 2; ++i)
 	{
 		m_ProgressBar.push_back(32U);
 	}
@@ -79,7 +79,7 @@ std::string da::WindowsFeatures::GenerateProgressBar(float progress, uint8_t bar
 
 void da::WindowsFeatures::AntMovesAndProgressBar(uint64_t moves, float progress, uint8_t barLength)
 {
-	m_Output.clear();
+	m_Output.str("");
 	
 	m_Output<< "\x1b[2k\x1b[A" << "\x1b[2k\x1b[A" << "\x1b[2k\x1b[A" << " Simulation threshold in: " << floor(progress * 100.0f) << "%" << "\n\r" << GenerateProgressBar(progress, barLength)<< "\n\r" << " Ant moves: " << moves << std::endl <<"\r";
 	std::cout << m_Output.str();
@@ -104,6 +104,53 @@ void da::WindowsFeatures::SetConsoleModeToVTP()
 	if (!SetConsoleMode(hOut, dwMode))
 	{
 		std::cout << "SetConsoleModeToVTP SetConsoleMode error:" << GetLastError();
+	}
+
+	CONSOLE_CURSOR_INFO CURSOR;
+	CURSOR.dwSize = 1;
+	CURSOR.bVisible = FALSE;
+	if (!SetConsoleCursorInfo(hOut, &CURSOR))
+	{
+		std::cout << "SetConsoleModeToVTP SetConsoleCursorInfo error:" << GetLastError();
+	}
+}
+
+void da::WindowsFeatures::RestoreOldConsoleMode()
+{
+	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (hOut == INVALID_HANDLE_VALUE)
+	{
+		std::cout << "RestoreOldConsoleMode GetStdHandle error:" << GetLastError();
+	}
+
+	CONSOLE_CURSOR_INFO CURSOR;
+	CURSOR.dwSize = 1;
+	CURSOR.bVisible = TRUE;
+	if (!SetConsoleCursorInfo(hOut, &CURSOR))
+	{
+		std::cout << "SetConsoleModeToVTP SetConsoleCursorInfo error:" << GetLastError();
+	}
+}
+
+void da::WindowsFeatures::InitTerminalForThreads(uint8_t threadMax)
+{
+	for (size_t i = 0; i < threadMax; ++i)
+	{
+		std::cout << std::endl;
+	}
+}
+
+void da::WindowsFeatures::ThreadProgressGeneretor(uint8_t threadNumber, const std::string& infoUpdate)
+{
+	for (int i = 0; i < threadNumber; ++i)
+	{
+		std::cout << "\x1b[A";
+	}
+		std::cout << "\x1b[2k\r" << infoUpdate;
+
+	for (int i = 0; i < threadNumber; ++i)
+	{
+		std::cout << "\x1b[B";
 	}
 }
 

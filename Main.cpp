@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
             sf::Color* colors = da::FileParser::CreateColorArray(line); // parsed colors for mesh from arguments
             mesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
 
-            da::Ant ant(&mesh, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+            da::Ant ant(0, &mesh, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
             window.setActive(true);
             while (da::KeyboardMethods::m_RenderStepCount != 0)
@@ -130,15 +130,24 @@ int main(int argc, char* argv[])
             sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::Default);
             window.setActive(false);
 
-            auto LambdaThread = [](int threadIndex, bool* thrStatus, std::ifstream* OpenFile, uint64_t SimulationStepsThresholdFromArgument, std::mutex* mc, std::mutex* md, sf::RenderWindow* w)
+            da::WindowsFeatures::InitTerminalForThreads(Thread_count);
+
+            auto LambdaThread = [](uint8_t threadIndex, uint8_t threadMax, bool* thrStatus, std::ifstream* OpenFile, uint64_t SimulationStepsThresholdFromArgument, std::mutex* mc, std::mutex* md, sf::RenderWindow* w)
             {
+                std::stringstream Output;
+
                 uint64_t LambdaRenderStepCount = 0;
                 uint64_t Progress = 0;
 
                 std::thread::id thread_id = std::this_thread::get_id();
 
+                Output << thread_id;
+                std::string sThreadID = Output.str();
+
                 mc->lock();
-                    std::cout << " Entering Thread:[" << thread_id << "]" << std::endl;
+
+                    da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Entering Thread : [" + sThreadID + "]"));
+
                 mc->unlock();
 
                 da::Mesh mesh(WINDOW_WIDTH, WINDOW_HEIGHT, w, mc, md, &LambdaRenderStepCount);
@@ -163,28 +172,33 @@ int main(int argc, char* argv[])
                         sf::Color* colors = da::FileParser::CreateColorArray(line);
                         if (colors == nullptr)
                         {
-                            std::cout << " In Thread:["<< thread_id <<"] AntiString detected skiping image generation" << std::endl;
                             mc->unlock();
                             continue;
                         }
                         mesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
                     mc->unlock();
 
-                    da::Ant ant(&mesh, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+                    da::Ant ant(threadIndex, &mesh, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
                     while (LambdaRenderStepCount != 0)
                     {
                         if (Progress > SimulationStepsThresholdFromArgument)
                         {
-                            mc->lock();
-                                std::cout<<" " << double(SimulationStepsThresholdFromArgument) / 100 << " Bilion moves, reached simulation limit in Thread: [" << thread_id << "]" << std::endl;
-                            mc->unlock();
-
-                            mesh.DumpToFile(std::string("Simulation threshold exceeded,"));
+                            mesh.DumpToFile(std::string(""));
                             LambdaRenderStepCount = 0;
                             Progress = 0;
                             break;
                         }
+                        mc->lock();
+
+                            std::string ThreadText(6, ' ');
+                            ThreadText.replace(0, sThreadID.length(), sThreadID);
+
+                            Output.str("");
+                            Output<<da::WindowsFeatures::GenerateProgressBar((float(Progress) / SIMULATION_STEPS_THRESHOLD), 28) << " Thread: [" << ThreadText<<"] File number: " << mesh.GetFileNumber();
+                            da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, Output.str());
+                        
+                       mc->unlock();
 
                         for (size_t i = 0; i < LambdaRenderStepCount; ++i) ant.NextMove();
 
@@ -194,6 +208,14 @@ int main(int argc, char* argv[])
                     delete[]colors;
 
                 }
+                mc->lock();
+
+                    std::string ThreadText(6, ' ');
+                    ThreadText.replace(0, sThreadID.length(), sThreadID);
+                    
+                    da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Thread: [" + ThreadText + "] Done genereting                                            "));
+
+                mc->unlock();
                 thrStatus[threadIndex] = false;
             };
 
@@ -201,7 +223,7 @@ int main(int argc, char* argv[])
             {
                 threadsStatus[i] = true;
 
-                threads[i] = std::thread(LambdaThread, i, threadsStatus, &infile, SIMULATION_STEPS_THRESHOLD, &mtxCout, &mtxDumpFile, &window);
+                threads[i] = std::thread(LambdaThread, i, Thread_count, threadsStatus, &infile, SIMULATION_STEPS_THRESHOLD, &mtxCout, &mtxDumpFile, &window);
                 threads[i].detach();
             }
 
@@ -262,7 +284,7 @@ int main(int argc, char* argv[])
 
              uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(da::FileParser::m_ColorCount);
 
-             da::Ant ant(nullptr, &megamesh, nullptr, daGreenColors, ColorMaskedTransitionArray, da::FileParser::m_ColorCount, WINDOW_WIDTH, WINDOW_HEIGHT);
+             da::Ant ant(0, nullptr, &megamesh, nullptr, daGreenColors, ColorMaskedTransitionArray, da::FileParser::m_ColorCount, WINDOW_WIDTH, WINDOW_HEIGHT);
 
              da::KeyboardMethods::m_RenderStepCount = 100000000;
              while (da::KeyboardMethods::m_RenderStepCount != 0)
@@ -297,5 +319,7 @@ int main(int argc, char* argv[])
         } break;
     }
 #pragma endregion
+
+    da::WindowsFeatures::RestoreOldConsoleMode();
 	return 0;
 }

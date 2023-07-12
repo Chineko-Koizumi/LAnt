@@ -42,13 +42,13 @@ static const uint8_t TURN_MASK		  = 16;
 		void DrawMesh();
 		void InitFieldColor(sf::Color c);
 
-		void DumpToFile(const std::string& s);
+		void DumpToFile(const std::string& s, uint8_t ThreadID = 0);
 		void DumpToFileAndContinue();
 
 	private:
 		uint64_t TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y);
 		void InitFieldPossition();
-		void ThreadSafeDumpToFile(const std::string& s);
+		void ThreadSafeDumpToFile(const std::string& s, uint8_t ThreadID);
 	};
 
 	class MegaMesh
@@ -111,6 +111,8 @@ static const uint8_t TURN_MASK		  = 16;
 		uint8_t		m_Facing;
 		uint8_t		m_NextTurn;
 
+		uint8_t		m_ThreadID;
+
 		uint64_t* m_pLoopEndCopy;
 
 		sf::Color*			m_pCurrentAntColor;
@@ -118,7 +120,7 @@ static const uint8_t TURN_MASK		  = 16;
 		uint8_t				m_CurrentAntColorMaskedCount;
 
 	public:
-		Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da::GreenColor* DaGreenColorTransitionArray, uint8_t* ColorMaskedTransitionArray, uint8_t ColorMaskedCount, uint32_t Width, uint32_t Height);
+		Ant(uint8_t threadIndex, Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da::GreenColor* DaGreenColorTransitionArray, uint8_t* ColorMaskedTransitionArray, uint8_t ColorMaskedCount, uint32_t Width, uint32_t Height);
 		~Ant();
 
 		void NextMove();

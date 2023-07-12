@@ -74,7 +74,7 @@ void da::Mesh::InitFieldColor(sf::Color c)
 	}
 }
 
-void da::Mesh::ThreadSafeDumpToFile(const std::string& s)
+void da::Mesh::ThreadSafeDumpToFile(const std::string& s, uint8_t ThreadID)
 {
 	sf::Texture texture;
 
@@ -95,23 +95,18 @@ void da::Mesh::ThreadSafeDumpToFile(const std::string& s)
 
 	sf::Image img = texture.copyToImage();
 
-	std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_" + std::to_string(m_AdditionalNumberForFileName) + ".png");
+	std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + ".png");
 	img.saveToFile(FileName);
-
-	m_pMutexCout->lock();
-		std::cout << s <<" screenshot saved as " << FileName << std::endl;
-	m_pMutexCout->unlock();
 
 	m_AdditionalNumberForFileName++;
 	*m_ploopEnd = 0;
 }
-
-void da::Mesh::DumpToFile(const std::string& s)
+void da::Mesh::DumpToFile(const std::string& s, uint8_t ThreadID)
 {
 	if (m_pWindow == nullptr)return;
 	if (m_pMutexCout != nullptr) 
 	{
-		ThreadSafeDumpToFile(s);
+		ThreadSafeDumpToFile(s, ThreadID);
 		return;
 	}
 
@@ -270,7 +265,7 @@ void da::MegaMesh::DumpToFileBig(da::GreenColor* daGreenColors)
 
 
 #pragma region Ant
-da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da::GreenColor* DaGreenColorTransitionArray, uint8_t* ColorMaskedTransitionArray, uint8_t ColorMaskedCount, uint32_t Width, uint32_t Height)
+da::Ant::Ant(uint8_t threadIndex, Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da::GreenColor* DaGreenColorTransitionArray, uint8_t* ColorMaskedTransitionArray, uint8_t ColorMaskedCount, uint32_t Width, uint32_t Height)
 	:m_pMesh(mesh)
 	,m_pMegaMesh(megaMesh)
 	,m_pColorTransitionArray(ColorTransitionArray)
@@ -282,6 +277,7 @@ da::Ant::Ant(Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da
 	,m_Height(Height)
 	,m_Facing(0)
 	,m_NextTurn(0)
+	,m_ThreadID(threadIndex)
 	,m_pCurrentAntColor(nullptr)
 	,m_CurrentAntColorMaskedCount(ColorMaskedCount)
 {
@@ -339,20 +335,20 @@ void da::Ant::CheckBounds()
 {
 	if (m_x > m_Width - 1) 
 	{
-		m_pMesh->DumpToFile(std::string(" ant reached border: x > Width,"));
+		m_pMesh->DumpToFile(std::string(" ant reached border: x > Width,"), m_ThreadID);
 	}
 	else if(m_x < 0)
 	{
-		m_pMesh->DumpToFile(std::string(" ant reached border: x < 0,"));
+		m_pMesh->DumpToFile(std::string(" ant reached border: x < 0,"), m_ThreadID);
 	}
 
 	if(m_y > m_Height - 1)
 	{
-		m_pMesh->DumpToFile(std::string(" ant reached border: y > Height,"));
+		m_pMesh->DumpToFile(std::string(" ant reached border: y > Height,"), m_ThreadID);
 	}
 	else if (m_y < 0)
 	{
-		m_pMesh->DumpToFile(std::string(" ant reached border: y < 0,"));
+		m_pMesh->DumpToFile(std::string(" ant reached border: y < 0,"), m_ThreadID);
 	}
 }
 
