@@ -24,6 +24,7 @@ namespace da
 	
 	public:
 		static sf::Color* CreateColorArray(const std::string& data);
+		static sf::Color* CreateColorArrayFromCL(const std::string& data);
 		static void	DeleteColorArray();
 
 		static da::Color* CreateDaColorArray(const std::string& data);
@@ -32,6 +33,7 @@ namespace da
 		static da::GreenColor* CreateDaGreenColorArray(const std::string& data);
 		static void	DeleteDaGreenColorArray();
 
+		
 	private:
 		FileParser() {};
 		~FileParser() {};

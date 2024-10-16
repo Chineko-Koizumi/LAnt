@@ -125,7 +125,7 @@ static const uint8_t TURN_MASK		  = 16;
 
 		void NextMove();
 
-		inline __attribute__((always_inline)) void NextMegaMove(uint32_t repetition)
+		inline void NextMegaMove(uint32_t repetition)
 		{
 			for (uint32_t i = repetition; i ; --i)
 			{

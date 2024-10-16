@@ -286,7 +286,7 @@ da::Ant::Ant(uint8_t threadIndex, Mesh* mesh, MegaMesh* megaMesh, sf::Color* Col
 		SetOffset(m_pMesh->GetCenterPoint());
 		m_pMesh->InitFieldColor(*m_pColorTransitionArray);
 	}
-	else 
+	else // MEGA PATH
 	{
 		SetOffset(m_pMegaMesh->GetCenterPoint());
 

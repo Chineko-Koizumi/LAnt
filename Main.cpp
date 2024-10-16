@@ -9,6 +9,9 @@ static uint32_t WINDOW_HEIGHT               = 0;
 static uint64_t SIMULATION_STEPS_THRESHOLD  = 0;
 static uint8_t GENERATION_TYPE              = 0;
 
+static std::string ANT_PATHS_FILE_PATH("EMPTY");
+static std::string ANT_PATH_FROM_CL("EMPTY");
+
 namespace da
 {
     class KeyboardMethods
@@ -48,12 +51,41 @@ namespace da
 
 int main(int argc, char* argv[])
 {
+    if (!strcmp(argv[1], "-CLG")) //generete from command line
+    {
+        WINDOW_WIDTH                = atoi(argv[2]);
+        WINDOW_HEIGHT               = atoi(argv[3]);
+        SIMULATION_STEPS_THRESHOLD  = atoi(argv[4]);
+        ANT_PATH_FROM_CL            = std::string(argv[5]);
+
+        GENERATION_TYPE = da::MenuOptions::ANT_GUI;
+    }
+    else if (!strcmp(argv[1], "-PG")) //generete from file, parrallel
+    {
+        WINDOW_WIDTH                = atoi(argv[2]);
+        WINDOW_HEIGHT               = atoi(argv[3]);
+        SIMULATION_STEPS_THRESHOLD  = atoi(argv[4]);
+        ANT_PATHS_FILE_PATH         = std::string(argv[5]);
+
+        GENERATION_TYPE = da::MenuOptions::ANT_NOGUI_FILE;
+    }
+    else if (!strcmp(argv[1], "-CLMG")) //generete mega file from command line
+    {
+        WINDOW_WIDTH                = atoi(argv[2]);
+        WINDOW_HEIGHT               = atoi(argv[3]);
+        SIMULATION_STEPS_THRESHOLD  = atoi(argv[4]);
+        ANT_PATH_FROM_CL            = std::string(argv[5]);
+
+        GENERATION_TYPE = da::MenuOptions::ANT_NOGUI_LARGE_FILE;
+    }
+    else 
+    {
+        GENERATION_TYPE = da::MenuOptions::EXIT;
+    }
+
     da::WindowsFeatures::SetConsoleModeToVTP();
 
-    WINDOW_WIDTH               = atoi(argv[1]);
-    WINDOW_HEIGHT              = atoi(argv[2]);
-    GENERATION_TYPE            = atoi(argv[3]);
-    SIMULATION_STEPS_THRESHOLD = atoi(argv[4]);
+    std::ifstream infile("data.txt");
 
 #pragma region Window
     
@@ -67,11 +99,7 @@ int main(int argc, char* argv[])
             sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::Default);
             da::Mesh mesh(WINDOW_WIDTH, WINDOW_HEIGHT, &window, nullptr, nullptr, &da::KeyboardMethods::m_RenderStepCount);
 
-            std::ifstream infile("data.txt");
-            std::string line;
-            std::getline(infile, line);
-
-            sf::Color* colors = da::FileParser::CreateColorArray(line); // parsed colors for mesh from arguments
+            sf::Color* colors = da::FileParser::CreateColorArrayFromCL(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
             mesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
 
             da::Ant ant(0, &mesh, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -117,7 +145,6 @@ int main(int argc, char* argv[])
         {
             if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_VERTEX)) return 0;
 
-            std::ifstream infile("data.txt");
             std::mutex mtxCout, mtxDumpFile;
             std::thread* threads;
             bool* threadsStatus;
@@ -270,7 +297,6 @@ int main(int argc, char* argv[])
 
              std::cout << std::endl << std::endl << std::endl;//new lines as place for ant moves and progress bar;
 
-             std::ifstream infile("data.txt");
              std::string line;
              std::getline(infile, line);
 
@@ -315,7 +341,7 @@ int main(int argc, char* argv[])
 
         default: 
         {
-            std::cout << "Unknown argument: " + std::string(argv[3]) << std::endl;
+            std::cout << "Unknown argument: " + std::string(argv[1]) << std::endl;
         } break;
     }
 #pragma endregion

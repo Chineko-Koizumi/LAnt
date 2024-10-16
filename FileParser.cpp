@@ -87,6 +87,30 @@ da::Color* da::FileParser::CreateDaColorArray(const std::string& data)
     else                    return nullptr;
 }
 
+sf::Color* da::FileParser::CreateColorArrayFromCL(const std::string& data)
+{
+    m_AntCurrentPathString.clear();
+    m_AntCurrentPathString = data;
+
+    m_ColorCount = data.size();
+    m_pColorArray = new sf::Color[m_ColorCount];
+
+    uint8_t colorRange = 255U;
+
+    for (size_t i = 0; i < m_ColorCount; i++)
+    {
+        int temp = (data[i] == 'L') ? 0 : 16;
+        int temp2 = (i != m_ColorCount - 1) ? (i + 1) : 0;
+
+        m_pColorArray[i] = sf::Color(0U, colorRange * (static_cast<float>(i)/ m_ColorCount), 0U, 224U + temp2 + temp);
+    }
+
+    if (CheckAndInsert())   return m_pColorArray;
+    else                    return nullptr;
+    
+}
+
+
 void da::FileParser::DeleteDaColorArray()
 {
     if (m_pDaColorArray != nullptr) delete[] m_pDaColorArray;
