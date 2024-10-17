@@ -1,6 +1,7 @@
 #include "Mesh.h"               // field for ant and ant itself
 #include "FileParser.h"         // main function argument parrser
 #include "WindowsFeatures.h"    // for Windows winapi features
+#include "DrawingAppConstants.h"
 
 #include <fstream>
 #include <utility>
@@ -98,12 +99,10 @@ int main(int argc, char* argv[])
             
             sf::Event event; // for windows event pool
             sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::Default);
-            da::Mesh mesh(WINDOW_WIDTH, WINDOW_HEIGHT, &window, nullptr, nullptr, &da::KeyboardMethods::m_RenderStepCount);
 
             sf::Color* colors = da::FileParser::CreateColorArrayFromCL(ANT_PATH_FROM_CL);
-            mesh.SetFilePrefix(ANT_PATH_FROM_CL);
 
-            da::Ant ant(0, &mesh, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+            da::Ant ant(&window, &da::KeyboardMethods::m_RenderStepCount, 0, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
 
             window.setActive(true);
             while (da::KeyboardMethods::m_RenderStepCount != 0)
@@ -118,7 +117,8 @@ int main(int argc, char* argv[])
                         {
                         case sf::Keyboard::Escape:
                         {
-                            mesh.DumpToFile(std::string("ESC Hit"));
+                            std::string temp("ESC Hit");
+                            ant.DumpToFile(temp);
                         }break;
                         case sf::Keyboard::Right:
                         {
@@ -133,10 +133,21 @@ int main(int argc, char* argv[])
                     }
                 }
 
-                mesh.DrawMesh();
+                ant.DrawMesh();
                 window.display();
 
-                for (size_t i = 0; i < da::KeyboardMethods::m_RenderStepCount; ++i)ant.NextMove();   
+                for (size_t i = 0; i < da::KeyboardMethods::m_RenderStepCount; ++i) 
+                {
+                    switch (ant.NextMove())
+                    {
+                        case constants::LIMIT_NOT_REACHED: break;
+
+                        case constants::X_ABOVE_LIMIT: {std::string temp(" ant reached border: x > Width ");  ant.DumpToFile(temp); } break;
+                        case constants::X_BELOW_LIMIT: {std::string temp(" ant reached border: x < 0 ");      ant.DumpToFile(temp); } break;
+                        case constants::Y_ABOVE_LIMIT: {std::string temp(" ant reached border: y > Height "); ant.DumpToFile(temp); } break;
+                        case constants::Y_BELOW_LIMIT: {std::string temp(" ant reached border: y < 0 ");      ant.DumpToFile(temp); } break;
+                    }
+                }
             }
             delete[] colors;
 
@@ -169,7 +180,16 @@ int main(int argc, char* argv[])
                 paths.push_back({ line, da::FileParser::CreateColorArrayFromCL(line) });
             }
             
-            auto LambdaThread = [](uint8_t threadIndex, uint8_t threadMax, bool* thrStatus, std::vector< std::pair<std::string, sf::Color* >>* vectorPaths, uint64_t SimulationStepsThresholdFromArgument, std::mutex* mc, std::mutex* md, sf::RenderWindow* w)
+            auto LambdaThread = [](
+                uint8_t threadIndex, 
+                uint8_t threadMax, 
+                bool* thrStatus, 
+                std::vector< std::pair<std::string, 
+                sf::Color* >>* vectorPaths, 
+                uint64_t SimulationStepsThresholdFromArgument, 
+                std::mutex* mc, 
+                std::mutex* md, 
+                sf::RenderWindow* w)
             {
                 std::stringstream Output;
 
@@ -186,9 +206,8 @@ int main(int argc, char* argv[])
                     da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Entering Thread : [" + sThreadID + "]"));
 
                 mc->unlock();
-
-                da::Mesh mesh(WINDOW_WIDTH, WINDOW_HEIGHT, w, mc, md, &LambdaRenderStepCount);
-                
+              
+                uint16_t fileNumer = 0u;
                 while (true)
                 {
                     mc->lock();
@@ -206,12 +225,10 @@ int main(int argc, char* argv[])
 
                             continue;
                         }
-                        mesh.SetFilePrefix(vectorPaths->back().first);
+                        da::Ant ant(w, &LambdaRenderStepCount, threadIndex, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT, vectorPaths->back().first);
 
                         vectorPaths->pop_back();
                     mc->unlock();
-
-                    da::Ant ant(threadIndex, &mesh, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
                     LambdaRenderStepCount = 10000000;
                     Progress = 0;
@@ -219,7 +236,8 @@ int main(int argc, char* argv[])
                     {
                         if (Progress > SimulationStepsThresholdFromArgument)
                         {
-                            mesh.DumpToFile(std::string(""));
+                            std::string temp("");
+                            ant.DumpToFile(temp);
                             LambdaRenderStepCount = 0;
                             Progress = 0;
                             break;
@@ -230,18 +248,28 @@ int main(int argc, char* argv[])
                             ThreadText.replace(0, sThreadID.length(), sThreadID);
 
                             Output.str("");
-                            Output<<da::WindowsFeatures::GenerateProgressBar((float(Progress) / SIMULATION_STEPS_THRESHOLD), 28) << " Thread: [" << ThreadText<<"] File number: " << mesh.GetFileNumber();
+                            Output<<da::WindowsFeatures::GenerateProgressBar((float(Progress) / SIMULATION_STEPS_THRESHOLD), 28) << " Thread: [" << ThreadText<<"] File number: " << fileNumer;
                             da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, Output.str());
                         
                        mc->unlock();
 
-                        for (size_t i = 0; i < LambdaRenderStepCount; ++i) ant.NextMove();
+                       for (size_t i = 0; i < LambdaRenderStepCount; ++i) 
+                       {
+                           if (ant.NextMove() != constants::LIMIT_NOT_REACHED) 
+                           {
+                                mc->lock();
+                                    std::string temp("");
+                                    ant.DumpToFile(temp);
+                                mc->unlock();
+
+                                break;
+                           } 
+                       } 
 
                         Progress++;
-
                     }
                     delete[]colors;
-
+                    fileNumer++;
                 }
                 mc->lock();
 
@@ -316,7 +344,7 @@ int main(int argc, char* argv[])
 
              uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(ANT_PATH_FROM_CL.size());
 
-             da::Ant ant(0, nullptr, &megamesh, nullptr, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size(), WINDOW_WIDTH, WINDOW_HEIGHT);
+             da::Ant ant(nullptr, nullptr, 0, &megamesh, nullptr, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size(), WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
 
              da::KeyboardMethods::m_RenderStepCount = 100000000;
              while (da::KeyboardMethods::m_RenderStepCount != 0)

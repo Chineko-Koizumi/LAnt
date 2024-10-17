@@ -48,7 +48,6 @@ static const uint8_t TURN_MASK		  = 16;
 	private:
 		uint64_t TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y);
 		void InitFieldPossition();
-		void ThreadSafeDumpToFile(const std::string& s, uint8_t ThreadID);
 	};
 
 	class MegaMesh
@@ -94,7 +93,7 @@ static const uint8_t TURN_MASK		  = 16;
 	class Ant
 	{
 	private:
-		Mesh*		m_pMesh;
+		Mesh		m_Mesh;
 		uint8_t*	m_pMeshFieldCopy;
 		MegaMesh*	m_pMegaMesh;
 
@@ -120,10 +119,23 @@ static const uint8_t TURN_MASK		  = 16;
 		uint8_t				m_CurrentAntColorMaskedCount;
 
 	public:
-		Ant(uint8_t threadIndex, Mesh* mesh, MegaMesh* megaMesh, sf::Color* ColorTransitionArray, da::GreenColor* DaGreenColorTransitionArray, uint8_t* ColorMaskedTransitionArray, uint8_t ColorMaskedCount, uint32_t Width, uint32_t Height);
+		Ant(
+			sf::RenderWindow* window, 
+			uint64_t* loopEnd, 
+			uint8_t threadIndex, 
+			MegaMesh* megaMesh, 
+			sf::Color* ColorTransitionArray, 
+			da::GreenColor* DaGreenColorTransitionArray,
+			uint8_t* ColorMaskedTransitionArray, 
+			uint8_t ColorMaskedCount, 
+			uint32_t Width, 
+			uint32_t Height,
+			std::string& antPath
+		);
+
 		~Ant();
 
-		void NextMove();
+		uint8_t NextMove();
 
 		inline void NextMegaMove(uint32_t repetition)
 		{
@@ -184,9 +196,12 @@ static const uint8_t TURN_MASK		  = 16;
 		void SetOffset(uint32_t x, uint32_t y);
 		void SetOffset(da::PointUI32 p);
 
+		void DumpToFile(std::string& antPath);
+		void DrawMesh();
+
 	private:
 
-		void CheckBounds();
+		uint8_t CheckBounds();
 
 		inline void MoveLeft()
 		{
