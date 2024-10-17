@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
     {
         case da::ANT_GUI:
         {
-            if ( !da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_VERTEX) ) return 0;
+            if ( !da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_VERTEX) ) break;
             
             sf::Event event; // for windows event pool
             sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::Default);
@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
 
         case da::ANT_NOGUI_FILE: 
         {
-            if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_VERTEX)) return 0;
+            if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_VERTEX)) break;
 
             std::mutex mtxCout, mtxDumpFile;
             std::thread* threads;
@@ -291,7 +291,7 @@ int main(int argc, char* argv[])
 
          case da::ANT_NOGUI_LARGE_FILE:
          {
-             if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_MASKED_COLOR)) return 0;
+             if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_MASKED_COLOR)) break;
 
              auto start = std::chrono::high_resolution_clock::now();
 

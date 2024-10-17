@@ -1,8 +1,9 @@
+
+#include "DrawingAppConstants.h"
 #include "FileParser.h"
 
 #include <vector>
 
-#define TURN_MASK			16
 
 bool da::FileParser::CheckAndInsert() // checking if inside set negation of path exists, returns true after insertion
 {
@@ -47,7 +48,7 @@ sf::Color* da::FileParser::CreateColorArray(const std::string& data)
             ,std::stoi(m_VectorforParsedValues[i * 4 + 4])
         );
 
-        char c = ((TURN_MASK & m_pColorArray[i].a) == 16) ? 'R' : 'L';
+        char c = ((constants::TURN_MASK & m_pColorArray[i].a) == constants::RIGHT) ? 'R' : 'L';
         m_AntCurrentPathString.push_back(c);
     }
 
@@ -79,7 +80,7 @@ da::Color* da::FileParser::CreateDaColorArray(const std::string& data)
             , (uint8_t)std::stoi(m_VectorforParsedValues[i * 4 + 4])
         };
 
-        char c = ((TURN_MASK & m_pDaColorArray[i].a) == 16) ? 'R' : 'L';
+        char c = ((constants::TURN_MASK & m_pDaColorArray[i].a) == constants::RIGHT) ? 'R' : 'L';
         m_AntCurrentPathString.push_back(c);
     }
 
@@ -97,17 +98,20 @@ sf::Color* da::FileParser::CreateColorArrayFromCL(const std::string& data)
 
     uint8_t colorRange = 255U;
 
-    for (size_t i = 0; i < m_ColorCount; i++)
+    //encoding information for ant on alfa channel bits 
+    // Alfa channel bits 0 to 3 are for encoding index of next color in ants path
+    // Alfa channel bit 4 => 0 turn left, 1(16 or 0001 0000) turn right
+    // Alfa channel bits 5 to 7 are used as alfa channel value 
+    for (size_t i = 0; i < m_ColorCount; i++) 
     {
-        int temp = (data[i] == 'L') ? 0 : 16;
+        int temp = (data[i] == 'L') ? constants::LEFT : constants::RIGHT;
         int temp2 = (i != m_ColorCount - 1) ? (i + 1) : 0;
 
-        m_pColorArray[i] = sf::Color(0U, colorRange * (static_cast<float>(i)/ m_ColorCount), 0U, 224U + temp2 + temp);
+        m_pColorArray[i] = sf::Color(0U, colorRange * (static_cast<float>(i)/ m_ColorCount), 0U, constants::ALFA_BASE_VALUE + temp2 + temp);
     }
 
     if (CheckAndInsert())   return m_pColorArray;
-    else                    return nullptr;
-    
+    else                    return nullptr; 
 }
 
 
@@ -133,7 +137,7 @@ da::GreenColor* da::FileParser::CreateDaGreenColorArray(const std::string& data)
             , (uint8_t)std::stoi(m_VectorforParsedValues[i * 4 + 4])
         };
 
-        char c = ((TURN_MASK & m_pDaGreenColorArray[i].a) == 16) ? 'R' : 'L';
+        char c = ((constants::TURN_MASK & m_pDaGreenColorArray[i].a) == constants::RIGHT) ? 'R' : 'L';
         m_AntCurrentPathString.push_back(c);
     }
 

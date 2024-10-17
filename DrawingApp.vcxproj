@@ -163,6 +163,7 @@
     <ClCompile Include="WindowsFeatures.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DrawingAppConstants.h" />
     <ClInclude Include="FileParser.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="VertexDefinitions.h" />
