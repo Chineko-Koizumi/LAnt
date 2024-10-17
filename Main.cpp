@@ -100,8 +100,8 @@ int main(int argc, char* argv[])
             sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::Default);
             da::Mesh mesh(WINDOW_WIDTH, WINDOW_HEIGHT, &window, nullptr, nullptr, &da::KeyboardMethods::m_RenderStepCount);
 
-            sf::Color* colors = da::FileParser::CreateColorArrayFromCL(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
-            mesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
+            sf::Color* colors = da::FileParser::CreateColorArrayFromCL(ANT_PATH_FROM_CL);
+            mesh.SetFilePrefix(ANT_PATH_FROM_CL);
 
             da::Ant ant(0, &mesh, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -306,20 +306,17 @@ int main(int argc, char* argv[])
 
              std::cout << std::endl << std::endl << std::endl;//new lines as place for ant moves and progress bar;
 
-             std::string line;
-             std::getline(infile, line);
-
              da::MegaMesh megamesh(WINDOW_WIDTH, WINDOW_HEIGHT, &da::KeyboardMethods::m_RenderStepCount);
              
-             da::GreenColor* daGreenColors = da::FileParser::CreateDaGreenColorArray(line); // parsed colors for mesh from arguments
+             da::GreenColor* daGreenColors = da::FileParser::CreateDaGreenColorArray(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
      
-             megamesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
+             megamesh.SetFilePrefix(ANT_PATH_FROM_CL);
 
              uint64_t Progress = 0;
 
-             uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(da::FileParser::m_ColorCount);
+             uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(ANT_PATH_FROM_CL.size());
 
-             da::Ant ant(0, nullptr, &megamesh, nullptr, daGreenColors, ColorMaskedTransitionArray, da::FileParser::m_ColorCount, WINDOW_WIDTH, WINDOW_HEIGHT);
+             da::Ant ant(0, nullptr, &megamesh, nullptr, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size(), WINDOW_WIDTH, WINDOW_HEIGHT);
 
              da::KeyboardMethods::m_RenderStepCount = 100000000;
              while (da::KeyboardMethods::m_RenderStepCount != 0)
@@ -339,7 +336,7 @@ int main(int argc, char* argv[])
 
                  ++Progress;
              }
-             da::FileParser::DeleteDaGreenColorArray();
+             delete[] daGreenColors;
 
              auto stop = std::chrono::high_resolution_clock::now();
              auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
