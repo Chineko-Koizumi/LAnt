@@ -1,8 +1,9 @@
 #include "Mesh.h"               // field for ant and ant itself
 #include "FileParser.h"         // main function argument parrser
 #include "WindowsFeatures.h"    // for Windows winapi features
+
 #include <fstream>
- 
+#include <utility>
 
 static uint32_t WINDOW_WIDTH                = 0;
 static uint32_t WINDOW_HEIGHT               = 0;
@@ -43,7 +44,7 @@ namespace da
     enum MenuOptions
     {
         ANT_GUI                 = 0,
-        ANT_NOGUI_FILE          = 1,
+        ANT_PARALLEL_FILE       = 1,
         ANT_NOGUI_LARGE_FILE    = 2,
         EXIT = 100
     };
@@ -60,14 +61,14 @@ int main(int argc, char* argv[])
 
         GENERATION_TYPE = da::MenuOptions::ANT_GUI;
     }
-    else if (!strcmp(argv[1], "-PG")) //generete from file, parrallel
+    else if (!strcmp(argv[1], "-FPG")) //generete from file, parrallel
     {
         WINDOW_WIDTH                = atoi(argv[2]);
         WINDOW_HEIGHT               = atoi(argv[3]);
         SIMULATION_STEPS_THRESHOLD  = atoi(argv[4]);
         ANT_PATHS_FILE_PATH         = std::string(argv[5]);
 
-        GENERATION_TYPE = da::MenuOptions::ANT_NOGUI_FILE;
+        GENERATION_TYPE = da::MenuOptions::ANT_PARALLEL_FILE;
     }
     else if (!strcmp(argv[1], "-CLMG")) //generete mega file from command line
     {
@@ -85,7 +86,7 @@ int main(int argc, char* argv[])
 
     da::WindowsFeatures::SetConsoleModeToVTP();
 
-    std::ifstream infile("data.txt");
+    std::ifstream infile(ANT_PATHS_FILE_PATH);
 
 #pragma region Window
     
@@ -137,11 +138,11 @@ int main(int argc, char* argv[])
 
                 for (size_t i = 0; i < da::KeyboardMethods::m_RenderStepCount; ++i)ant.NextMove();   
             }
-            da::FileParser::DeleteColorArray();
+            delete[] colors;
 
         }break;
 
-        case da::ANT_NOGUI_FILE: 
+        case da::ANT_PARALLEL_FILE: 
         {
             if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_VERTEX)) break;
 
@@ -159,7 +160,16 @@ int main(int argc, char* argv[])
 
             da::WindowsFeatures::InitTerminalForThreads(Thread_count);
 
-            auto LambdaThread = [](uint8_t threadIndex, uint8_t threadMax, bool* thrStatus, std::ifstream* OpenFile, uint64_t SimulationStepsThresholdFromArgument, std::mutex* mc, std::mutex* md, sf::RenderWindow* w)
+            std::vector< std::pair<std::string, sf::Color* > > paths;
+
+            std::string line;
+            while (!infile.eof())
+            {
+                std::getline(infile, line);
+                paths.push_back({ line, da::FileParser::CreateColorArrayFromCL(line) });
+            }
+            
+            auto LambdaThread = [](uint8_t threadIndex, uint8_t threadMax, bool* thrStatus, std::vector< std::pair<std::string, sf::Color* >>* vectorPaths, uint64_t SimulationStepsThresholdFromArgument, std::mutex* mc, std::mutex* md, sf::RenderWindow* w)
             {
                 std::stringstream Output;
 
@@ -179,34 +189,32 @@ int main(int argc, char* argv[])
 
                 da::Mesh mesh(WINDOW_WIDTH, WINDOW_HEIGHT, w, mc, md, &LambdaRenderStepCount);
                 
-                std::string line;
                 while (true)
                 {
                     mc->lock();
-                        if (OpenFile->eof())
+                        if (vectorPaths->empty())
                         {
                             mc->unlock();
                             break;
                         }
-                        std::getline(*OpenFile, line);
 
-                    mc->unlock();
-
-                    LambdaRenderStepCount = 10000000;
-                    Progress = 0;
-
-                    mc->lock();
-                        sf::Color* colors = da::FileParser::CreateColorArray(line);
-                        if (colors == nullptr)
+                        sf::Color* colors = vectorPaths->back().second;
+                        if (colors == nullptr) 
                         {
+                            vectorPaths->pop_back();
                             mc->unlock();
+
                             continue;
                         }
-                        mesh.SetFilePrefix(da::FileParser::m_AntCurrentPathString);
+                        mesh.SetFilePrefix(vectorPaths->back().first);
+
+                        vectorPaths->pop_back();
                     mc->unlock();
 
                     da::Ant ant(threadIndex, &mesh, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+                    LambdaRenderStepCount = 10000000;
+                    Progress = 0;
                     while (LambdaRenderStepCount != 0)
                     {
                         if (Progress > SimulationStepsThresholdFromArgument)
@@ -242,7 +250,8 @@ int main(int argc, char* argv[])
                     
                     da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Thread: [" + ThreadText + "] Done genereting                                            "));
 
-                mc->unlock();
+                mc->unlock();   
+
                 thrStatus[threadIndex] = false;
             };
 
@@ -250,7 +259,7 @@ int main(int argc, char* argv[])
             {
                 threadsStatus[i] = true;
 
-                threads[i] = std::thread(LambdaThread, i, Thread_count, threadsStatus, &infile, SIMULATION_STEPS_THRESHOLD, &mtxCout, &mtxDumpFile, &window);
+                threads[i] = std::thread(LambdaThread, i, Thread_count, threadsStatus, &paths, SIMULATION_STEPS_THRESHOLD, &mtxCout, &mtxDumpFile, &window);
                 threads[i].detach();
             }
 

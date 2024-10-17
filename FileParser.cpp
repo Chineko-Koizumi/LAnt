@@ -4,12 +4,11 @@
 
 #include <vector>
 
-
-bool da::FileParser::CheckAndInsert() // checking if inside set negation of path exists, returns true after insertion
+bool da::FileParser::CheckAndInsert(const std::string& data) // checking if inside set negation of path exists, returns true after insertion
 {
-    std::string AntiString = m_AntCurrentPathString;
+    std::string AntiString = data;
 
-    for (size_t i = 0; i < m_AntCurrentPathString.length(); ++i)
+    for (size_t i = 0; i < data.length(); ++i)
     {
         switch (AntiString[i])
         {
@@ -20,7 +19,7 @@ bool da::FileParser::CheckAndInsert() // checking if inside set negation of path
 
     if (m_SetOfPaths.end() == m_SetOfPaths.find(AntiString))
     {
-        m_SetOfPaths.insert(m_AntCurrentPathString);
+        m_SetOfPaths.insert(data);
         return true;
     }
     else
@@ -29,95 +28,26 @@ bool da::FileParser::CheckAndInsert() // checking if inside set negation of path
     }
 }
 
-sf::Color* da::FileParser::CreateColorArray(const std::string& data)
-{
-    m_VectorforParsedValues.clear();
-    getNumberFromString(data);
-
-    m_AntCurrentPathString.clear();
-
-    m_ColorCount    = std::stoi(m_VectorforParsedValues[0]);
-    m_pColorArray   = new sf::Color[m_ColorCount];
-
-    for (size_t i = 0; i < m_ColorCount; ++i)
-    {
-        m_pColorArray[i] = sf::Color(
-             std::stoi(m_VectorforParsedValues[i * 4 + 1])
-            ,std::stoi(m_VectorforParsedValues[i * 4 + 2])
-            ,std::stoi(m_VectorforParsedValues[i * 4 + 3])
-            ,std::stoi(m_VectorforParsedValues[i * 4 + 4])
-        );
-
-        char c = ((constants::TURN_MASK & m_pColorArray[i].a) == constants::RIGHT) ? 'R' : 'L';
-        m_AntCurrentPathString.push_back(c);
-    }
-
-    if (CheckAndInsert())   return m_pColorArray;
-    else                    return nullptr;
-}
-
-void da::FileParser::DeleteColorArray()
-{
-    if(m_pColorArray !=nullptr) delete[] m_pColorArray;
-}
-
-da::Color* da::FileParser::CreateDaColorArray(const std::string& data)
-{
-    m_VectorforParsedValues.clear();
-    getNumberFromString(data);
-
-    m_AntCurrentPathString.clear();
-
-    m_ColorCount = std::stoi(m_VectorforParsedValues[0]);
-    m_pDaColorArray = new da::Color[m_ColorCount];
-
-    for (size_t i = 0; i < m_ColorCount; ++i)
-    {
-        m_pDaColorArray[i] = da::Color{
-              (uint8_t)std::stoi(m_VectorforParsedValues[i * 4 + 1])
-            , (uint8_t)std::stoi(m_VectorforParsedValues[i * 4 + 2])
-            , (uint8_t)std::stoi(m_VectorforParsedValues[i * 4 + 3])
-            , (uint8_t)std::stoi(m_VectorforParsedValues[i * 4 + 4])
-        };
-
-        char c = ((constants::TURN_MASK & m_pDaColorArray[i].a) == constants::RIGHT) ? 'R' : 'L';
-        m_AntCurrentPathString.push_back(c);
-    }
-
-    if (CheckAndInsert())   return m_pDaColorArray;
-    else                    return nullptr;
-}
-
 sf::Color* da::FileParser::CreateColorArrayFromCL(const std::string& data)
 {
-    m_AntCurrentPathString.clear();
-    m_AntCurrentPathString = data;
-
-    m_ColorCount = data.size();
-    m_pColorArray = new sf::Color[m_ColorCount];
-
-    uint8_t colorRange = 255U;
+    if ( !CheckAndInsert(data) ) return nullptr;
+    
+    uint8_t colorCount = data.size();
+    sf::Color*  pColorArray = new sf::Color[colorCount];
 
     //encoding information for ant on alfa channel bits 
     // Alfa channel bits 0 to 3 are for encoding index of next color in ants path
     // Alfa channel bit 4 => 0 turn left, 1(16 or 0001 0000) turn right
     // Alfa channel bits 5 to 7 are used as alfa channel value 
-    for (size_t i = 0; i < m_ColorCount; i++) 
+    for (size_t i = 0; i < colorCount; i++)
     {
         int temp = (data[i] == 'L') ? constants::LEFT : constants::RIGHT;
-        int temp2 = (i != m_ColorCount - 1) ? (i + 1) : 0;
+        int temp2 = (i != colorCount - 1) ? (i + 1) : 0;
 
-        m_pColorArray[i] = sf::Color(0U, colorRange * (static_cast<float>(i)/ m_ColorCount), 0U, constants::ALFA_BASE_VALUE + temp2 + temp);
-    }
+        pColorArray[i] = sf::Color(0U, constants::COLOR_RANGE_8BIT * (static_cast<float>(i)/ colorCount), 0U, constants::ALFA_BASE_VALUE + temp2 + temp);
+    } 
 
-    if (CheckAndInsert())   return m_pColorArray;
-    else                    return nullptr; 
-}
-
-
-void da::FileParser::DeleteDaColorArray()
-{
-    if (m_pDaColorArray != nullptr) delete[] m_pDaColorArray;
+    return pColorArray;
 }
 
 da::GreenColor* da::FileParser::CreateDaGreenColorArray(const std::string& data)
@@ -141,13 +71,13 @@ da::GreenColor* da::FileParser::CreateDaGreenColorArray(const std::string& data)
         m_AntCurrentPathString.push_back(c);
     }
 
-    if (CheckAndInsert())   return m_pDaGreenColorArray;
-    else                    return nullptr;
+    if (CheckAndInsert(m_AntCurrentPathString))     return m_pDaGreenColorArray;
+    else                                            return nullptr;
 }
 
 void da::FileParser::DeleteDaGreenColorArray()
 {
-    if (m_pDaColorArray != nullptr) delete[] m_pDaColorArray;
+    if (m_pDaGreenColorArray != nullptr) delete[] m_pDaGreenColorArray;
 }
 
 
@@ -162,8 +92,6 @@ void da::FileParser::getNumberFromString(const std::string& s)
     } 
 }
 
-sf::Color* da::FileParser::m_pColorArray                = nullptr;
-da::Color* da::FileParser::m_pDaColorArray              = nullptr;
 da::GreenColor* da::FileParser::m_pDaGreenColorArray    = nullptr;
 
 uint32_t da::FileParser::m_ColorCount = 0;
