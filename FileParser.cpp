@@ -28,6 +28,8 @@ bool da::FileParser::CheckAndInsert(const std::string& data) // checking if insi
     }
 }
 
+// returns poiter to encoded color values with information for ant on alfa channel
+// or null pointer if path or antipath exists in collection
 sf::Color* da::FileParser::CreateColorArrayFromCL(const std::string& data)
 {
     if ( !CheckAndInsert(data) ) return nullptr;

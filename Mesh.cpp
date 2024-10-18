@@ -9,10 +9,8 @@
 
 static const uint8_t COLOR_INDEX_MASK = 15;
 
-da::Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, std::mutex* mtxCout, std::mutex* mtxDumpFile, uint64_t* loopEnd)
+da::Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, uint64_t* loopEnd)
 	:m_pWindow(window)
-	,m_pMutexCout(mtxCout)
-	,m_pMutexDumpFile(mtxDumpFile)
 	,m_FieldWidth(width)
 	,m_FieldHeight(height)
 	,m_AdditionalNumberForFileName(0)
@@ -27,11 +25,6 @@ da::Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, std::m
 da::Mesh::~Mesh()
 {
 	delete m_pfield;
-}
-
-uint16_t da::Mesh::GetFileNumber()
-{
-	return m_AdditionalNumberForFileName;
 }
 
 uint64_t da::Mesh::TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y)
@@ -75,27 +68,22 @@ void da::Mesh::InitFieldColor(sf::Color c)
 	}
 }
 
-void da::Mesh::DumpToFile(const std::string& s, uint8_t ThreadID)
+void da::Mesh::DumpToFile()
 {
 	if (m_pWindow == nullptr)return;
-	//if (m_pMutexCout != nullptr) 
-	//{
-	//	ThreadSafeDumpToFile(s, ThreadID);
-	//	return;
-	//}
 
 	sf::Texture texture;
 
 	m_pWindow->setActive(true);
 
-	m_pWindow->clear();
-	DrawMesh();
-	m_pWindow->display();
-	DrawMesh();
-	m_pWindow->display();
+		m_pWindow->clear();
+		DrawMesh();
+		m_pWindow->display();
+		DrawMesh();
+		m_pWindow->display();
 	
-	texture.create(m_pWindow->getSize().x, m_pWindow->getSize().y);
-	texture.update(*m_pWindow);
+		texture.create(m_pWindow->getSize().x, m_pWindow->getSize().y);
+		texture.update(*m_pWindow);
 
 	m_pWindow->setActive(false);
 
@@ -106,28 +94,6 @@ void da::Mesh::DumpToFile(const std::string& s, uint8_t ThreadID)
 
 	m_AdditionalNumberForFileName++;
 	*m_ploopEnd = 0;
-}
-
-void da::Mesh::DumpToFileAndContinue()
-{
-	if (m_pWindow == nullptr)return;
-
-	m_pWindow->clear();
-	DrawMesh();
-	m_pWindow->display();
-	DrawMesh();
-	m_pWindow->display();
-
-	sf::Texture texture;
-	texture.create(m_pWindow->getSize().x, m_pWindow->getSize().y);
-	texture.update(*m_pWindow);
-
-	sf::Image img = texture.copyToImage();
-
-	std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_Snap_Shot_Of" + std::to_string(m_AdditionalNumberForFileName) + ".png");
-	img.saveToFile(FileName);
-
-	std::cout << "screenshot saved as " << FileName << std::endl;
 }
 
 void da::Mesh::InitFieldPossition()
@@ -256,7 +222,7 @@ da::Ant::Ant
 	uint32_t Height,
 	std::string& antPath
 	)	
-		:m_Mesh(da::Mesh(Width, Height, window, nullptr, nullptr, loopEnd))
+		:m_Mesh(da::Mesh(Width, Height, window, loopEnd))
 		,m_pMegaMesh(megaMesh)
 		,m_pColorTransitionArray(ColorTransitionArray)
 		,m_pDaGreenColorTransitionArray(DaGreenColorTransitionArray)
@@ -265,8 +231,11 @@ da::Ant::Ant
 		,m_y(0)
 		,m_Width(Width)
 		,m_Height(Height)
-		,m_Facing(0)
-		,m_NextTurn(0)
+		,m_Facing(0U)
+		,m_NextTurn(0U)
+		,m_NextCheck(0)
+		,m_DistanceToYWall(0)
+		,m_DistanceToXWall(0)
 		,m_ThreadID(threadIndex)
 		,m_pCurrentAntColor(nullptr)
 		,m_CurrentAntColorMaskedCount(ColorMaskedCount)
@@ -295,21 +264,51 @@ da::Ant::Ant
 
 da::Ant::~Ant(){}
 
-uint8_t da::Ant::NextMove()
+bool da::Ant::NextMove(uint64_t repetitions)
 {
-	m_pCurrentAntColor = m_Mesh.GetColor(m_x, m_y);
-
-	m_NextTurn = TURN_MASK & m_pCurrentAntColor->a;
-
-	m_Mesh.SetColor(m_x, m_y, m_pColorTransitionArray[COLOR_INDEX_MASK & m_pCurrentAntColor->a]);
-
-	switch (m_NextTurn)
+	for (size_t i = 0; i < repetitions; i++)
 	{
-	case constants::LEFT:	MoveLeft();		break;
-	case constants::RIGHT:	MoveRight();	break;
-	}
+		m_pCurrentAntColor = m_Mesh.GetColor(m_x, m_y);
 
-	return CheckBounds();
+		m_NextTurn = TURN_MASK & m_pCurrentAntColor->a;
+
+		m_Mesh.SetColor(m_x, m_y, m_pColorTransitionArray[COLOR_INDEX_MASK & m_pCurrentAntColor->a]);
+
+		switch (m_NextTurn)
+		{
+		case constants::LEFT:	MoveLeft();		break;
+		case constants::RIGHT:	MoveRight();	break;
+		}
+
+		if (m_NextCheck <= 0) 
+		{
+			if (m_x > m_Width - 1)
+			{
+				return false;
+			}
+			else if (m_x < 0)
+			{
+				return false;
+			}
+
+			if (m_y > m_Height - 1)
+			{
+				return false;
+			}
+			else if (m_y < 0)
+			{
+				return false;
+			}
+
+			m_DistanceToYWall = m_x < m_Width - 1 - m_x		? m_x : m_Width - 1 - m_x;
+			m_DistanceToXWall = m_y < m_Height - 1 - m_y	? m_y : m_Height - 1 - m_y;
+
+			m_NextCheck = m_DistanceToYWall < m_DistanceToXWall ? m_DistanceToYWall : m_DistanceToXWall;
+			++m_NextCheck;
+		}
+		--m_NextCheck;
+	}
+	return true;
 }
 
 void da::Ant::SetOffset(uint32_t x, uint32_t y)
@@ -324,41 +323,14 @@ void da::Ant::SetOffset(da::PointUI32 p)
 	m_y = p.y;
 }
 
-void da::Ant::DumpToFile(std::string& reason)
+void da::Ant::DumpToFile()
 {
-	m_Mesh.DumpToFile(reason);
+	m_Mesh.DumpToFile();
 }
 
 void da::Ant::DrawMesh()
 {
 	m_Mesh.DrawMesh();
-}
-
-uint8_t da::Ant::CheckBounds()
-{
-	if (m_x > m_Width - 1) 
-	{
-		return constants::X_ABOVE_LIMIT;
-		//m_Mesh.DumpToFile(std::string(" ant reached border: x > Width,"), m_ThreadID);
-	}
-	else if(m_x < 0)
-	{
-		return constants::X_BELOW_LIMIT;
-		//m_Mesh.DumpToFile(std::string(" ant reached border: x < 0,"), m_ThreadID);
-	}
-
-	if(m_y > m_Height - 1)
-	{
-		return constants::Y_ABOVE_LIMIT;
-		//m_Mesh.DumpToFile(std::string(" ant reached border: y > Height,"), m_ThreadID);
-	}
-	else if (m_y < 0)
-	{
-		return constants::Y_BELOW_LIMIT;
-		//m_Mesh.DumpToFile(std::string(" ant reached border: y < 0,"), m_ThreadID);
-	}
-
-	return constants::LIMIT_NOT_REACHED;
 }
 
 #pragma endregion

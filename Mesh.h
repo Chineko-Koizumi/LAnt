@@ -13,11 +13,8 @@ static const uint8_t TURN_MASK		  = 16;
 	{
 	public:
 		sf::RenderWindow* m_pWindow;
-		std::mutex* m_pMutexCout;
 
 	private:
-		std::mutex* m_pMutexDumpFile;
-
 		sf::VertexArray *m_pfield;
 
 		uint32_t m_FieldWidth;
@@ -29,10 +26,8 @@ static const uint8_t TURN_MASK		  = 16;
 		std::string m_FilePrefix;
 
 	public:
-		Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, std::mutex* mtxCout, std::mutex* mtxDumpFile, uint64_t* loopEnd);
+		Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, uint64_t* loopEnd);
 		~Mesh();
-
-		uint16_t GetFileNumber();
 
 		sf::Color* GetColor(uint32_t x, uint32_t y);
 		void SetColor(uint32_t x, uint32_t y, sf::Color c);
@@ -42,8 +37,7 @@ static const uint8_t TURN_MASK		  = 16;
 		void DrawMesh();
 		void InitFieldColor(sf::Color c);
 
-		void DumpToFile(const std::string& s, uint8_t ThreadID = 0);
-		void DumpToFileAndContinue();
+		void DumpToFile();
 
 	private:
 		uint64_t TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y);
@@ -57,8 +51,6 @@ static const uint8_t TURN_MASK		  = 16;
 		uint8_t* m_pfield;
 
 	private:
-
-		
 		uint64_t m_fieldSize;
 		uint32_t m_FieldWidth;
 		uint32_t m_FieldHeight;
@@ -107,6 +99,10 @@ static const uint8_t TURN_MASK		  = 16;
 		int32_t		m_Width;
 		int32_t		m_Height;
 
+		int32_t		m_DistanceToYWall;
+		int32_t		m_DistanceToXWall;
+		int32_t		m_NextCheck;
+
 		uint8_t		m_Facing;
 		uint8_t		m_NextTurn;
 
@@ -135,7 +131,7 @@ static const uint8_t TURN_MASK		  = 16;
 
 		~Ant();
 
-		uint8_t NextMove();
+		bool NextMove(uint64_t repetitions);
 
 		inline void NextMegaMove(uint32_t repetition)
 		{
@@ -196,21 +192,19 @@ static const uint8_t TURN_MASK		  = 16;
 		void SetOffset(uint32_t x, uint32_t y);
 		void SetOffset(da::PointUI32 p);
 
-		void DumpToFile(std::string& antPath);
+		void DumpToFile();
 		void DrawMesh();
 
 	private:
-
-		uint8_t CheckBounds();
 
 		inline void MoveLeft()
 		{
 			switch (m_Facing)
 			{
-			case 0: m_x--; m_Facing = 3; break;
-			case 1: m_y--; m_Facing = 0; break;
-			case 2: m_x++; m_Facing = 1; break;
-			case 3: m_y++; m_Facing = 2; break;
+			case 0U: m_x--; m_Facing = 3U; break;
+			case 1U: m_y--; m_Facing = 0U; break;
+			case 2U: m_x++; m_Facing = 1U; break;
+			case 3U: m_y++; m_Facing = 2U; break;
 			}
 		}
 
@@ -218,10 +212,10 @@ static const uint8_t TURN_MASK		  = 16;
 		{
 			switch (m_Facing)
 			{
-			case 0:m_x++; m_Facing = 1; break;
-			case 1:m_y++; m_Facing = 2; break;
-			case 2:m_x--; m_Facing = 3; break;
-			case 3:m_y--; m_Facing = 0; break;
+			case 0U:m_x++; m_Facing = 1U; break;
+			case 1U:m_y++; m_Facing = 2U; break;
+			case 2U:m_x--; m_Facing = 3U; break;
+			case 3U:m_y--; m_Facing = 0U; break;
 			}
 		}
 
