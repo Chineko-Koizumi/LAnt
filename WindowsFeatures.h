@@ -19,7 +19,6 @@ namespace da
 		static void ThreadProgressGeneretor(uint8_t threadNumber, const std::string& infoUpdate);
 		static void InitTerminalForThreads(uint8_t threadMax);
 
-
 	private:
 		WindowsFeatures();
 		~WindowsFeatures();

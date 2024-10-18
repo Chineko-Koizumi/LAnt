@@ -21,12 +21,11 @@ static const uint8_t TURN_MASK		  = 16;
 		uint32_t m_FieldHeight;
 
 		uint16_t m_AdditionalNumberForFileName;
-		uint64_t* m_ploopEnd;
 
 		std::string m_FilePrefix;
 
 	public:
-		Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, uint64_t* loopEnd);
+		Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window);
 		~Mesh();
 
 		sf::Color* GetColor(uint32_t x, uint32_t y);
@@ -108,7 +107,8 @@ static const uint8_t TURN_MASK		  = 16;
 
 		uint8_t		m_ThreadID;
 
-		uint64_t* m_pLoopEndCopy;
+		uint64_t*	m_pLoopEndCopy;
+		uint64_t*	m_ploopEnd;
 
 		sf::Color*			m_pCurrentAntColor;
 		uint8_t				m_CurrentAntColorMasked;		

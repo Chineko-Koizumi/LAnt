@@ -9,12 +9,11 @@
 
 static const uint8_t COLOR_INDEX_MASK = 15;
 
-da::Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, uint64_t* loopEnd)
+da::Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window)
 	:m_pWindow(window)
 	,m_FieldWidth(width)
 	,m_FieldHeight(height)
 	,m_AdditionalNumberForFileName(0)
-	,m_ploopEnd(loopEnd)
 	,m_FilePrefix(std::string("NoPrefixSet_"))
 {
 	m_pfield = new sf::VertexArray(sf::Points, uint64_t(height) * uint64_t(width));
@@ -93,7 +92,6 @@ void da::Mesh::DumpToFile()
 	img.saveToFile(FileName);
 
 	m_AdditionalNumberForFileName++;
-	*m_ploopEnd = 0;
 }
 
 void da::Mesh::InitFieldPossition()
@@ -222,7 +220,7 @@ da::Ant::Ant
 	uint32_t Height,
 	std::string& antPath
 	)	
-		:m_Mesh(da::Mesh(Width, Height, window, loopEnd))
+		:m_Mesh(da::Mesh(Width, Height, window))
 		,m_pMegaMesh(megaMesh)
 		,m_pColorTransitionArray(ColorTransitionArray)
 		,m_pDaGreenColorTransitionArray(DaGreenColorTransitionArray)
@@ -237,6 +235,7 @@ da::Ant::Ant
 		,m_DistanceToYWall(0)
 		,m_DistanceToXWall(0)
 		,m_ThreadID(threadIndex)
+		,m_ploopEnd(loopEnd)
 		,m_pCurrentAntColor(nullptr)
 		,m_CurrentAntColorMaskedCount(ColorMaskedCount)
 {
@@ -284,26 +283,31 @@ bool da::Ant::NextMove(uint64_t repetitions)
 		{
 			if (m_x > m_Width - 1)
 			{
+				*m_ploopEnd = 0U;
 				return false;
 			}
 			else if (m_x < 0)
 			{
+				*m_ploopEnd = 0U;
 				return false;
 			}
 
 			if (m_y > m_Height - 1)
 			{
+				*m_ploopEnd = 0U;
 				return false;
 			}
 			else if (m_y < 0)
 			{
+				*m_ploopEnd = 0U;
 				return false;
 			}
 
 			m_DistanceToYWall = m_x < m_Width - 1 - m_x		? m_x : m_Width - 1 - m_x;
 			m_DistanceToXWall = m_y < m_Height - 1 - m_y	? m_y : m_Height - 1 - m_y;
 
-			m_NextCheck = m_DistanceToYWall < m_DistanceToXWall ? m_DistanceToYWall : m_DistanceToXWall;
+			m_NextCheck = m_DistanceToYWall < m_DistanceToXWall ? m_DistanceToYWall : m_DistanceToXWall; // shortest stright line to mesh border
+			m_NextCheck *= 2;// The shortest path is always diagonal so on the grid this mean 2x more steps than stright line
 			++m_NextCheck;
 		}
 		--m_NextCheck;

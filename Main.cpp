@@ -243,7 +243,6 @@ int main(int argc, char* argv[])
                                 ant.DumpToFile();
                             md->unlock();
                         }
-
                         Progress++;
                     }
                     delete[]colors;
@@ -254,7 +253,7 @@ int main(int argc, char* argv[])
                     std::string ThreadText(6, ' ');
                     ThreadText.replace(0, sThreadID.length(), sThreadID);
                     
-                    da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Thread: [" + ThreadText + "] Done genereting                                            "));
+                    da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Thread: [" + ThreadText + "] Done generating                                            "));
 
                 mc->unlock();   
 
