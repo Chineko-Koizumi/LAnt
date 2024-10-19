@@ -102,10 +102,12 @@ int main(int argc, char* argv[])
 
             sf::Color* colors = da::FileParser::CreateColorArrayFromCL(ANT_PATH_FROM_CL);
 
-            da::Ant ant(&window, &da::KeyboardMethods::m_RenderStepCount, 0, colors, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
+            da::Ant ant(&window, 0, colors, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
 
             window.setActive(true);
-            while (da::KeyboardMethods::m_RenderStepCount != 0)
+
+            bool exit = false;
+            while ( !exit )
             {
                 if (window.pollEvent(event))
                 {
@@ -118,6 +120,8 @@ int main(int argc, char* argv[])
                         case sf::Keyboard::Escape:
                         {
                             ant.DumpToFile();
+                            exit = true;
+                            continue;
                         }break;
                         case sf::Keyboard::Right:
                         {
@@ -135,7 +139,11 @@ int main(int argc, char* argv[])
                 ant.DrawMesh();
                 window.display();
 
-                if (!ant.NextMove(da::KeyboardMethods::m_RenderStepCount))ant.DumpToFile();
+                if (!ant.NextMove(da::KeyboardMethods::m_RenderStepCount))
+                {
+                    ant.DumpToFile();
+                    break;
+                }
             }
             delete[] colors;
 
@@ -149,7 +157,7 @@ int main(int argc, char* argv[])
             std::thread* threads;
             bool* threadsStatus;
 
-            uint16_t Thread_count = da::WindowsFeatures::GetThreadCount(WINDOW_WIDTH, WINDOW_HEIGHT);
+            uint16_t Thread_count = da::WindowsFeatures::GetThreadCountForMeshSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 
             threads = new std::thread[Thread_count];
             threadsStatus = new bool[Thread_count];
@@ -207,7 +215,7 @@ int main(int argc, char* argv[])
 
                         sf::Color* colors = vectorPaths->back().second;
 
-                        da::Ant ant(w, &LambdaRenderStepCount, threadIndex, colors, WINDOW_WIDTH, WINDOW_HEIGHT, vectorPaths->back().first);
+                        da::Ant ant(w, threadIndex, colors, WINDOW_WIDTH, WINDOW_HEIGHT, vectorPaths->back().first);
 
                         vectorPaths->pop_back();
                     mc->unlock();
@@ -218,12 +226,9 @@ int main(int argc, char* argv[])
                     {
                         if (Progress > SimulationStepsThresholdFromArgument)
                         {
-                            std::string temp("");
-
                             md->lock();
                                 ant.DumpToFile();
                             md->unlock();
-
                             break;
                         }
                         mc->lock();
@@ -242,6 +247,7 @@ int main(int argc, char* argv[])
                             md->lock();
                                 ant.DumpToFile();
                             md->unlock();
+                            break;
                         }
                         Progress++;
                     }
@@ -314,7 +320,7 @@ int main(int argc, char* argv[])
             
              da::GreenColor* daGreenColors = da::FileParser::CreateDaGreenColorArray(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
      
-             uint64_t Progress = 0;
+             uint64_t Progress = 0U;
 
              uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(ANT_PATH_FROM_CL.size());
 

@@ -76,16 +76,10 @@ namespace da
 	private:
 		Mesh		m_Mesh;
 
-		sf::Color*			m_pColorTransitionArray;
-		da::GreenColor*		m_pDaGreenColorTransitionArray;
-
-		int32_t		m_DistanceToYWall;
-		int32_t		m_DistanceToXWall;
-		int32_t		m_NextCheck;
+		sf::Color*	m_pColorTransitionArray;
+		sf::Color*	m_pCurrentAntColor;
 
 		uint8_t		m_ThreadID;
-
-		sf::Color*	m_pCurrentAntColor;
 
 	protected:
 		int32_t		m_x;
@@ -96,12 +90,14 @@ namespace da
 
 		uint8_t		m_Facing;
 		uint8_t		m_NextTurn;
-		uint64_t*	m_ploopEnd;
+
+		int32_t		m_DistanceToYWall;
+		int32_t		m_DistanceToXWall;
+		int32_t		m_NextCheck;
 
 	public:
 		Ant(
-			sf::RenderWindow* window, 
-			uint64_t* loopEnd, 
+			sf::RenderWindow* window,
 			uint8_t threadIndex,  
 			sf::Color* ColorTransitionArray, 
 			uint32_t Width, 
@@ -142,7 +138,6 @@ namespace da
 			case 3U:m_y--; m_Facing = 0U; break;
 			}
 		}
-
 	};
 
 	class MegaAnt : public Ant 
@@ -158,7 +153,6 @@ namespace da
 		uint8_t			m_CurrentAntColorMaskedCount;
 
 	public:
-
 		MegaAnt(	 uint64_t* loopEnd
 					,uint8_t threadIndex
 					,uint32_t Width
@@ -206,25 +200,31 @@ namespace da
 
 					switch (m_Facing)
 					{
-					case 0U:++m_x; ++m_Facing; break;
-					case 1U:++m_y; ++m_Facing; break;
-					case 2U:--m_x; ++m_Facing; break;
-					case 3U:--m_y; m_Facing = 0U; break;
+					case 0U:++m_x; ++m_Facing;		break;
+					case 1U:++m_y; ++m_Facing;		break;
+					case 2U:--m_x; ++m_Facing;		break;
+					case 3U:--m_y; m_Facing = 0U;	break;
 					}
 
 					break;
 				}
 
-				if (m_x == m_Width)		return false;
-				else if (m_x == -1)		return false;
-										
-				if (m_y == m_Height)	return false;
-				else if (m_y == -1)		return false;
-
-				switch (*m_ploopEnd)
+				if (m_NextCheck <= 0)
 				{
-					case 0: i = 1U;
+					if (m_x > m_Width - 1)	return false;
+					else if (m_x < 0)		return false;
+					
+					if (m_y > m_Height - 1)	return false;
+					else if (m_y < 0)		return false;
+					
+					m_DistanceToYWall = m_x < m_Width - 1 - m_x ? m_x : m_Width - 1 - m_x;
+					m_DistanceToXWall = m_y < m_Height - 1 - m_y ? m_y : m_Height - 1 - m_y;
+
+					m_NextCheck = m_DistanceToYWall < m_DistanceToXWall ? m_DistanceToYWall : m_DistanceToXWall; // shortest stright line to mesh border
+					m_NextCheck *= 2;// The shortest path is always diagonal so on the grid this mean 2x more steps than stright line
+					++m_NextCheck;
 				}
+				--m_NextCheck;
 			}
 
 			return true;

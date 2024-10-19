@@ -4,7 +4,10 @@
 
 #include <vector>
 
-bool da::FileParser::CheckAndInsert(const std::string& data) // checking if inside set negation of path exists, returns true after insertion
+std::unordered_set<std::string> da::FileParser::m_SetOfPaths = std::unordered_set<std::string>();
+
+// checking if inside set negation of path exists, returns true after insertion
+bool da::FileParser::CheckAndInsert(const std::string& data) 
 {
     std::string AntiString = data;
 
@@ -56,6 +59,7 @@ sf::Color* da::FileParser::CreateColorArrayFromCL(const std::string& data)
     return pColorArray;
 }
 
+//same as aboce but using different output type
 da::GreenColor* da::FileParser::CreateDaGreenColorArray(const std::string& data)
 {
     if (!CheckAndInsert(data)) return nullptr;
@@ -80,7 +84,3 @@ da::GreenColor* da::FileParser::CreateDaGreenColorArray(const std::string& data)
 
     return pGreenColorArray;
 }
-
-std::unordered_set<std::string> da::FileParser::m_SetOfPaths = std::unordered_set<std::string>();
-
-

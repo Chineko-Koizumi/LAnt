@@ -220,15 +220,13 @@ void da::MegaMesh::DumpToFileBig(da::GreenColor* daGreenColors)
 da::Ant::Ant
 	(
 	sf::RenderWindow* window,
-	uint64_t* loopEnd,
 	uint8_t threadIndex, 
 	sf::Color* ColorTransitionArray, 
 	uint32_t Width, 
 	uint32_t Height,
 	std::string& antPath
 	)	
-		:m_Mesh(da::Mesh(Width, Height, window))
-		,m_pColorTransitionArray(ColorTransitionArray)
+		:m_pColorTransitionArray(ColorTransitionArray)
 		,m_x(0)
 		,m_y(0)
 		,m_Width(Width)
@@ -239,10 +237,11 @@ da::Ant::Ant
 		,m_DistanceToYWall(0)
 		,m_DistanceToXWall(0)
 		,m_ThreadID(threadIndex)
-		,m_ploopEnd(loopEnd)
 		,m_pCurrentAntColor(nullptr)
 {
 		if (m_pColorTransitionArray == nullptr) return;
+
+		m_Mesh = da::Mesh(Width, Height, window);
 
 		SetOffset(m_Mesh.GetCenterPoint());
 		m_Mesh.InitFieldColor(*m_pColorTransitionArray);
@@ -269,28 +268,13 @@ bool da::Ant::NextMove(uint64_t repetitions)
 
 		if (m_NextCheck <= 0) 
 		{
-			if (m_x > m_Width - 1)
-			{
-				*m_ploopEnd = 0U;
-				return false;
-			}
-			else if (m_x < 0)
-			{
-				*m_ploopEnd = 0U;
-				return false;
-			}
+			if (m_x > m_Width - 1)	return false;
+			else if (m_x < 0)		return false;
+			
 
-			if (m_y > m_Height - 1)
-			{
-				*m_ploopEnd = 0U;
-				return false;
-			}
-			else if (m_y < 0)
-			{
-				*m_ploopEnd = 0U;
-				return false;
-			}
-
+			if (m_y > m_Height - 1)	return false;
+			else if (m_y < 0)		return false;
+			
 			m_DistanceToYWall = m_x < m_Width - 1 - m_x		? m_x : m_Width - 1 - m_x;
 			m_DistanceToXWall = m_y < m_Height - 1 - m_y	? m_y : m_Height - 1 - m_y;
 
@@ -337,7 +321,7 @@ da::MegaAnt::MegaAnt(	 uint64_t* loopEnd
 						,da::GreenColor* DaGreenColorTransitionArray
 						,uint8_t* ColorMaskedTransitionArray
 						,uint8_t ColorMaskedCount)
-			:Ant(nullptr, loopEnd, threadIndex, nullptr, Width, Height, antPath)
+			:Ant(nullptr, threadIndex, nullptr, Width, Height, antPath)
 			,m_MegaMesh(MegaMesh(Width, Height))
 			,m_CurrentAntColorMaskedCount(ColorMaskedCount)
 			,m_pDaGreenColorTransitionArray(DaGreenColorTransitionArray)
@@ -365,7 +349,6 @@ da::MegaAnt::~MegaAnt()
 void da::MegaAnt::DumpToFile()
 {
 	m_MegaMesh.DumpToFileBig(m_pDaGreenColorTransitionArray);
-	*m_ploopEnd = 0;
 }
 
 #pragma endregion

@@ -23,7 +23,4 @@ namespace da
 		FileParser() {};
 		~FileParser() {};
 	};
-
 }
-
-

@@ -26,7 +26,7 @@ uint64_t da::WindowsFeatures::GetFreeMemoryInKB()
 	return statex.ullAvailPhys / KB;
 }
 
-uint32_t da::WindowsFeatures::GetThreadCount(uint64_t windowWidth, uint64_t windowHeight)
+uint32_t da::WindowsFeatures::GetThreadCountForMeshSize(uint64_t windowWidth, uint64_t windowHeight)
 {
 	uint32_t processor_count = std::thread::hardware_concurrency();
 
