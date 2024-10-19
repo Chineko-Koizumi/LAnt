@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 
             sf::Color* colors = da::FileParser::CreateColorArrayFromCL(ANT_PATH_FROM_CL);
 
-            da::Ant ant(&window, &da::KeyboardMethods::m_RenderStepCount, 0, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
+            da::Ant ant(&window, &da::KeyboardMethods::m_RenderStepCount, 0, colors, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
 
             window.setActive(true);
             while (da::KeyboardMethods::m_RenderStepCount != 0)
@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
 
                         sf::Color* colors = vectorPaths->back().second;
 
-                        da::Ant ant(w, &LambdaRenderStepCount, threadIndex, nullptr, colors, nullptr, nullptr, 0, WINDOW_WIDTH, WINDOW_HEIGHT, vectorPaths->back().first);
+                        da::Ant ant(w, &LambdaRenderStepCount, threadIndex, colors, WINDOW_WIDTH, WINDOW_HEIGHT, vectorPaths->back().first);
 
                         vectorPaths->pop_back();
                     mc->unlock();
@@ -311,17 +311,14 @@ int main(int argc, char* argv[])
 
              std::cout << std::endl << std::endl << std::endl;//new lines as place for ant moves and progress bar;
 
-             da::MegaMesh megamesh(WINDOW_WIDTH, WINDOW_HEIGHT, &da::KeyboardMethods::m_RenderStepCount);
-             
+            
              da::GreenColor* daGreenColors = da::FileParser::CreateDaGreenColorArray(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
      
-             megamesh.SetFilePrefix(ANT_PATH_FROM_CL);
-
              uint64_t Progress = 0;
 
              uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(ANT_PATH_FROM_CL.size());
 
-             da::Ant ant(nullptr, nullptr, 0, &megamesh, nullptr, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size(), WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
+             da::MegaAnt megaAnt(&da::KeyboardMethods::m_RenderStepCount, 0U, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size());
 
              da::KeyboardMethods::m_RenderStepCount = 100000000;
              while (da::KeyboardMethods::m_RenderStepCount != 0)
@@ -330,14 +327,18 @@ int main(int argc, char* argv[])
                  {
                      std::cout << std::endl << " " << (long double)SIMULATION_STEPS_THRESHOLD * da::KeyboardMethods::m_RenderStepCount << " moves, reached simulation limit" << std::endl;
 
-                     megamesh.DumpToFileBig(daGreenColors);
+                     megaAnt.DumpToFile();
                      da::KeyboardMethods::m_RenderStepCount = 0;
                      break;
                  }
                 
                  da::WindowsFeatures::AntMovesAndProgressBar( Progress * da::KeyboardMethods::m_RenderStepCount, (float(Progress) / SIMULATION_STEPS_THRESHOLD), 28 );
 
-                 ant.NextMegaMove(da::KeyboardMethods::m_RenderStepCount);
+                 if (!megaAnt.NextMove(da::KeyboardMethods::m_RenderStepCount)) 
+                 {
+                     megaAnt.DumpToFile();
+                     break;
+                 }
 
                  ++Progress;
              }

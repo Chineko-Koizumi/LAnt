@@ -8,6 +8,16 @@
 
 static const uint8_t COLOR_INDEX_MASK = 15;
 
+da::Mesh::Mesh() 
+	:m_pWindow(nullptr)
+	,m_FieldWidth(0)
+	,m_FieldHeight(0)
+	,m_AdditionalNumberForFileName(0)
+	,m_FilePrefix(std::string("NoPrefixSet_"))
+	,m_pfield(nullptr)
+{
+}
+
 da::Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window)
 	:m_pWindow(window)
 	,m_FieldWidth(width)
@@ -108,20 +118,23 @@ void da::Mesh::InitFieldPossition()
 
 #pragma region MegaMesh
 
-da::MegaMesh::MegaMesh(uint32_t width, uint32_t height, uint64_t* loopEnd)
-	:m_ploopEnd(loopEnd)
-	,m_FieldWidth(width)
+da::MegaMesh::MegaMesh(uint32_t width, uint32_t height)
+	:m_FieldWidth(width)
 	,m_FieldHeight(height)
 	
 {
 	m_fieldSize = uint64_t(height) * uint64_t(width);
 	m_pfield	= new uint8_t[m_fieldSize];
-
 }
 
 da::MegaMesh::~MegaMesh()
 {
 	delete[] m_pfield;
+}
+
+uint8_t* da::MegaMesh::GetFieldPtr()
+{
+	return m_pfield;
 }
 
 void da::MegaMesh::SetFilePrefix(const std::string& s)
@@ -198,7 +211,6 @@ void da::MegaMesh::DumpToFileBig(da::GreenColor* daGreenColors)
 	SSDump.close();
 
 	std::cout << std::endl << " File generated in: " << duration.count() << "[ms] screenshot saved as " << FileName << std::endl;
-	*m_ploopEnd = 0;
 }
 
 #pragma endregion
@@ -210,20 +222,13 @@ da::Ant::Ant
 	sf::RenderWindow* window,
 	uint64_t* loopEnd,
 	uint8_t threadIndex, 
-	MegaMesh* megaMesh, 
 	sf::Color* ColorTransitionArray, 
-	da::GreenColor* DaGreenColorTransitionArray, 
-	uint8_t* ColorMaskedTransitionArray, 
-	uint8_t ColorMaskedCount, 
 	uint32_t Width, 
 	uint32_t Height,
 	std::string& antPath
 	)	
 		:m_Mesh(da::Mesh(Width, Height, window))
-		,m_pMegaMesh(megaMesh)
 		,m_pColorTransitionArray(ColorTransitionArray)
-		,m_pDaGreenColorTransitionArray(DaGreenColorTransitionArray)
-		,m_pColorMaskedTransitionArray(ColorMaskedTransitionArray)
 		,m_x(0)
 		,m_y(0)
 		,m_Width(Width)
@@ -236,28 +241,12 @@ da::Ant::Ant
 		,m_ThreadID(threadIndex)
 		,m_ploopEnd(loopEnd)
 		,m_pCurrentAntColor(nullptr)
-		,m_CurrentAntColorMaskedCount(ColorMaskedCount)
 {
-	if (m_pMegaMesh == nullptr)
-	{
-		SetOffset(m_Mesh.GetCenterPoint());
+		if (m_pColorTransitionArray == nullptr) return;
 
+		SetOffset(m_Mesh.GetCenterPoint());
 		m_Mesh.InitFieldColor(*m_pColorTransitionArray);
 		m_Mesh.SetFilePrefix(antPath);
-	}
-	else // MEGA PATH
-	{
-		SetOffset(m_pMegaMesh->GetCenterPoint());
-
-		for (size_t i = 0; i < m_CurrentAntColorMaskedCount; i++)
-		{
-			m_pColorMaskedTransitionArray[i] = constants::TURN_MASK & DaGreenColorTransitionArray[i].a;
-		}
-
-		m_pMegaMesh->InitFieldColor(m_pColorMaskedTransitionArray[0]);
-		m_pMeshFieldCopy = m_pMegaMesh->m_pfield;
-		m_pLoopEndCopy = m_pMegaMesh->m_ploopEnd;
-	}
 }
 
 da::Ant::~Ant(){}
@@ -334,6 +323,49 @@ void da::Ant::DumpToFile()
 void da::Ant::DrawMesh()
 {
 	m_Mesh.DrawMesh();
+}
+
+#pragma endregion
+
+#pragma region MegaAnt
+
+da::MegaAnt::MegaAnt(	 uint64_t* loopEnd
+						,uint8_t threadIndex
+						,uint32_t Width
+						,uint32_t Height
+						,std::string& antPath
+						,da::GreenColor* DaGreenColorTransitionArray
+						,uint8_t* ColorMaskedTransitionArray
+						,uint8_t ColorMaskedCount)
+			:Ant(nullptr, loopEnd, threadIndex, nullptr, Width, Height, antPath)
+			,m_MegaMesh(MegaMesh(Width, Height))
+			,m_CurrentAntColorMaskedCount(ColorMaskedCount)
+			,m_pDaGreenColorTransitionArray(DaGreenColorTransitionArray)
+			,m_pColorMaskedTransitionArray(ColorMaskedTransitionArray)
+			,m_CurrentAntColorMasked(0U)
+
+{
+	SetOffset(m_MegaMesh.GetCenterPoint());
+
+	for (size_t i = 0; i < m_CurrentAntColorMaskedCount; i++)
+	{
+		m_pColorMaskedTransitionArray[i] = constants::TURN_MASK & m_pDaGreenColorTransitionArray[i].a;
+	}
+
+	m_MegaMesh.SetFilePrefix(antPath);
+	m_MegaMesh.InitFieldColor(m_pColorMaskedTransitionArray[0]);
+
+	m_pMeshFieldCopy = m_MegaMesh.GetFieldPtr();
+}
+
+da::MegaAnt::~MegaAnt()
+{
+}
+
+void da::MegaAnt::DumpToFile()
+{
+	m_MegaMesh.DumpToFileBig(m_pDaGreenColorTransitionArray);
+	*m_ploopEnd = 0;
 }
 
 #pragma endregion
