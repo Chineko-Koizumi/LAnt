@@ -1,6 +1,5 @@
 #include "Mesh.h"
 #include "WindowsFeatures.h"
-#include "DrawingAppConstants.h"
 
 #include <fstream>
 #include <chrono>
@@ -252,7 +251,7 @@ da::Ant::Ant
 
 		for (size_t i = 0; i < m_CurrentAntColorMaskedCount; i++)
 		{
-			m_pColorMaskedTransitionArray[i] = da::TURN_MASK & DaGreenColorTransitionArray[i].a;
+			m_pColorMaskedTransitionArray[i] = constants::TURN_MASK & DaGreenColorTransitionArray[i].a;
 		}
 
 		m_pMegaMesh->InitFieldColor(m_pColorMaskedTransitionArray[0]);
@@ -269,9 +268,9 @@ bool da::Ant::NextMove(uint64_t repetitions)
 	{
 		m_pCurrentAntColor = m_Mesh.GetColor(m_x, m_y);
 
-		m_NextTurn = TURN_MASK & m_pCurrentAntColor->a;
+		m_NextTurn = constants::TURN_MASK & m_pCurrentAntColor->a;
 
-		m_Mesh.SetColor(m_x, m_y, m_pColorTransitionArray[COLOR_INDEX_MASK & m_pCurrentAntColor->a]);
+		m_Mesh.SetColor(m_x, m_y, m_pColorTransitionArray[constants::COLOR_INDEX_MASK & m_pCurrentAntColor->a]);
 
 		switch (m_NextTurn)
 		{

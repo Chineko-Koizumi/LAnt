@@ -5,10 +5,10 @@
 #include <iostream>
 
 #include "VertexDefinitions.h"
+#include "DrawingAppConstants.h"
+
 namespace da
 {
-static const uint8_t TURN_MASK		  = 16;
-
 	class Mesh
 	{
 	public:
@@ -80,7 +80,6 @@ static const uint8_t TURN_MASK		  = 16;
 
 	};
 
-
 	class Ant
 	{
 	private:
@@ -139,38 +138,38 @@ static const uint8_t TURN_MASK		  = 16;
 			{
 				m_CurrentAntColorMasked = m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x];
 
-				switch (TURN_MASK & m_CurrentAntColorMasked)
+				switch (constants::TURN_MASK & m_CurrentAntColorMasked)
 				{
-				case 0:
+				case constants::LEFT:
 
-					m_CurrentAntColorMasked &= 0x0F;
+					m_CurrentAntColorMasked &= 0x0FU;
 					m_CurrentAntColorMasked = (m_CurrentAntColorMasked == m_CurrentAntColorMaskedCount - 1 ? 0 : ++m_CurrentAntColorMasked);
 
 					m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
 
 					switch (m_Facing)
 					{
-						case 0: --m_x; m_Facing = 3U; break;
-						case 1: --m_y; --m_Facing; break;
-						case 2: ++m_x; --m_Facing; break;
-						case 3: ++m_y; --m_Facing; break;
+						case 0U: --m_x; m_Facing = 3U; break;
+						case 1U: --m_y; --m_Facing; break;
+						case 2U: ++m_x; --m_Facing; break;
+						case 3U: ++m_y; --m_Facing; break;
 					}
 					
 					break;
 
-				case 16:
+				case constants::RIGHT:
 
-					m_CurrentAntColorMasked &= 0x0F;
+					m_CurrentAntColorMasked &= 0x0FU;
 					m_CurrentAntColorMasked = (m_CurrentAntColorMasked == m_CurrentAntColorMaskedCount - 1 ? 0 : ++m_CurrentAntColorMasked);
 
 					m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
 					
 					switch (m_Facing)
 					{
-						case 0:++m_x; ++m_Facing; break;
-						case 1:++m_y; ++m_Facing; break;
-						case 2:--m_x; ++m_Facing; break;
-						case 3:--m_y; m_Facing = 0U; break;
+						case 0U:++m_x; ++m_Facing; break;
+						case 1U:++m_y; ++m_Facing; break;
+						case 2U:--m_x; ++m_Facing; break;
+						case 3U:--m_y; m_Facing = 0U; break;
 					}
 					
 					break;
