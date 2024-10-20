@@ -2,6 +2,7 @@
 #include "FileParser.h"         // main function argument parrser
 #include "WindowsFeatures.h"    // for Windows winapi features
 #include "DrawingAppConstants.h"
+#include "GUI.h"
 
 #include <fstream>
 #include <utility>
@@ -95,45 +96,18 @@ int main(int argc, char* argv[])
         {
             if ( !da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_VERTEX) ) break;
             
-            sf::Event eventGui; // for windows event pool
-            sf::RenderWindow windowGUI(sf::VideoMode(WINDOW_WIDTH/2U, WINDOW_HEIGHT/3U), "GUI", sf::Style::Resize);
-            windowGUI.setPosition(sf::Vector2i(0, 0));
+            da::GUI windowGUI(WINDOW_WIDTH, WINDOW_HEIGHT);
+            windowGUI.UpdateText(da::GUI::PATH, ANT_PATH_FROM_CL);
+            windowGUI.UpdateText(da::GUI::MULTIPLIER, std::to_string( da::KeyboardMethods::m_RenderStepCount));
+            windowGUI.Redraw();
 
             sf::Event eventAnt; // for windows event pool
             sf::RenderWindow windowAnt(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::None);
-
-            sf::Font font;
-            font.loadFromFile("arial.ttf");
-
-            sf::Text GUItexts[3];
-            GUItexts[0].setString(ANT_PATH_FROM_CL.c_str());
-            GUItexts[1].setString(std::to_string( da::KeyboardMethods::m_RenderStepCount ));
-
-            GUItexts[0].setCharacterSize(24);
-            GUItexts[1].setCharacterSize(24);
-
-            GUItexts[0].setFillColor(sf::Color::Red);
-            GUItexts[1].setFillColor(sf::Color::Red);
-
-            GUItexts[0].setPosition( sf::Vector2f(0.0f, 0.0f) );
-            GUItexts[1].setPosition( sf::Vector2f(0.0f, 40.0f) );
-
-            GUItexts[0].setStyle(sf::Text::Bold);
-            GUItexts[1].setStyle(sf::Text::Bold);
-
-            GUItexts[0].setFont(font);
-            GUItexts[1].setFont(font);
 
             sf::Color* colors = da::FileParser::CreateColorArrayFromCL(ANT_PATH_FROM_CL);
             da::Ant ant(&windowAnt, 0, colors, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
 
             windowAnt.setActive(true);
-
-            windowGUI.setActive(true);
-
-            windowGUI.draw(GUItexts[0]);
-            windowGUI.draw(GUItexts[1]);
-            windowGUI.display();
 
             bool exit = false;
             while ( !exit )
@@ -155,39 +129,29 @@ int main(int argc, char* argv[])
                         case sf::Keyboard::Right:
                         {
                             da::KeyboardMethods::SpeedUpRender();
-                            GUItexts[1].setString(std::to_string(da::KeyboardMethods::m_RenderStepCount));
-
-                            windowGUI.clear(sf::Color::Black);
-                            windowGUI.draw(GUItexts[1]);
-                            windowGUI.display();
-
+                            windowGUI.UpdateText(da::GUI::MULTIPLIER, std::to_string(da::KeyboardMethods::m_RenderStepCount));
+                            windowGUI.Redraw();
                         }break;
                         case sf::Keyboard::Left:
                         {
                             da::KeyboardMethods::SpeedDownRender();
-                            GUItexts[1].setString(std::to_string(da::KeyboardMethods::m_RenderStepCount));
-
-                            windowGUI.clear(sf::Color::Black);
-                            windowGUI.draw(GUItexts[1]);
-                            windowGUI.display();
-
+                            windowGUI.UpdateText(da::GUI::MULTIPLIER, std::to_string(da::KeyboardMethods::m_RenderStepCount));
+                            windowGUI.Redraw();
                         }break;
                         }
                     }break;
                     }
                 }
 
-                ant.DrawMesh();
-
-                windowAnt.display();
-                
-
                 if (!ant.NextMove(da::KeyboardMethods::m_RenderStepCount))
                 {
                     ant.DumpToFile();
                     break;
                 }
+
+                ant.DrawMesh();
             }
+
             delete[] colors;
 
         }break;

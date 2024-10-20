@@ -3,7 +3,6 @@
 
 #include <SFML/Graphics.hpp>
 
-
 namespace da 
 {
 	class GUI
@@ -26,6 +25,8 @@ namespace da
 
 		sf::Text m_aGUITexts[GUI::Names::LAST];
 
+		sf::Font m_Font;
+
 	public:
 
 		GUI(uint32_t windowWidth, uint32_t windowHeight);
@@ -37,14 +38,6 @@ namespace da
 	private:
 		
 	};
-
-	GUI::Names& operator++ (GUI::Names& name)
-	{
-		uint8_t temp = name;
-		name = static_cast<GUI::Names>(++temp);
-
-		return name;
-	}
 }
 
 #endif

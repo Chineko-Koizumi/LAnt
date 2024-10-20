@@ -166,7 +166,7 @@
   <ItemGroup>
     <ClInclude Include="DrawingAppConstants.h" />
     <ClInclude Include="FileParser.h" />
-    <ClInclude Include="GUI.hpp" />
+    <ClInclude Include="GUI.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="VertexDefinitions.h" />
     <ClInclude Include="WindowsFeatures.h" />

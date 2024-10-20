@@ -64,6 +64,7 @@ da::PointUI32 da::Mesh::GetCenterPoint()
 void da::Mesh::DrawMesh()//unsafe for generating without Window
 {
 	m_pWindow->draw(*m_pfield);
+	m_pWindow->display();
 }
 
 void da::Mesh::InitFieldColor(sf::Color c)
