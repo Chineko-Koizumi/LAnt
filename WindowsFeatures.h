@@ -16,8 +16,8 @@ namespace da
 		static void SetConsoleModeToVTP();
 		static void RestoreOldConsoleMode();
 		static std::string GenerateProgressBar(float progress/* Fixed <0;1> value*/, uint8_t barLength /* bar length in characters*/ );
-		static void ThreadProgressGeneretor(uint8_t threadNumber, const std::string& infoUpdate);
-		static void InitTerminalForThreads(uint8_t threadMax);
+		static void ThreadProgressGeneretor(uint16_t threadNumber, const std::string& infoUpdate);
+		static void InitTerminalForThreads(uint16_t threadMax);
 
 	private:
 		WindowsFeatures();

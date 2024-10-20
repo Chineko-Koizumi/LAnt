@@ -67,8 +67,8 @@ std::string da::WindowsFeatures::GenerateProgressBar(float progress, uint8_t bar
 	{
 		m_ProgressBar.push_back(178U);
 	}
-	uint8_t temp = m_ProgressBar.length();
-	for (int i = 0; i < barLength - temp + 2; ++i)
+	size_t temp = m_ProgressBar.length();
+	for (size_t i = 0; i < barLength - temp + 2; ++i)
 	{
 		m_ProgressBar.push_back(32U);
 	}
@@ -132,7 +132,7 @@ void da::WindowsFeatures::RestoreOldConsoleMode()
 	}
 }
 
-void da::WindowsFeatures::InitTerminalForThreads(uint8_t threadMax)
+void da::WindowsFeatures::InitTerminalForThreads(uint16_t threadMax)
 {
 	for (size_t i = 0; i < threadMax; ++i)
 	{
@@ -140,7 +140,7 @@ void da::WindowsFeatures::InitTerminalForThreads(uint8_t threadMax)
 	}
 }
 
-void da::WindowsFeatures::ThreadProgressGeneretor(uint8_t threadNumber, const std::string& infoUpdate)
+void da::WindowsFeatures::ThreadProgressGeneretor(uint16_t threadNumber, const std::string& infoUpdate)
 {
 	for (int i = 0; i < threadNumber; ++i)
 	{

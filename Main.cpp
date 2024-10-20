@@ -26,13 +26,11 @@ namespace da
         static void SpeedUpRender()
         {
             if (m_RenderStepCount < 100000000U)m_RenderStepCount *= 10;
-            std::cout << "Iteration per Update: " << m_RenderStepCount << std::endl;
         }
 
         static void SpeedDownRender()
         {
             if (m_RenderStepCount > 1U)m_RenderStepCount /= 10;
-            std::cout << "Iteration per Update: " << m_RenderStepCount << std::endl;
         }
 
     private:
@@ -97,25 +95,56 @@ int main(int argc, char* argv[])
         {
             if ( !da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_VERTEX) ) break;
             
-            sf::Event event; // for windows event pool
-            sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::Default);
+            sf::Event eventGui; // for windows event pool
+            sf::RenderWindow windowGUI(sf::VideoMode(WINDOW_WIDTH/2U, WINDOW_HEIGHT/3U), "GUI", sf::Style::Resize);
+            windowGUI.setPosition(sf::Vector2i(0, 0));
+
+            sf::Event eventAnt; // for windows event pool
+            sf::RenderWindow windowAnt(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::None);
+
+            sf::Font font;
+            font.loadFromFile("arial.ttf");
+
+            sf::Text GUItexts[3];
+            GUItexts[0].setString(ANT_PATH_FROM_CL.c_str());
+            GUItexts[1].setString(std::to_string( da::KeyboardMethods::m_RenderStepCount ));
+
+            GUItexts[0].setCharacterSize(24);
+            GUItexts[1].setCharacterSize(24);
+
+            GUItexts[0].setFillColor(sf::Color::Red);
+            GUItexts[1].setFillColor(sf::Color::Red);
+
+            GUItexts[0].setPosition( sf::Vector2f(0.0f, 0.0f) );
+            GUItexts[1].setPosition( sf::Vector2f(0.0f, 40.0f) );
+
+            GUItexts[0].setStyle(sf::Text::Bold);
+            GUItexts[1].setStyle(sf::Text::Bold);
+
+            GUItexts[0].setFont(font);
+            GUItexts[1].setFont(font);
 
             sf::Color* colors = da::FileParser::CreateColorArrayFromCL(ANT_PATH_FROM_CL);
+            da::Ant ant(&windowAnt, 0, colors, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
 
-            da::Ant ant(&window, 0, colors, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
+            windowAnt.setActive(true);
 
-            window.setActive(true);
+            windowGUI.setActive(true);
+
+            windowGUI.draw(GUItexts[0]);
+            windowGUI.draw(GUItexts[1]);
+            windowGUI.display();
 
             bool exit = false;
             while ( !exit )
             {
-                if (window.pollEvent(event))
+                if (windowAnt.pollEvent(eventAnt))
                 {
-                    switch (event.type)
+                    switch (eventAnt.type)
                     {
                     case sf::Event::KeyPressed:
                     {
-                        switch (event.key.code)
+                        switch (eventAnt.key.code)
                         {
                         case sf::Keyboard::Escape:
                         {
@@ -126,10 +155,22 @@ int main(int argc, char* argv[])
                         case sf::Keyboard::Right:
                         {
                             da::KeyboardMethods::SpeedUpRender();
+                            GUItexts[1].setString(std::to_string(da::KeyboardMethods::m_RenderStepCount));
+
+                            windowGUI.clear(sf::Color::Black);
+                            windowGUI.draw(GUItexts[1]);
+                            windowGUI.display();
+
                         }break;
                         case sf::Keyboard::Left:
                         {
                             da::KeyboardMethods::SpeedDownRender();
+                            GUItexts[1].setString(std::to_string(da::KeyboardMethods::m_RenderStepCount));
+
+                            windowGUI.clear(sf::Color::Black);
+                            windowGUI.draw(GUItexts[1]);
+                            windowGUI.display();
+
                         }break;
                         }
                     }break;
@@ -137,7 +178,9 @@ int main(int argc, char* argv[])
                 }
 
                 ant.DrawMesh();
-                window.display();
+
+                windowAnt.display();
+                
 
                 if (!ant.NextMove(da::KeyboardMethods::m_RenderStepCount))
                 {
@@ -182,8 +225,8 @@ int main(int argc, char* argv[])
             }
             
             auto LambdaThread = [](
-                uint8_t threadIndex, 
-                uint8_t threadMax, 
+                uint16_t threadIndex, 
+                uint16_t threadMax,
                 bool* thrStatus, 
                 std::vector< std::pair<std::string, sf::Color* >>* vectorPaths, 
                 uint64_t SimulationStepsThresholdFromArgument, 
@@ -266,7 +309,7 @@ int main(int argc, char* argv[])
                 thrStatus[threadIndex] = false;
             };
 
-            for (int i = 0; i < Thread_count; ++i)
+            for (uint16_t i = 0; i < Thread_count; ++i)
             {
                 threadsStatus[i] = true;
 

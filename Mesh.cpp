@@ -190,7 +190,7 @@ void da::MegaMesh::DumpToFileBig(da::GreenColor* daGreenColors)
 			{
 				Progress.clear();
 
-				Progress << "\x1b[2k\x1b[A" << "\x1b[2k\x1b[A" << " done in: " << floor(double(i) / m_fieldSize * 100.0f) << "%      " << "\n\r" << da::WindowsFeatures::GenerateProgressBar(double(i) / m_fieldSize, 28)<<std::endl;
+				Progress << "\x1b[2k\x1b[A" << "\x1b[2k\x1b[A" << " done in: " << floor(double(i) / m_fieldSize * 100.0f) << "%      " << "\n\r" << da::WindowsFeatures::GenerateProgressBar(float(i) / m_fieldSize, 28)<<std::endl;
 				std::cout << Progress.str();
 			}
 		}
@@ -220,13 +220,14 @@ void da::MegaMesh::DumpToFileBig(da::GreenColor* daGreenColors)
 da::Ant::Ant
 	(
 	sf::RenderWindow* window,
-	uint8_t threadIndex, 
+	uint16_t threadIndex, 
 	sf::Color* ColorTransitionArray, 
 	uint32_t Width, 
 	uint32_t Height,
 	std::string& antPath
 	)	
-		:m_pColorTransitionArray(ColorTransitionArray)
+		:m_pMesh(new da::Mesh(Width, Height, window))
+		,m_pColorTransitionArray(ColorTransitionArray)
 		,m_x(0)
 		,m_y(0)
 		,m_Width(Width)
@@ -241,24 +242,25 @@ da::Ant::Ant
 {
 		if (m_pColorTransitionArray == nullptr) return;
 
-		m_Mesh = da::Mesh(Width, Height, window);
-
-		SetOffset(m_Mesh.GetCenterPoint());
-		m_Mesh.InitFieldColor(*m_pColorTransitionArray);
-		m_Mesh.SetFilePrefix(antPath);
+		SetOffset(m_pMesh->GetCenterPoint());
+		m_pMesh->InitFieldColor(*m_pColorTransitionArray);
+		m_pMesh->SetFilePrefix(antPath);
 }
 
-da::Ant::~Ant(){}
+da::Ant::~Ant()
+{
+	delete m_pMesh;
+}
 
 bool da::Ant::NextMove(uint64_t repetitions)
 {
 	for (size_t i = 0; i < repetitions; i++)
 	{
-		m_pCurrentAntColor = m_Mesh.GetColor(m_x, m_y);
+		m_pCurrentAntColor = m_pMesh->GetColor(m_x, m_y);
 
 		m_NextTurn = constants::TURN_MASK & m_pCurrentAntColor->a;
 
-		m_Mesh.SetColor(m_x, m_y, m_pColorTransitionArray[constants::COLOR_INDEX_MASK & m_pCurrentAntColor->a]);
+		m_pMesh->SetColor(m_x, m_y, m_pColorTransitionArray[constants::COLOR_INDEX_MASK & m_pCurrentAntColor->a]);
 
 		switch (m_NextTurn)
 		{
@@ -301,12 +303,12 @@ void da::Ant::SetOffset(da::PointUI32 p)
 
 void da::Ant::DumpToFile()
 {
-	m_Mesh.DumpToFile();
+	m_pMesh->DumpToFile();
 }
 
 void da::Ant::DrawMesh()
 {
-	m_Mesh.DrawMesh();
+	m_pMesh->DrawMesh();
 }
 
 #pragma endregion
@@ -320,7 +322,8 @@ da::MegaAnt::MegaAnt(	 uint64_t* loopEnd
 						,std::string& antPath
 						,da::GreenColor* DaGreenColorTransitionArray
 						,uint8_t* ColorMaskedTransitionArray
-						,uint8_t ColorMaskedCount)
+						,uint16_t ColorMaskedCount)
+
 			:Ant(nullptr, threadIndex, nullptr, Width, Height, antPath)
 			,m_MegaMesh(MegaMesh(Width, Height))
 			,m_CurrentAntColorMaskedCount(ColorMaskedCount)

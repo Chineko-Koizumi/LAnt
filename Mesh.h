@@ -74,12 +74,12 @@ namespace da
 	class Ant
 	{
 	private:
-		Mesh		m_Mesh;
+		Mesh*		m_pMesh;
 
 		sf::Color*	m_pColorTransitionArray;
 		sf::Color*	m_pCurrentAntColor;
 
-		uint8_t		m_ThreadID;
+		uint16_t		m_ThreadID;
 
 	protected:
 		int32_t		m_x;
@@ -98,7 +98,7 @@ namespace da
 	public:
 		Ant(
 			sf::RenderWindow* window,
-			uint8_t threadIndex,  
+			uint16_t threadIndex,  
 			sf::Color* ColorTransitionArray, 
 			uint32_t Width, 
 			uint32_t Height,
@@ -149,8 +149,8 @@ namespace da
 		da::GreenColor* m_pDaGreenColorTransitionArray;
 		uint8_t*		m_pColorMaskedTransitionArray;
 
-		uint8_t			m_CurrentAntColorMasked;
-		uint8_t			m_CurrentAntColorMaskedCount;
+		uint16_t		m_CurrentAntColorMasked;
+		uint16_t		m_CurrentAntColorMaskedCount;
 
 	public:
 		MegaAnt(	 uint64_t* loopEnd
@@ -160,7 +160,7 @@ namespace da
 					,std::string& antPath
 					,da::GreenColor* DaGreenColorTransitionArray
 					,uint8_t* ColorMaskedTransitionArray
-					,uint8_t ColorMaskedCount );
+					,uint16_t ColorMaskedCount );
 
 		~MegaAnt();
 
