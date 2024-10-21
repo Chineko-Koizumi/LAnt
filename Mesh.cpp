@@ -18,8 +18,7 @@ namespace da
 		, m_AdditionalNumberForFileName(0)
 		, m_FilePrefix(std::string("NoPrefixSet_"))
 		, m_pfield(nullptr)
-	{
-	}
+	{}
 
 	Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window)
 		:m_pWindow(window)
@@ -80,7 +79,7 @@ namespace da
 		}
 	}
 
-	void Mesh::DumpToFile()
+	void Mesh::DumpToFile(const std::string& outputPath)
 	{
 		if (m_pWindow == nullptr)return;
 
@@ -88,18 +87,20 @@ namespace da
 
 		m_pWindow->setActive(true);
 
-		m_pWindow->clear(sf::Color::Black);
-		DrawMesh();
+			m_pWindow->clear(sf::Color::Black);
+			DrawMesh();
 
-		texture.create(m_pWindow->getSize().x, m_pWindow->getSize().y);
-		texture.update(*m_pWindow);
+			texture.create(m_pWindow->getSize().x, m_pWindow->getSize().y);
+			texture.update(*m_pWindow);
 
-		sf::Image img = texture.copyToImage();
+			sf::Image img = texture.copyToImage();
 
-		std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_" + std::to_string(m_AdditionalNumberForFileName) + ".png");
-		img.saveToFile(FileName);
+			filesystem::create_directories(outputPath);
 
-		m_AdditionalNumberForFileName++;
+			std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_" + std::to_string(m_AdditionalNumberForFileName) + ".png");
+			img.saveToFile(outputPath + FileName);
+
+			m_AdditionalNumberForFileName++;
 
 		m_pWindow->setActive(false);
 	}
@@ -158,13 +159,13 @@ namespace da
 		}
 	}
 
-	void MegaMesh::DumpToFileBig(daTypes::GreenColor* daGreenColors)
+	void MegaMesh::DumpToFileBig(daTypes::GreenColor* daGreenColors, const std::string& outputPath)
 	{
 		std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_" + ".ppm");
 		std::stringstream Progress;
 
 		std::ofstream SSDump;
-		SSDump.open(FileName);
+		SSDump.open(outputPath + FileName);
 
 		SSDump << "P3" << std::endl;
 		SSDump << m_FieldWidth << " " << m_FieldHeight << std::endl;

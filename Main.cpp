@@ -5,8 +5,8 @@
 #include "WindowsFeatures.hpp"      // Windows winapi features
 #include "DrawingAppConstants.hpp"  // Usefull constants
 
-#include <fstream>
-#include <utility>
+#include <fstream>      // Getting path data from file
+#include <time.h>       /* time_t, struct tm, time, localtime, strftime */
 
 static uint32_t WINDOW_WIDTH                = 0;
 static uint32_t WINDOW_HEIGHT               = 0;
@@ -15,6 +15,9 @@ static uint8_t GENERATION_TYPE              = 0;
 
 static std::string ANT_PATHS_FILE_PATH("EMPTY");
 static std::string ANT_PATH_FROM_CL("EMPTY");
+
+static std::string OUTPUT_PATH_VAR("");
+static const std::string OUTPUT_PATH_CONST("./Output/");
 
 namespace da
 {
@@ -89,6 +92,18 @@ int main(int argc, char* argv[])
 
     std::ifstream infile(ANT_PATHS_FILE_PATH);
 
+    time_t rawtime;
+    struct tm timeinfo;
+    char buffer[80];
+
+    time(&rawtime);
+    localtime_s(&timeinfo, &rawtime);
+
+    strftime(buffer, 80, "%F(%Hh%Mm%Ss)/", &timeinfo);
+
+    OUTPUT_PATH_VAR += OUTPUT_PATH_CONST;
+    OUTPUT_PATH_VAR += buffer;
+
 #pragma region Window
     
     switch (GENERATION_TYPE)
@@ -123,7 +138,6 @@ int main(int argc, char* argv[])
                         {
                         case sf::Keyboard::Escape:
                         {
-                            ant.DumpToFile();
                             exit = true;
                             continue;
                         }break;
@@ -144,15 +158,12 @@ int main(int argc, char* argv[])
                     }
                 }
 
-                if (!ant.NextMove(da::KeyboardMethods::m_RenderStepCount))
-                {
-                    ant.DumpToFile();
-                    break;
-                }
+                if (!ant.NextMove(da::KeyboardMethods::m_RenderStepCount))  break;
 
                 ant.DrawMesh();
             }
 
+            ant.DumpToFile(OUTPUT_PATH_VAR);
             delete[] colors;
 
         }break;
@@ -232,13 +243,8 @@ int main(int argc, char* argv[])
                     Progress = 0;
                     while (LambdaRenderStepCount != 0)
                     {
-                        if (Progress > SimulationStepsThresholdFromArgument)
-                        {
-                            md->lock();
-                                ant.DumpToFile();
-                            md->unlock();
-                            break;
-                        }
+                        if (Progress > SimulationStepsThresholdFromArgument) break;
+                        
                         mc->lock();
 
                             std::string ThreadText(6, ' ');
@@ -250,15 +256,15 @@ int main(int argc, char* argv[])
                         
                        mc->unlock();
 
-                        if (!ant.NextMove(LambdaRenderStepCount)) 
-                        {
-                            md->lock();
-                                ant.DumpToFile();
-                            md->unlock();
-                            break;
-                        }
+                        if (!ant.NextMove(LambdaRenderStepCount)) break;
+                        
                         Progress++;
                     }
+
+                    md->lock();
+                        ant.DumpToFile(OUTPUT_PATH_VAR);
+                    md->unlock();
+
                     delete[]colors;
                     fileNumer++;
                 }
@@ -340,21 +346,19 @@ int main(int argc, char* argv[])
                  {
                      std::cout << std::endl << " " << (long double)SIMULATION_STEPS_THRESHOLD * da::KeyboardMethods::m_RenderStepCount << " moves, reached simulation limit" << std::endl;
 
-                     megaAnt.DumpToFile();
                      da::KeyboardMethods::m_RenderStepCount = 0;
                      break;
                  }
                 
                  da::WindowsFeatures::AntMovesAndProgressBar( Progress * da::KeyboardMethods::m_RenderStepCount, (float(Progress) / SIMULATION_STEPS_THRESHOLD), 28 );
 
-                 if (!megaAnt.NextMove(da::KeyboardMethods::m_RenderStepCount)) 
-                 {
-                     megaAnt.DumpToFile();
-                     break;
-                 }
-
+                 if (!megaAnt.NextMove(da::KeyboardMethods::m_RenderStepCount)) break;
+                 
                  ++Progress;
              }
+
+             megaAnt.DumpToFile(OUTPUT_PATH_VAR);
+
              delete[] daGreenColors;
 
              auto stop = std::chrono::high_resolution_clock::now();

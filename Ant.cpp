@@ -88,9 +88,9 @@ namespace da
 		m_y = p.y;
 	}
 
-	void Ant::DumpToFile()
+	void Ant::DumpToFile(const std::string& outputPath)
 	{
-		m_pMesh->DumpToFile();
+		m_pMesh->DumpToFile(outputPath);
 	}
 
 	void Ant::DrawMesh()
@@ -112,33 +112,34 @@ namespace da
 		, uint16_t ColorMaskedCount)
 
 		:Ant(nullptr, threadIndex, nullptr, Width, Height, antPath)
-		, m_MegaMesh(MegaMesh(Width, Height))
+		, m_pMegaMesh(new MegaMesh(Width, Height))
 		, m_CurrentAntColorMaskedCount(ColorMaskedCount)
 		, m_pDaGreenColorTransitionArray(DaGreenColorTransitionArray)
 		, m_pColorMaskedTransitionArray(ColorMaskedTransitionArray)
 		, m_CurrentAntColorMasked(0U)
 
 	{
-		SetOffset(m_MegaMesh.GetCenterPoint());
+		SetOffset(m_pMegaMesh->GetCenterPoint());
 
 		for (size_t i = 0; i < m_CurrentAntColorMaskedCount; i++)
 		{
 			m_pColorMaskedTransitionArray[i] = constants::TURN_MASK & m_pDaGreenColorTransitionArray[i].a;
 		}
 
-		m_MegaMesh.SetFilePrefix(antPath);
-		m_MegaMesh.InitFieldColor(m_pColorMaskedTransitionArray[0]);
+		m_pMegaMesh->SetFilePrefix(antPath);
+		m_pMegaMesh->InitFieldColor(m_pColorMaskedTransitionArray[0]);
 
-		m_pMeshFieldCopy = m_MegaMesh.GetFieldPtr();
+		m_pMeshFieldCopy = m_pMegaMesh->GetFieldPtr();
 	}
 
 	MegaAnt::~MegaAnt()
 	{
+		delete m_pMegaMesh;
 	}
 
-	void MegaAnt::DumpToFile()
+	void MegaAnt::DumpToFile(const std::string& outputPath)
 	{
-		m_MegaMesh.DumpToFileBig(m_pDaGreenColorTransitionArray);
+		m_pMegaMesh->DumpToFileBig(m_pDaGreenColorTransitionArray, outputPath);
 	}
 
 #pragma endregion

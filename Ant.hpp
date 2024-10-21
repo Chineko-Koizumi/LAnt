@@ -42,7 +42,7 @@ namespace da
 		~Ant();
 
 		virtual bool NextMove(uint64_t repetitions);
-		virtual void DumpToFile();
+		virtual void DumpToFile(const std::string& outputPath);
 
 		void SetOffset(uint32_t x, uint32_t y);
 		void SetOffset(daTypes::PointUI32 p);
@@ -77,8 +77,8 @@ namespace da
 	class MegaAnt : public Ant
 	{
 	private:
-		uint8_t* m_pMeshFieldCopy;
-		MegaMesh	m_MegaMesh;
+		uint8_t*	m_pMeshFieldCopy;
+		MegaMesh*	m_pMegaMesh;
 
 		daTypes::GreenColor* m_pDaGreenColorTransitionArray;
 		uint8_t* m_pColorMaskedTransitionArray;
@@ -98,7 +98,7 @@ namespace da
 
 		~MegaAnt();
 
-		virtual void DumpToFile() override;
+		virtual void DumpToFile(const std::string& outputPath) override;
 
 		virtual inline bool NextMove(uint64_t repetition) override
 		{

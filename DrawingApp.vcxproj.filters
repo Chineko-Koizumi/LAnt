@@ -53,9 +53,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DrawingAppConstants.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Mesh.hpp">
       <Filter>DrawingApp\Mesh</Filter>
     </ClInclude>
@@ -73,6 +70,9 @@
     </ClInclude>
     <ClInclude Include="WindowsFeatures.hpp">
       <Filter>DrawingApp\WindowsFeatures</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawingAppConstants.hpp">
+      <Filter>DrawingApp</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

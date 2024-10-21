@@ -6,8 +6,11 @@
 #include <thread>         
 #include <mutex>
 #include <iostream>
+#include <filesystem>   // Creation of folder
 
 #include "DrawingAppConstants.hpp"
+
+namespace filesystem = std::filesystem;
 
 namespace da
 {
@@ -39,7 +42,7 @@ namespace da
 		void DrawMesh();
 		void InitFieldColor(sf::Color c);
 
-		void DumpToFile();
+		void DumpToFile(const std::string& outputPath);
 
 	private:
 		uint64_t TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y);
@@ -67,7 +70,7 @@ namespace da
 
 		daTypes::PointUI32 GetCenterPoint();
 		void InitFieldColor(uint8_t c);
-		void DumpToFileBig(daTypes::GreenColor* daGreenColors);
+		void DumpToFileBig(daTypes::GreenColor* daGreenColors, const std::string& outputPath);
 
 	private:
 
