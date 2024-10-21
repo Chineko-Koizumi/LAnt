@@ -164,6 +164,8 @@ namespace da
 		std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_" + ".ppm");
 		std::stringstream Progress;
 
+		filesystem::create_directories(outputPath);
+
 		std::ofstream SSDump;
 		SSDump.open(outputPath + FileName);
 

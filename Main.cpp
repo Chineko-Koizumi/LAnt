@@ -60,8 +60,7 @@ int main(int argc, char* argv[])
     {
         WINDOW_WIDTH                = atoi(argv[2]);
         WINDOW_HEIGHT               = atoi(argv[3]);
-        SIMULATION_STEPS_THRESHOLD  = atoi(argv[4]);
-        ANT_PATH_FROM_CL            = std::string(argv[5]);
+        ANT_PATH_FROM_CL            = std::string(argv[4]);
 
         GENERATION_TYPE = da::MenuOptions::ANT_GUI;
     }
