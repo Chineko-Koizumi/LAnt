@@ -1,5 +1,5 @@
-#ifndef GUI_HPP
-#define GUI_HPP
+#ifndef GUIBASE_HPP
+#define GUIBASE_HPP
 
 #include <SFML/Graphics.hpp>
 
@@ -28,31 +28,6 @@ namespace da
 	private:
 		
 	};
-
-	class AntGUI : public GUIBase
-	{
-	public:
-		enum Names : uint16_t
-		{
-			FIRST = 0U,
-			PATH = FIRST,
-			MULTIPLIER,
-			LAST
-		};
-
-	private:
-
-	public:
-		AntGUI(uint32_t windowWidth, uint32_t windowHeight);
-		~AntGUI();
-
-		void Redraw() override;
-		void UpdateText(uint16_t name, const std::string& text) override;
-
-	private:
-
-	};
-
 }
 
 #endif

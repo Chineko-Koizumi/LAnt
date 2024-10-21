@@ -1,8 +1,9 @@
 #include "Mesh.h"               // field for ant and ant itself
+#include "Ant.hpp" 
 #include "FileParser.h"         // main function argument parrser
 #include "WindowsFeatures.h"    // for Windows winapi features
 #include "DrawingAppConstants.h"
-#include "GUI.h"
+#include "GUIAnt.hpp"
 
 #include <fstream>
 #include <utility>
@@ -43,9 +44,9 @@ namespace da
 
     enum MenuOptions
     {
-        ANT_GUI                 = 0,
-        ANT_PARALLEL_FILE       = 1,
-        ANT_NOGUI_LARGE_FILE    = 2,
+        ANT_GUI = 0,
+        ANT_PARALLEL_FILE = 1,
+        ANT_NOGUI_LARGE_FILE = 2,
         EXIT = 100
     };
 }
@@ -96,13 +97,13 @@ int main(int argc, char* argv[])
         {
             if ( !da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_VERTEX) ) break;
             
-            da::AntGUI windowGUI(WINDOW_WIDTH, WINDOW_HEIGHT);
-            windowGUI.UpdateText(da::AntGUI::PATH, ANT_PATH_FROM_CL);
-            windowGUI.UpdateText(da::AntGUI::MULTIPLIER, std::to_string( da::KeyboardMethods::m_RenderStepCount));
+            da::GUIAnt windowGUI(WINDOW_WIDTH, WINDOW_HEIGHT);
+            windowGUI.UpdateText(da::GUIAnt::PATH, ANT_PATH_FROM_CL);
+            windowGUI.UpdateText(da::GUIAnt::MULTIPLIER, std::to_string( da::KeyboardMethods::m_RenderStepCount));
             windowGUI.Redraw();
 
             sf::Event eventAnt; // for windows event pool
-            sf::RenderWindow windowAnt(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::None);
+            sf::RenderWindow windowAnt(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::Default);
 
             sf::Color* colors = da::FileParser::CreateColorArrayFromCL(ANT_PATH_FROM_CL);
             da::Ant ant(&windowAnt, 0, colors, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
@@ -129,13 +130,13 @@ int main(int argc, char* argv[])
                         case sf::Keyboard::Right:
                         {
                             da::KeyboardMethods::SpeedUpRender();
-                            windowGUI.UpdateText(da::AntGUI::MULTIPLIER, std::to_string(da::KeyboardMethods::m_RenderStepCount));
+                            windowGUI.UpdateText(da::GUIAnt::MULTIPLIER, std::to_string(da::KeyboardMethods::m_RenderStepCount));
                             windowGUI.Redraw();
                         }break;
                         case sf::Keyboard::Left:
                         {
                             da::KeyboardMethods::SpeedDownRender();
-                            windowGUI.UpdateText(da::AntGUI::MULTIPLIER, std::to_string(da::KeyboardMethods::m_RenderStepCount));
+                            windowGUI.UpdateText(da::GUIAnt::MULTIPLIER, std::to_string(da::KeyboardMethods::m_RenderStepCount));
                             windowGUI.Redraw();
                         }break;
                         }

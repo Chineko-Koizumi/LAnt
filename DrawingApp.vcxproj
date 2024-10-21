@@ -157,16 +157,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Ant.cpp" />
     <ClCompile Include="FileParser.cpp" />
-    <ClCompile Include="GUI.cpp" />
+    <ClCompile Include="GUIAnt.cpp" />
+    <ClCompile Include="GUIBase.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="WindowsFeatures.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Ant.hpp" />
     <ClInclude Include="DrawingAppConstants.h" />
     <ClInclude Include="FileParser.h" />
-    <ClInclude Include="GUI.h" />
+    <ClInclude Include="GUIAnt.hpp" />
+    <ClInclude Include="GUIBase.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="VertexDefinitions.h" />
     <ClInclude Include="WindowsFeatures.h" />

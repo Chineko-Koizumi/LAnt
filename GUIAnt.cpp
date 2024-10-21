@@ -1,33 +1,16 @@
-#include "GUI.h"
+#include "GUIAnt.hpp"
 
 namespace da 
 {
-	GUIBase::GUIBase(uint32_t windowWidth, uint32_t windowHeight, uint16_t enumCount)
-		:m_WindowWidth(windowWidth)
-		,m_WindowHeight(windowHeight)
-		,m_pWindow(new sf::RenderWindow(sf::VideoMode(windowWidth / 2U, windowHeight / 3U), "GUI", sf::Style::Resize))
-		,m_pGUITexts(new sf::Text[enumCount])
-		,m_Font()
-	{
-		m_pWindow->setPosition(sf::Vector2i(0, 0));
-
-		m_Font.loadFromFile("Consolas.ttf");
-	}
-
-	GUIBase::~GUIBase()
-	{
-		delete m_pWindow;
-	}
-
-	AntGUI::Names& operator++ (AntGUI::Names& name)
+	GUIAnt::Names& operator++ (GUIAnt::Names& name)
 	{
 		uint8_t temp = name;
-		name = static_cast<AntGUI::Names>(++temp);
+		name = static_cast<GUIAnt::Names>(++temp);
 
 		return name;
 	}
 
-	AntGUI::AntGUI(uint32_t windowWidth, uint32_t windowHeight)
+	GUIAnt::GUIAnt(uint32_t windowWidth, uint32_t windowHeight)
 		:GUIBase(windowWidth, windowHeight, Names::LAST)
 	{
 		float windowSpacing = static_cast<float>(windowHeight) / 30U;
@@ -42,14 +25,14 @@ namespace da
 		}
 	}
 
-	AntGUI::~AntGUI(){}
+	GUIAnt::~GUIAnt() {}
 
-	void AntGUI::UpdateText(uint16_t name, const std::string& text)
+	void GUIAnt::UpdateText(uint16_t name, const std::string& text)
 	{
 		m_pGUITexts[name].setString(text);
 	}
 
-	void AntGUI::Redraw()
+	void GUIAnt::Redraw()
 	{
 		m_pWindow->clear(sf::Color::Black);
 
@@ -59,6 +42,4 @@ namespace da
 		}
 		m_pWindow->display();
 	}
-
 }
-
