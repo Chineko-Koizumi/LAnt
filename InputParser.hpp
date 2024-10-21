@@ -3,11 +3,11 @@
 #include <sstream>
 #include <unordered_set>
 
-#include "VertexDefinitions.h"
+#include "DrawingAppConstants.hpp"
 
 namespace da 
 {
-	class FileParser
+	class InputParser
 	{
 	public:
 		static std::unordered_set<std::string> m_SetOfPaths;
@@ -17,10 +17,10 @@ namespace da
 	
 	public:
 		static sf::Color* CreateColorArrayFromCL(const std::string& data);
-		static da::GreenColor* CreateDaGreenColorArray(const std::string& data);
+		static daTypes::GreenColor* CreateDaGreenColorArray(const std::string& data);
 
 	private:
-		FileParser() {};
-		~FileParser() {};
+		InputParser() {};
+		~InputParser() {};
 	};
 }

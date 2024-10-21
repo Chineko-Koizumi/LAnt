@@ -1,9 +1,9 @@
-#include "Mesh.h"               // field for ant and ant itself
-#include "Ant.hpp" 
-#include "FileParser.h"         // main function argument parrser
-#include "WindowsFeatures.h"    // for Windows winapi features
-#include "DrawingAppConstants.h"
-#include "GUIAnt.hpp"
+#include "Mesh.hpp"                 // Field for ant and ant itself
+#include "Ant.hpp"                  // Ant backend
+#include "GUIAnt.hpp"               // GUI with seperate window
+#include "InputParser.hpp"          // Main function argument parrser
+#include "WindowsFeatures.hpp"      // Windows winapi features
+#include "DrawingAppConstants.hpp"  // Usefull constants
 
 #include <fstream>
 #include <utility>
@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
     {
         case da::ANT_GUI:
         {
-            if ( !da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_VERTEX) ) break;
+            if ( !da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, constants::SIZE_OF_VERTEX) ) break;
             
             da::GUIAnt windowGUI(WINDOW_WIDTH, WINDOW_HEIGHT);
             windowGUI.UpdateText(da::GUIAnt::PATH, ANT_PATH_FROM_CL);
@@ -105,7 +105,7 @@ int main(int argc, char* argv[])
             sf::Event eventAnt; // for windows event pool
             sf::RenderWindow windowAnt(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::Default);
 
-            sf::Color* colors = da::FileParser::CreateColorArrayFromCL(ANT_PATH_FROM_CL);
+            sf::Color* colors = da::InputParser::CreateColorArrayFromCL(ANT_PATH_FROM_CL);
             da::Ant ant(&windowAnt, 0, colors, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
 
             windowAnt.setActive(true);
@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
 
         case da::ANT_PARALLEL_FILE: 
         {
-            if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_VERTEX)) break;
+            if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, constants::SIZE_OF_VERTEX)) break;
 
             std::mutex mtxCout, mtxDumpFile;
             std::thread* threads;
@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
             {
                 std::getline(infile, line);
 
-                sf::Color* pColor = da::FileParser::CreateColorArrayFromCL(line);
+                sf::Color* pColor = da::InputParser::CreateColorArrayFromCL(line);
                 if (pColor != nullptr) 
                 {
                     paths.push_back({ line, pColor });
@@ -319,13 +319,13 @@ int main(int argc, char* argv[])
 
          case da::ANT_NOGUI_LARGE_FILE:
          {
-             if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_MASKED_COLOR)) break;
+             if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, constants::SIZE_OF_MASKED_COLOR)) break;
 
              auto start = std::chrono::high_resolution_clock::now();
 
              std::cout << std::endl << std::endl << std::endl;//new lines as place for ant moves and progress bar;
 
-             da::GreenColor* daGreenColors = da::FileParser::CreateDaGreenColorArray(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
+             daTypes::GreenColor* daGreenColors = da::InputParser::CreateDaGreenColorArray(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
      
              uint64_t Progress = 0U;
 

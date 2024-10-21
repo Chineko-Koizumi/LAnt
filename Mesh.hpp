@@ -7,8 +7,7 @@
 #include <mutex>
 #include <iostream>
 
-#include "VertexDefinitions.h"
-#include "DrawingAppConstants.h"
+#include "DrawingAppConstants.hpp"
 
 namespace da
 {
@@ -36,7 +35,7 @@ namespace da
 		void SetColor(uint32_t x, uint32_t y, sf::Color c);
 		void SetFilePrefix(const std::string & s);
 
-		da::PointUI32 GetCenterPoint();
+		daTypes::PointUI32 GetCenterPoint();
 		void DrawMesh();
 		void InitFieldColor(sf::Color c);
 
@@ -66,9 +65,9 @@ namespace da
 		
 		void SetFilePrefix(const std::string& s);
 
-		da::PointUI32 GetCenterPoint();
+		daTypes::PointUI32 GetCenterPoint();
 		void InitFieldColor(uint8_t c);
-		void DumpToFileBig(da::GreenColor* daGreenColors);
+		void DumpToFileBig(daTypes::GreenColor* daGreenColors);
 
 	private:
 

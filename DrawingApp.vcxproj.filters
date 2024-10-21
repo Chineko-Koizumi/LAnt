@@ -22,15 +22,15 @@
     <Filter Include="DrawingApp\GUI">
       <UniqueIdentifier>{769c0569-2d49-45d4-b621-ee2ebfcf2c0e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DrawingApp\FileParser">
+      <UniqueIdentifier>{a12bebd5-6dfe-47e9-ba0d-4a17d6963958}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DrawingApp\WindowsFeatures">
+      <UniqueIdentifier>{8a7a7c5c-2dad-44f0-b60d-364e325d7a10}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
-      <Filter>DrawingApp</Filter>
-    </ClCompile>
-    <ClCompile Include="FileParser.cpp">
-      <Filter>DrawingApp</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowsFeatures.cpp">
       <Filter>DrawingApp</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
@@ -45,21 +45,18 @@
     <ClCompile Include="GUIAnt.cpp">
       <Filter>DrawingApp\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="InputParser.cpp">
+      <Filter>DrawingApp\FileParser</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowsFeatures.cpp">
+      <Filter>DrawingApp\WindowsFeatures</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="VertexDefinitions.h">
+    <ClInclude Include="DrawingAppConstants.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowsFeatures.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DrawingAppConstants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
+    <ClInclude Include="Mesh.hpp">
       <Filter>DrawingApp\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Ant.hpp">
@@ -70,6 +67,12 @@
     </ClInclude>
     <ClInclude Include="GUIAnt.hpp">
       <Filter>DrawingApp\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="InputParser.hpp">
+      <Filter>DrawingApp\FileParser</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsFeatures.hpp">
+      <Filter>DrawingApp\WindowsFeatures</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

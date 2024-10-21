@@ -3,8 +3,6 @@
 
 namespace da
 {
-	const static uint32_t KB = 1024;
-
 	class WindowsFeatures
 	{
 	public:

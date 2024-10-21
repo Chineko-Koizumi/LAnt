@@ -1,7 +1,7 @@
 #ifndef ANT_HPP
 #define ANT_HPP
 
-#include "Mesh.h"
+#include "Mesh.hpp"
 
 namespace da 
 {
@@ -45,7 +45,7 @@ namespace da
 		virtual void DumpToFile();
 
 		void SetOffset(uint32_t x, uint32_t y);
-		void SetOffset(da::PointUI32 p);
+		void SetOffset(daTypes::PointUI32 p);
 
 		void DrawMesh();
 
@@ -80,7 +80,7 @@ namespace da
 		uint8_t* m_pMeshFieldCopy;
 		MegaMesh	m_MegaMesh;
 
-		da::GreenColor* m_pDaGreenColorTransitionArray;
+		daTypes::GreenColor* m_pDaGreenColorTransitionArray;
 		uint8_t* m_pColorMaskedTransitionArray;
 
 		uint16_t		m_CurrentAntColorMasked;
@@ -92,7 +92,7 @@ namespace da
 			, uint32_t Width
 			, uint32_t Height
 			, std::string& antPath
-			, da::GreenColor* DaGreenColorTransitionArray
+			, daTypes::GreenColor* DaGreenColorTransitionArray
 			, uint8_t* ColorMaskedTransitionArray
 			, uint16_t ColorMaskedCount);
 

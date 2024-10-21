@@ -158,7 +158,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Ant.cpp" />
-    <ClCompile Include="FileParser.cpp" />
+    <ClCompile Include="InputParser.cpp" />
     <ClCompile Include="GUIAnt.cpp" />
     <ClCompile Include="GUIBase.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -167,13 +167,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ant.hpp" />
-    <ClInclude Include="DrawingAppConstants.h" />
-    <ClInclude Include="FileParser.h" />
+    <ClInclude Include="DrawingAppConstants.hpp" />
+    <ClInclude Include="InputParser.hpp" />
     <ClInclude Include="GUIAnt.hpp" />
     <ClInclude Include="GUIBase.h" />
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="VertexDefinitions.h" />
-    <ClInclude Include="WindowsFeatures.h" />
+    <ClInclude Include="Mesh.hpp" />
+    <ClInclude Include="WindowsFeatures.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
