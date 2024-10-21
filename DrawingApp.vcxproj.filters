@@ -59,7 +59,7 @@
     <ClInclude Include="Ant.hpp">
       <Filter>DrawingApp\Ant</Filter>
     </ClInclude>
-    <ClInclude Include="GUIBase.h">
+    <ClInclude Include="GUIBase.hpp">
       <Filter>DrawingApp\GUI</Filter>
     </ClInclude>
     <ClInclude Include="GUIAnt.hpp">

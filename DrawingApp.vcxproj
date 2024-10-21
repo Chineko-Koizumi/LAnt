@@ -170,7 +170,7 @@
     <ClInclude Include="DrawingAppConstants.hpp" />
     <ClInclude Include="InputParser.hpp" />
     <ClInclude Include="GUIAnt.hpp" />
-    <ClInclude Include="GUIBase.h" />
+    <ClInclude Include="GUIBase.hpp" />
     <ClInclude Include="Mesh.hpp" />
     <ClInclude Include="WindowsFeatures.hpp" />
   </ItemGroup>

@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
             windowGUI.Redraw();
 
             sf::Event eventAnt; // for windows event pool
-            sf::RenderWindow windowAnt(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::Default);
+            sf::RenderWindow windowAnt(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::None);
 
             sf::Color* colors = da::InputParser::CreateColorArrayFromCL(ANT_PATH_FROM_CL);
             da::Ant ant(&windowAnt, 0, colors, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
@@ -181,7 +181,7 @@ int main(int argc, char* argv[])
             threads = new std::thread[Thread_count];
             threadsStatus = new bool[Thread_count];
 
-            sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::Default);
+            sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::None);
             window.setActive(false);
 
             da::WindowsFeatures::InitTerminalForThreads(Thread_count);

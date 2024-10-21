@@ -1,7 +1,7 @@
 #ifndef GUIANT_HPP
 #define GUIANT_HPP
 
-#include "GUIBase.h"
+#include "GUIBase.hpp"
 
 namespace da 
 {
