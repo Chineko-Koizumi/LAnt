@@ -565,9 +565,9 @@ private:
 /// A sf::Window can create its own new window, or be embedded into
 /// an already existing control using the create(handle) function.
 /// This can be useful for embedding an OpenGL rendering area into
-/// a view which is part of a bigger GUI with existing windows,
+/// a view which is part of a bigger GUIBase with existing windows,
 /// controls, etc. It can also serve as embedding an OpenGL rendering
-/// area into a window created by another (probably richer) GUI library
+/// area into a window created by another (probably richer) GUIBase library
 /// like Qt or wxWidgets.
 ///
 /// The sf::Window class provides a simple interface for manipulating

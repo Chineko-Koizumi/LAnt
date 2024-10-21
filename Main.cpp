@@ -96,9 +96,9 @@ int main(int argc, char* argv[])
         {
             if ( !da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, da::SIZE_OF_VERTEX) ) break;
             
-            da::GUI windowGUI(WINDOW_WIDTH, WINDOW_HEIGHT);
-            windowGUI.UpdateText(da::GUI::PATH, ANT_PATH_FROM_CL);
-            windowGUI.UpdateText(da::GUI::MULTIPLIER, std::to_string( da::KeyboardMethods::m_RenderStepCount));
+            da::AntGUI windowGUI(WINDOW_WIDTH, WINDOW_HEIGHT);
+            windowGUI.UpdateText(da::AntGUI::PATH, ANT_PATH_FROM_CL);
+            windowGUI.UpdateText(da::AntGUI::MULTIPLIER, std::to_string( da::KeyboardMethods::m_RenderStepCount));
             windowGUI.Redraw();
 
             sf::Event eventAnt; // for windows event pool
@@ -129,13 +129,13 @@ int main(int argc, char* argv[])
                         case sf::Keyboard::Right:
                         {
                             da::KeyboardMethods::SpeedUpRender();
-                            windowGUI.UpdateText(da::GUI::MULTIPLIER, std::to_string(da::KeyboardMethods::m_RenderStepCount));
+                            windowGUI.UpdateText(da::AntGUI::MULTIPLIER, std::to_string(da::KeyboardMethods::m_RenderStepCount));
                             windowGUI.Redraw();
                         }break;
                         case sf::Keyboard::Left:
                         {
                             da::KeyboardMethods::SpeedDownRender();
-                            windowGUI.UpdateText(da::GUI::MULTIPLIER, std::to_string(da::KeyboardMethods::m_RenderStepCount));
+                            windowGUI.UpdateText(da::AntGUI::MULTIPLIER, std::to_string(da::KeyboardMethods::m_RenderStepCount));
                             windowGUI.Redraw();
                         }break;
                         }
@@ -324,7 +324,6 @@ int main(int argc, char* argv[])
 
              std::cout << std::endl << std::endl << std::endl;//new lines as place for ant moves and progress bar;
 
-            
              da::GreenColor* daGreenColors = da::FileParser::CreateDaGreenColorArray(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
      
              uint64_t Progress = 0U;
