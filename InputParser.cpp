@@ -76,7 +76,7 @@ namespace da
         for (size_t i = 0; i < colorCount; i++)
         {
             uint8_t temp = (data[i] == 'L') ? constants::LEFT : constants::RIGHT;
-            uint8_t temp2 = (i != colorCount - 1U) ? (i + 1U) : 0U;
+            uint8_t temp2 = (i != colorCount - 1U) ? (i + 1U) : 0U;                 // @Bug only 15 colors possible
 
             pGreenColorArray[i] = daTypes::GreenColor{
                                         static_cast<uint8_t>(constants::COLOR_RANGE_8BIT * (static_cast<float>(i) / colorCount)),

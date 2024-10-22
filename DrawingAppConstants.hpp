@@ -2,6 +2,8 @@
 #define DRAWINGAPPCONSTANTS_HPP
 #include <stdint.h>
 
+#include <SFML/Graphics/Color.hpp>
+
 namespace constants 
 {
 	static const uint8_t COLOR_RANGE_8BIT	= 255U;
@@ -42,18 +44,32 @@ namespace daTypes
         uint64_t y;
     };
 
+    struct GreenColor
+    {
+        uint8_t g; ///< Green component
+        uint8_t a; ///< Alpha (opacity) component
+    };
+
     struct Color
     {
         uint8_t r; ///< Red component
         uint8_t g; ///< Green component
         uint8_t b; ///< Blue component
         uint8_t a; ///< Alpha (opacity) component
-    };
 
-    struct GreenColor
-    {
-        uint8_t g; ///< Green component
-        uint8_t a; ///< Alpha (opacity) component
+        Color(sf::Color c)
+            : r(c.r)
+            , g(c.g)
+            , b(c.b)
+            , a(c.a)
+        {}
+
+        Color(GreenColor c)
+            : r(0U)
+            , g(c.g)
+            , b(0U)
+            , a(c.a)
+        {}
     };
 
     struct DaVertex

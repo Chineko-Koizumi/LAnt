@@ -6,26 +6,12 @@
 
 #pragma region Mesh
 
-static const uint8_t COLOR_INDEX_MASK = 15;
-
 namespace da 
 {
-
-	Mesh::Mesh()
-		:m_pWindow(nullptr)
-		, m_FieldWidth(0)
-		, m_FieldHeight(0)
-		, m_AdditionalNumberForFileName(0)
-		, m_FilePrefix(std::string("NoPrefixSet_"))
-		, m_pfield(nullptr)
-	{}
-
 	Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window)
-		:m_pWindow(window)
-		, m_FieldWidth(width)
-		, m_FieldHeight(height)
-		, m_AdditionalNumberForFileName(0)
-		, m_FilePrefix(std::string("NoPrefixSet_"))
+		: MeshBase(width, height)
+		, m_pWindow(window)
+		, m_pfield(nullptr)
 	{
 		m_pfield = new sf::VertexArray(sf::Points, uint64_t(height) * uint64_t(width));
 
@@ -69,13 +55,13 @@ namespace da
 		m_pWindow->display();
 	}
 
-	void Mesh::InitFieldColor(sf::Color c)
+	void Mesh::InitFieldColor(daTypes::Color c)
 	{
 		uint64_t fieldrenge = uint64_t(m_FieldWidth) * uint64_t(m_FieldHeight);
 
 		for (uint64_t i = 0; i < fieldrenge; i++)
 		{
-			m_pfield->operator[](i).color = c;
+			m_pfield->operator[](i).color = sf::Color(c.r, c.g,  c.b, c.a);
 		}
 	}
 
@@ -97,10 +83,8 @@ namespace da
 
 			filesystem::create_directories(outputPath);
 
-			std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_" + std::to_string(m_AdditionalNumberForFileName) + ".png");
+			std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + ".png");
 			img.saveToFile(outputPath + FileName);
-
-			m_AdditionalNumberForFileName++;
 
 		m_pWindow->setActive(false);
 	}
@@ -120,10 +104,11 @@ namespace da
 
 #pragma region MegaMesh
 
-	MegaMesh::MegaMesh(uint32_t width, uint32_t height)
-		:m_FieldWidth(width)
-		, m_FieldHeight(height)
-
+	MegaMesh::MegaMesh(uint32_t width, uint32_t height, daTypes::GreenColor* daGreenColorTransitionArray /* Green color with encoded data one alpa channel*/)
+		: MeshBase(width, height)
+		, m_fieldSize(0U)
+		, m_pfield(nullptr)
+		, m_pDaGreenColorTransitionArray(daGreenColorTransitionArray)
 	{
 		m_fieldSize = uint64_t(height) * uint64_t(width);
 		m_pfield = new uint8_t[m_fieldSize];
@@ -150,18 +135,18 @@ namespace da
 		return daTypes::PointUI32{ m_FieldWidth / 2, m_FieldHeight / 2 };
 	}
 
-	void MegaMesh::InitFieldColor(uint8_t c)
+	void MegaMesh::InitFieldColor(daTypes::Color c)
 	{
 		uint64_t fieldrenge = uint64_t(m_FieldWidth) * uint64_t(m_FieldHeight);
-		for (uint64_t i = 0; i < fieldrenge; i++)
+		for (uint64_t i = 0U; i < fieldrenge; i++)
 		{
-			m_pfield[i] = c;
+			m_pfield[i] = c.a; //this is field with already encoded values on 8 bit value see CreateDaGreenColorArray(const std::string& data) for more info
 		}
 	}
 
-	void MegaMesh::DumpToFileBig(daTypes::GreenColor* daGreenColors, const std::string& outputPath)
+	void MegaMesh::DumpToFile(const std::string& outputPath)
 	{
-		std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + "_" + ".ppm");
+		std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + ".ppm");
 		std::stringstream Progress;
 
 		filesystem::create_directories(outputPath);
@@ -182,7 +167,7 @@ namespace da
 		{
 			DumpSplitter += std::to_string(0);
 			DumpSplitter += " ";
-			DumpSplitter += std::to_string(daGreenColors[0x0F & m_pfield[i]].g);
+			DumpSplitter += std::to_string(m_pDaGreenColorTransitionArray[0x0F & m_pfield[i]].g); //0x0F <=> 0000 1111;
 			DumpSplitter += " ";
 			DumpSplitter += std::to_string(0);
 			DumpSplitter += " ";

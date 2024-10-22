@@ -332,12 +332,11 @@ int main(int argc, char* argv[])
 
              daTypes::GreenColor* daGreenColors = da::InputParser::CreateDaGreenColorArray(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
      
-             uint64_t Progress = 0U;
-
              uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(ANT_PATH_FROM_CL.size());
 
              da::MegaAnt megaAnt(&da::KeyboardMethods::m_RenderStepCount, 0U, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size());
 
+             uint64_t Progress = 0U;
              da::KeyboardMethods::m_RenderStepCount = 100000000;
              while (da::KeyboardMethods::m_RenderStepCount != 0)
              {

@@ -30,7 +30,8 @@ namespace da
 		if (m_pColorTransitionArray == nullptr) return;
 
 		SetOffset(m_pMesh->GetCenterPoint());
-		m_pMesh->InitFieldColor(*m_pColorTransitionArray);
+
+		m_pMesh->InitFieldColor(daTypes::Color( m_pColorTransitionArray[0] ));
 		m_pMesh->SetFilePrefix(antPath);
 	}
 
@@ -57,12 +58,12 @@ namespace da
 
 			if (m_NextCheck <= 0)
 			{
-				if (m_x > m_Width - 1)	return false;
-				else if (m_x < 0)		return false;
+				if (m_x == m_Width - 1)		return false;
+				else if (m_x == 0)			return false;
 
 
-				if (m_y > m_Height - 1)	return false;
-				else if (m_y < 0)		return false;
+				if (m_y == m_Height - 1)	return false;
+				else if (m_y == 0)			return false;
 
 				m_DistanceToYWall = m_x < m_Width - 1 - m_x ? m_x : m_Width - 1 - m_x;
 				m_DistanceToXWall = m_y < m_Height - 1 - m_y ? m_y : m_Height - 1 - m_y;
@@ -112,22 +113,21 @@ namespace da
 		, uint16_t ColorMaskedCount)
 
 		:Ant(nullptr, threadIndex, nullptr, Width, Height, antPath)
-		, m_pMegaMesh(new MegaMesh(Width, Height))
+		, m_pMegaMesh(new MegaMesh(Width, Height, DaGreenColorTransitionArray))
 		, m_CurrentAntColorMaskedCount(ColorMaskedCount)
-		, m_pDaGreenColorTransitionArray(DaGreenColorTransitionArray)
 		, m_pColorMaskedTransitionArray(ColorMaskedTransitionArray)
 		, m_CurrentAntColorMasked(0U)
 
 	{
 		SetOffset(m_pMegaMesh->GetCenterPoint());
 
-		for (size_t i = 0; i < m_CurrentAntColorMaskedCount; i++)
+		for (size_t i = 0U; i < m_CurrentAntColorMaskedCount; i++)
 		{
-			m_pColorMaskedTransitionArray[i] = constants::TURN_MASK & m_pDaGreenColorTransitionArray[i].a;
+			m_pColorMaskedTransitionArray[i] = constants::TURN_MASK & DaGreenColorTransitionArray[i].a;
 		}
 
 		m_pMegaMesh->SetFilePrefix(antPath);
-		m_pMegaMesh->InitFieldColor(m_pColorMaskedTransitionArray[0]);
+		m_pMegaMesh->InitFieldColor(daTypes::GreenColor{ 0U, m_pColorMaskedTransitionArray[0] } );
 
 		m_pMeshFieldCopy = m_pMegaMesh->GetFieldPtr();
 	}
@@ -139,7 +139,7 @@ namespace da
 
 	void MegaAnt::DumpToFile(const std::string& outputPath)
 	{
-		m_pMegaMesh->DumpToFileBig(m_pDaGreenColorTransitionArray, outputPath);
+		m_pMegaMesh->DumpToFile( outputPath );
 	}
 
 #pragma endregion

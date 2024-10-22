@@ -80,7 +80,6 @@ namespace da
 		uint8_t*	m_pMeshFieldCopy;
 		MegaMesh*	m_pMegaMesh;
 
-		daTypes::GreenColor* m_pDaGreenColorTransitionArray;
 		uint8_t* m_pColorMaskedTransitionArray;
 
 		uint16_t		m_CurrentAntColorMasked;
@@ -101,7 +100,7 @@ namespace da
 		virtual void DumpToFile(const std::string& outputPath) override;
 
 		virtual inline bool NextMove(uint64_t repetition) override
-		{
+		{ 
 			for (uint64_t i = repetition; i; --i)
 			{
 				m_CurrentAntColorMasked = m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x];
@@ -145,11 +144,11 @@ namespace da
 
 				if (m_NextCheck <= 0)
 				{
-					if (m_x > m_Width - 1)	return false;
-					else if (m_x < 0)		return false;
+					if (m_x == m_Width - 1)		return false;
+					else if (m_x == 0)			return false;
 
-					if (m_y > m_Height - 1)	return false;
-					else if (m_y < 0)		return false;
+					if (m_y == m_Height - 1)	return false;
+					else if (m_y == 0)			return false;
 
 					m_DistanceToYWall = m_x < m_Width - 1 - m_x ? m_x : m_Width - 1 - m_x;
 					m_DistanceToXWall = m_y < m_Height - 1 - m_y ? m_y : m_Height - 1 - m_y;

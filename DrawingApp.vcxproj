@@ -163,6 +163,7 @@
     <ClCompile Include="GUIBase.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshBase.cpp" />
     <ClCompile Include="WindowsFeatures.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +173,7 @@
     <ClInclude Include="GUIAnt.hpp" />
     <ClInclude Include="GUIBase.hpp" />
     <ClInclude Include="Mesh.hpp" />
+    <ClInclude Include="MeshBase.hpp" />
     <ClInclude Include="WindowsFeatures.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

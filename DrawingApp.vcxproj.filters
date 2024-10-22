@@ -22,11 +22,11 @@
     <Filter Include="DrawingApp\GUI">
       <UniqueIdentifier>{769c0569-2d49-45d4-b621-ee2ebfcf2c0e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="DrawingApp\FileParser">
-      <UniqueIdentifier>{a12bebd5-6dfe-47e9-ba0d-4a17d6963958}</UniqueIdentifier>
-    </Filter>
     <Filter Include="DrawingApp\WindowsFeatures">
       <UniqueIdentifier>{8a7a7c5c-2dad-44f0-b60d-364e325d7a10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DrawingApp\InputParser">
+      <UniqueIdentifier>{a12bebd5-6dfe-47e9-ba0d-4a17d6963958}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -46,10 +46,13 @@
       <Filter>DrawingApp\GUI</Filter>
     </ClCompile>
     <ClCompile Include="InputParser.cpp">
-      <Filter>DrawingApp\FileParser</Filter>
+      <Filter>DrawingApp\InputParser</Filter>
     </ClCompile>
     <ClCompile Include="WindowsFeatures.cpp">
       <Filter>DrawingApp\WindowsFeatures</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshBase.cpp">
+      <Filter>DrawingApp\Mesh</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -66,13 +69,16 @@
       <Filter>DrawingApp\GUI</Filter>
     </ClInclude>
     <ClInclude Include="InputParser.hpp">
-      <Filter>DrawingApp\FileParser</Filter>
+      <Filter>DrawingApp\InputParser</Filter>
     </ClInclude>
     <ClInclude Include="WindowsFeatures.hpp">
       <Filter>DrawingApp\WindowsFeatures</Filter>
     </ClInclude>
     <ClInclude Include="DrawingAppConstants.hpp">
       <Filter>DrawingApp</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshBase.hpp">
+      <Filter>DrawingApp\Mesh</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

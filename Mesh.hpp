@@ -8,69 +8,55 @@
 #include <iostream>
 #include <filesystem>   // Creation of folder
 
-#include "DrawingAppConstants.hpp"
+#include "MeshBase.hpp"
 
 namespace filesystem = std::filesystem;
 
 namespace da
 {
-	class Mesh
+	class Mesh : public MeshBase 
 	{
-	public:
-		sf::RenderWindow* m_pWindow;
-
 	private:
+		sf::RenderWindow* m_pWindow;
 		sf::VertexArray *m_pfield;
 
-		uint32_t m_FieldWidth;
-		uint32_t m_FieldHeight;
-
-		uint16_t m_AdditionalNumberForFileName;
-
-		std::string m_FilePrefix;
-
 	public:
-		Mesh();
 		Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window);
 		~Mesh();
 
 		sf::Color* GetColor(uint32_t x, uint32_t y);
 		void SetColor(uint32_t x, uint32_t y, sf::Color c);
-		void SetFilePrefix(const std::string & s);
-
-		daTypes::PointUI32 GetCenterPoint();
 		void DrawMesh();
-		void InitFieldColor(sf::Color c);
 
-		void DumpToFile(const std::string& outputPath);
+		void SetFilePrefix(const std::string & s)		override;
+		daTypes::PointUI32 GetCenterPoint()				override;
+		void DumpToFile(const std::string& outputPath)	override;
+		void InitFieldColor(daTypes::Color c)			override;
 
 	private:
 		uint64_t TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y);
 		void InitFieldPossition();
+
 	};
 
-	class MegaMesh
+	class MegaMesh: public MeshBase
 	{
 	private:
+		uint64_t m_fieldSize;
 		uint8_t* m_pfield;
 
-		uint64_t m_fieldSize;
-		uint32_t m_FieldWidth;
-		uint32_t m_FieldHeight;
-
-		std::string m_FilePrefix;
+		daTypes::GreenColor* m_pDaGreenColorTransitionArray;
 
 	public:
-		MegaMesh(uint32_t width, uint32_t height);
+		MegaMesh(uint32_t width, uint32_t height, daTypes::GreenColor* daGreenColorTransitionArray);
 		~MegaMesh();
 
 		uint8_t* GetFieldPtr();
 		
-		void SetFilePrefix(const std::string& s);
-
-		daTypes::PointUI32 GetCenterPoint();
-		void InitFieldColor(uint8_t c);
-		void DumpToFileBig(daTypes::GreenColor* daGreenColors, const std::string& outputPath);
+		void SetFilePrefix(const std::string& s)		override;
+		daTypes::PointUI32 GetCenterPoint()				override;
+		void InitFieldColor(daTypes::Color c)			override;
+		void DumpToFile(const std::string& outputPath)	override	;
 
 	private:
 
