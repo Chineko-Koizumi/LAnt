@@ -16,17 +16,23 @@ namespace da
 {
 	class Mesh : public MeshBase 
 	{
+	public:
+		sf::VertexArray* m_pfield;
+
 	private:
 		sf::RenderWindow* m_pWindow;
-		sf::VertexArray *m_pfield;
+
+		/// <summary>
+		uint64_t m_fieldSize;
+		uint8_t* m_pfieldNEW;
+		/// </summary>
 
 	public:
 		Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window);
 		~Mesh();
 
-		sf::Color* GetColor(uint32_t x, uint32_t y);
-		void SetColor(uint32_t x, uint32_t y, sf::Color c);
 		void DrawMesh();
+		uint8_t* GetFieldPtr();
 
 		void SetFilePrefix(const std::string & s)		override;
 		daTypes::PointUI32 GetCenterPoint()				override;
@@ -36,7 +42,6 @@ namespace da
 	private:
 		uint64_t TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y);
 		void InitFieldPossition();
-
 	};
 
 	class MegaMesh: public MeshBase
@@ -56,7 +61,7 @@ namespace da
 		void SetFilePrefix(const std::string& s)		override;
 		daTypes::PointUI32 GetCenterPoint()				override;
 		void InitFieldColor(daTypes::Color c)			override;
-		void DumpToFile(const std::string& outputPath)	override	;
+		void DumpToFile(const std::string& outputPath)	override;
 
 	private:
 

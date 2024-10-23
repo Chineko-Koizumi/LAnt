@@ -81,4 +81,9 @@
       <Filter>DrawingApp\Mesh</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="FragmentShader.frag">
+      <Filter>DrawingApp</Filter>
+    </None>
+  </ItemGroup>
 </Project>

@@ -119,8 +119,8 @@ int main(int argc, char* argv[])
             sf::Event eventAnt; // for windows event pool
             sf::RenderWindow windowAnt(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::None);
 
-            sf::Color* colors = da::InputParser::CreateColorArrayFromCL(ANT_PATH_FROM_CL);
-            da::Ant ant(&windowAnt, 0, colors, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
+            daTypes::GreenColor* greenColors = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL);
+            da::Ant ant(&windowAnt, 0, greenColors, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
 
             windowAnt.setActive(true);
 
@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
             }
 
             ant.DumpToFile(OUTPUT_PATH_VAR);
-            delete[] colors;
+            delete[] greenColors;
 
         }break;
 
@@ -185,14 +185,14 @@ int main(int argc, char* argv[])
 
             da::WindowsFeatures::InitTerminalForThreads(Thread_count);
 
-            std::vector< std::pair<std::string, sf::Color* > > paths;
+            std::vector< std::pair<std::string, daTypes::GreenColor* > > paths;
 
             std::string line;
             while (!infile.eof())
             {
                 std::getline(infile, line);
 
-                sf::Color* pColor = da::InputParser::CreateColorArrayFromCL(line);
+                daTypes::GreenColor* pColor = da::InputParser::CreateDaGreenColorArrayFromCL(line);
                 if (pColor != nullptr) 
                 {
                     paths.push_back({ line, pColor });
@@ -203,7 +203,7 @@ int main(int argc, char* argv[])
                 uint16_t threadIndex, 
                 uint16_t threadMax,
                 bool* thrStatus, 
-                std::vector< std::pair<std::string, sf::Color* >>* vectorPaths, 
+                std::vector< std::pair<std::string, daTypes::GreenColor* >>* vectorPaths,
                 uint64_t SimulationStepsThresholdFromArgument, 
                 std::mutex* mc, 
                 std::mutex* md, 
@@ -231,9 +231,8 @@ int main(int argc, char* argv[])
                             break;
                         }
 
-                        sf::Color* colors = vectorPaths->back().second;
-
-                        da::Ant ant(w, threadIndex, colors, WINDOW_WIDTH, WINDOW_HEIGHT, vectorPaths->back().first);
+                        daTypes::GreenColor* pGreenColor = vectorPaths->back().second;
+                        da::Ant ant(w, threadIndex, pGreenColor, WINDOW_WIDTH, WINDOW_HEIGHT, vectorPaths->back().first);
 
                         vectorPaths->pop_back();
                     mc->unlock();
@@ -264,8 +263,13 @@ int main(int argc, char* argv[])
                         ant.DumpToFile(OUTPUT_PATH_VAR);
                     md->unlock();
 
-                    delete[]colors;
                     fileNumer++;
+
+                    if (pGreenColor != nullptr) 
+                    {
+                        delete[] pGreenColor;
+                        pGreenColor = nullptr;
+                    }
                 }
                 mc->lock();
 
@@ -330,7 +334,7 @@ int main(int argc, char* argv[])
 
              std::cout << std::endl << std::endl << std::endl;//new lines as place for ant moves and progress bar;
 
-             daTypes::GreenColor* daGreenColors = da::InputParser::CreateDaGreenColorArray(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
+             daTypes::GreenColor* daGreenColors = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
      
              uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(ANT_PATH_FROM_CL.size());
 

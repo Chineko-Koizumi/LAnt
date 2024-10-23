@@ -176,6 +176,9 @@
     <ClInclude Include="MeshBase.hpp" />
     <ClInclude Include="WindowsFeatures.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="FragmentShader.frag" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -62,7 +62,7 @@ namespace da
     }
 
     //same as aboce but using different output type
-    daTypes::GreenColor* InputParser::CreateDaGreenColorArray(const std::string& data)
+    daTypes::GreenColor* InputParser::CreateDaGreenColorArrayFromCL(const std::string& data)
     {
         if (!CheckAndInsert(data)) return nullptr;
 

@@ -15,27 +15,26 @@ namespace da
 	{
 		m_pfield = new sf::VertexArray(sf::Points, uint64_t(height) * uint64_t(width));
 
+		m_fieldSize = uint64_t(height) * uint64_t(width);
+		m_pfieldNEW = new uint8_t[m_fieldSize];
+
 		InitFieldPossition();
 	}
 
 	Mesh::~Mesh()
 	{
 		delete m_pfield;
+		delete[] m_pfieldNEW;
+	}
+
+	uint8_t* Mesh::GetFieldPtr()
+	{
+		return m_pfieldNEW;
 	}
 
 	uint64_t Mesh::TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y)
 	{
 		return (uint64_t(y) * uint64_t(m_FieldWidth) + uint64_t(x));
-	}
-
-	sf::Color* Mesh::GetColor(uint32_t x, uint32_t y)
-	{
-		return &(m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).color);
-	}
-
-	void Mesh::SetColor(uint32_t x, uint32_t y, sf::Color c)
-	{
-		m_pfield->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y)).color = c;
 	}
 
 	void Mesh::SetFilePrefix(const std::string& s)
@@ -61,7 +60,8 @@ namespace da
 
 		for (uint64_t i = 0; i < fieldrenge; i++)
 		{
-			m_pfield->operator[](i).color = sf::Color(c.r, c.g,  c.b, c.a);
+			m_pfield->operator[](i).color = sf::Color(c.r, c.g,  c.b);
+			m_pfieldNEW[i] = constants::TURN_MASK & c.a;
 		}
 	}
 
@@ -140,7 +140,7 @@ namespace da
 		uint64_t fieldrenge = uint64_t(m_FieldWidth) * uint64_t(m_FieldHeight);
 		for (uint64_t i = 0U; i < fieldrenge; i++)
 		{
-			m_pfield[i] = c.a; //this is field with already encoded values on 8 bit value see CreateDaGreenColorArray(const std::string& data) for more info
+			m_pfield[i] = c.a; //this is field with already encoded values on 8 bit value see CreateDaGreenColorArrayFromCL(const std::string& data) for more info
 		}
 	}
 

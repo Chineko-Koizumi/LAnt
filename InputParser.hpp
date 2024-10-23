@@ -17,7 +17,7 @@ namespace da
 	
 	public:
 		static sf::Color* CreateColorArrayFromCL(const std::string& data);
-		static daTypes::GreenColor* CreateDaGreenColorArray(const std::string& data);
+		static daTypes::GreenColor* CreateDaGreenColorArrayFromCL(const std::string& data);
 
 	private:
 		InputParser() {};

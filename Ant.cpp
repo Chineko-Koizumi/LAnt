@@ -8,13 +8,12 @@ namespace da
 	(
 		sf::RenderWindow* window,
 		uint16_t threadIndex,
-		sf::Color* ColorTransitionArray,
+		daTypes::GreenColor* DaGreenColorTransitionArray,
 		uint32_t Width,
 		uint32_t Height,
 		std::string& antPath
 	)
 		:m_pMesh(new Mesh(Width, Height, window))
-		, m_pColorTransitionArray(ColorTransitionArray)
 		, m_x(0)
 		, m_y(0)
 		, m_Width(Width)
@@ -25,56 +24,34 @@ namespace da
 		, m_DistanceToYWall(0)
 		, m_DistanceToXWall(0)
 		, m_ThreadID(threadIndex)
-		, m_pCurrentAntColor(nullptr)
+		, m_pMeshFieldCopy(nullptr)
 	{
-		if (m_pColorTransitionArray == nullptr) return;
 
 		SetOffset(m_pMesh->GetCenterPoint());
 
-		m_pMesh->InitFieldColor(daTypes::Color( m_pColorTransitionArray[0] ));
+		m_pMesh->InitFieldColor( daTypes::Color(DaGreenColorTransitionArray[0]) );
 		m_pMesh->SetFilePrefix(antPath);
+		
+		/// <summary>
+		m_pDaGreenColorTransitionArray = DaGreenColorTransitionArray;
+
+		m_CurrentAntColorMaskedCount = antPath.size();
+		m_pColorMaskedTransitionArray = new uint8_t[m_CurrentAntColorMaskedCount];
+
+		for (size_t i = 0U; i < m_CurrentAntColorMaskedCount; i++)
+		{
+			m_pColorMaskedTransitionArray[i] = constants::TURN_MASK & DaGreenColorTransitionArray[i].a;
+		}
+
+		m_pMeshFieldCopy = m_pMesh->GetFieldPtr();
+		/// </summary>
+		
 	}
 
 	Ant::~Ant()
 	{
 		delete m_pMesh;
-	}
-
-	bool Ant::NextMove(uint64_t repetitions)
-	{
-		for (size_t i = 0; i < repetitions; i++)
-		{
-			m_pCurrentAntColor = m_pMesh->GetColor(m_x, m_y);
-
-			m_NextTurn = constants::TURN_MASK & m_pCurrentAntColor->a;
-
-			m_pMesh->SetColor(m_x, m_y, m_pColorTransitionArray[constants::COLOR_INDEX_MASK & m_pCurrentAntColor->a]);
-
-			switch (m_NextTurn)
-			{
-			case constants::LEFT:	MoveLeft();		break;
-			case constants::RIGHT:	MoveRight();	break;
-			}
-
-			if (m_NextCheck <= 0)
-			{
-				if (m_x == m_Width - 1)		return false;
-				else if (m_x == 0)			return false;
-
-
-				if (m_y == m_Height - 1)	return false;
-				else if (m_y == 0)			return false;
-
-				m_DistanceToYWall = m_x < m_Width - 1 - m_x ? m_x : m_Width - 1 - m_x;
-				m_DistanceToXWall = m_y < m_Height - 1 - m_y ? m_y : m_Height - 1 - m_y;
-
-				m_NextCheck = m_DistanceToYWall < m_DistanceToXWall ? m_DistanceToYWall : m_DistanceToXWall; // shortest stright line to mesh border
-				m_NextCheck *= 2;// The shortest path is always diagonal so on the grid this mean 2x more steps than stright line
-				++m_NextCheck;
-			}
-			--m_NextCheck;
-		}
-		return true;
+		delete m_pColorMaskedTransitionArray;
 	}
 
 	void Ant::SetOffset(uint32_t x, uint32_t y)
