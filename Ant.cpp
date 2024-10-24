@@ -32,7 +32,6 @@ namespace da
 		m_pMesh->InitFieldColor( daTypes::Color(DaGreenColorTransitionArray[0]) );
 		m_pMesh->SetFilePrefix(antPath);
 		
-		/// <summary>
 		m_pDaGreenColorTransitionArray = DaGreenColorTransitionArray;
 
 		m_CurrentAntColorMaskedCount = antPath.size();
@@ -44,8 +43,6 @@ namespace da
 		}
 
 		m_pMeshFieldCopy = m_pMesh->GetFieldPtr();
-		/// </summary>
-		
 	}
 
 	Ant::~Ant()

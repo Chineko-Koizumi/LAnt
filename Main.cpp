@@ -231,8 +231,8 @@ int main(int argc, char* argv[])
                             break;
                         }
 
-                        daTypes::GreenColor* pGreenColor = vectorPaths->back().second;
-                        da::Ant ant(w, threadIndex, pGreenColor, WINDOW_WIDTH, WINDOW_HEIGHT, vectorPaths->back().first);
+                            daTypes::GreenColor* pGreenColor = vectorPaths->back().second;
+                            da::Ant ant(w, threadIndex, pGreenColor, WINDOW_WIDTH, WINDOW_HEIGHT, vectorPaths->back().first);
 
                         vectorPaths->pop_back();
                     mc->unlock();

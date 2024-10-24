@@ -52,6 +52,7 @@ namespace da
 	{
 		m_pWindow->draw(*m_pfield);
 		m_pWindow->display();
+		m_pWindow->display();
 	}
 
 	void Mesh::InitFieldColor(daTypes::Color c)
@@ -74,18 +75,20 @@ namespace da
 		m_pWindow->setActive(true);
 
 			m_pWindow->clear(sf::Color::Black);
-			DrawMesh();
 
+			DrawMesh();
+				
 			texture.create(m_pWindow->getSize().x, m_pWindow->getSize().y);
 			texture.update(*m_pWindow);
-
+			
 			sf::Image img = texture.copyToImage();
 
 			filesystem::create_directories(outputPath);
 
-			std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + ".png");
-			img.saveToFile(outputPath + FileName);
+			std::string FileName(outputPath + m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + ".png");
 
+			img.saveToFile(FileName);
+		
 		m_pWindow->setActive(false);
 	}
 
