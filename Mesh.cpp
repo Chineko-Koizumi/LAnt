@@ -3,15 +3,13 @@
 
 #include <filesystem>   // Creation of folder
 
-#pragma region Mesh
-
 namespace da 
 {
 	Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window)
 		: MeshBase(width, height)
 		, m_pWindow(window)
 		, m_pfieldVertex( new sf::VertexArray(sf::Points, uint64_t(height) * uint64_t(width)) )
-		, m_pTexture(new sf::Texture)
+		, m_pTexture( new sf::Texture )
 	{
 		InitFieldPossition();
 
@@ -37,14 +35,12 @@ namespace da
 		m_pWindow->display();
 	}
 
-	void Mesh::InitFieldColor(daTypes::Color c)
+	void Mesh::InitField(uint8_t encodedInitialPixel)
 	{
-		uint64_t fieldrenge = uint64_t(m_FieldWidth) * uint64_t(m_FieldHeight);
-
-		for (uint64_t i = 0; i < fieldrenge; i++)
+		for (uint64_t i = 0; i < m_fieldSize; i++)
 		{
-			m_pfieldVertex->operator[](i).color = sf::Color(c.r, c.g,  c.b);
-			m_pfield[i] = constants::TURN_MASK & c.a;
+			m_pfieldVertex->operator[](i).color = sf::Color(0u, 0u,  0u);
+			m_pfield[i] = constants::TURN_MASK & encodedInitialPixel;
 		}
 	}
 
@@ -81,7 +77,4 @@ namespace da
 			}
 		}
 	}
-
-#pragma endregion
-
 }

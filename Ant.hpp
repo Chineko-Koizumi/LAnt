@@ -4,51 +4,25 @@
 #include "Mesh.hpp"
 #include "MeshMega.hpp"
 
+#include "AntBase.hpp"
+
 namespace da 
 {
-	class Ant
+	class Ant : public AntBase
 	{
 	private:
-		Mesh* m_pMesh;
-
-		/// <summary>
-		uint8_t* m_pMeshFieldCopy;
-
-		uint8_t m_CurrentAntColorMaskedCount;
-		uint8_t* m_pColorMaskedTransitionArray;
-
-		uint8_t m_CurrentAntColorMasked;
-
-		daTypes::GreenColor* m_pDaGreenColorTransitionArray;
-		/// </summary>
-
-		uint16_t		m_ThreadID;
-
-	protected:
-		int32_t		m_x;
-		int32_t		m_y;
-
-		int32_t		m_Width;
-		int32_t		m_Height;
-
-		uint8_t		m_Facing;
-		uint8_t		m_NextTurn;
-
-		int32_t		m_DistanceToYWall;
-		int32_t		m_DistanceToXWall;
-		int32_t		m_NextCheck;
+		da::Mesh* m_pMesh;
 
 	public:
 		Ant(
 			sf::RenderWindow* window,
-			uint16_t threadIndex,
 			daTypes::GreenColor* DaGreenColorTransitionArray,
 			uint32_t Width,
 			uint32_t Height,
-			std::string& antPath
+			const std::string& rAntPath
 		);
 
-		~Ant();
+		virtual ~Ant();
 
 		virtual inline bool NextMove(uint64_t repetition)
 		{
@@ -84,7 +58,7 @@ namespace da
 					if (m_CurrentAntColorMasked == m_CurrentAntColorMaskedCount) m_CurrentAntColorMasked = 0;
 
 					m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
-					m_pMesh->	m_pfieldVertex->operator[](uint64_t(m_y)* m_Width + m_x).color = sf::Color(0U, m_pDaGreenColorTransitionArray[m_CurrentAntColorMasked].g, 0U);
+					m_pMesh->m_pfieldVertex->operator[](uint64_t(m_y)* m_Width + m_x).color = sf::Color(0U, m_pDaGreenColorTransitionArray[m_CurrentAntColorMasked].g, 0U);
 
 					switch (m_Facing)
 					{
@@ -125,28 +99,6 @@ namespace da
 		void DrawMesh();
 
 	private:
-
-		inline void MoveLeft()
-		{
-			switch (m_Facing)
-			{
-			case 0U: m_x--; m_Facing = 3U; break;
-			case 1U: m_y--; m_Facing = 0U; break;
-			case 2U: m_x++; m_Facing = 1U; break;
-			case 3U: m_y++; m_Facing = 2U; break;
-			}
-		}
-
-		inline void MoveRight()
-		{
-			switch (m_Facing)
-			{
-			case 0U:m_x++; m_Facing = 1U; break;
-			case 1U:m_y++; m_Facing = 2U; break;
-			case 2U:m_x--; m_Facing = 3U; break;
-			case 3U:m_y--; m_Facing = 0U; break;
-			}
-		}
 	};
 
 	class MegaAnt : public Ant
@@ -161,9 +113,8 @@ namespace da
 		uint16_t		m_CurrentAntColorMaskedCount;
 
 	public:
-		MegaAnt(uint64_t* loopEnd
-			, uint8_t threadIndex
-			, uint32_t Width
+		MegaAnt(
+			  uint32_t Width
 			, uint32_t Height
 			, std::string& antPath
 			, daTypes::GreenColor* DaGreenColorTransitionArray

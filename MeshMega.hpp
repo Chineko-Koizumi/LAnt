@@ -12,9 +12,9 @@ namespace da
 
 	public:
 		MeshMega(uint32_t width, uint32_t height, daTypes::GreenColor* daGreenColorTransitionArray);
-		~MeshMega();
+		virtual ~MeshMega();
 
-		void InitFieldColor(daTypes::Color c)			override;
+		void InitField(uint8_t encodedInitialPixel)			override;
 		void DumpToFile(const std::string& outputPath)	override;
 
 	private:

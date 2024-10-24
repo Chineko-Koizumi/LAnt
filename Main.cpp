@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
             sf::RenderWindow windowAnt(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::None);
 
             daTypes::GreenColor* greenColors = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL);
-            da::Ant ant(&windowAnt, 0, greenColors, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
+            da::Ant ant(&windowAnt, greenColors, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
 
             windowAnt.setActive(true);
 
@@ -235,7 +235,7 @@ int main(int argc, char* argv[])
                         }
 
                             daTypes::GreenColor* pGreenColor = vectorPaths->back().second;
-                            da::Ant ant(w, threadIndex, pGreenColor, WINDOW_WIDTH, WINDOW_HEIGHT, vectorPaths->back().first);
+                            da::Ant ant(w, pGreenColor, WINDOW_WIDTH, WINDOW_HEIGHT, vectorPaths->back().first);
 
                         vectorPaths->pop_back();
                     mc->unlock();
@@ -341,7 +341,7 @@ int main(int argc, char* argv[])
      
              uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(ANT_PATH_FROM_CL.size());
 
-             da::MegaAnt megaAnt(&da::KeyboardMethods::m_RenderStepCount, 0U, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size());
+             da::MegaAnt megaAnt(WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size());
 
              uint64_t Progress = 0U;
              da::KeyboardMethods::m_RenderStepCount = 100000000;

@@ -28,6 +28,6 @@ namespace da
 
 	daTypes::PointUI32 MeshBase::GetCenterPoint()
 	{
-		return daTypes::PointUI32{ m_FieldWidth / 2, m_FieldHeight / 2 };
+		return daTypes::PointUI32{ m_FieldWidth / 2U, m_FieldHeight / 2U };
 	}
 }

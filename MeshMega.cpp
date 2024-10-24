@@ -17,12 +17,11 @@ namespace da
 	MeshMega::~MeshMega()
 	{}
 
-	void MeshMega::InitFieldColor(daTypes::Color c)
+	void MeshMega::InitField(uint8_t encodedInitialPixel)
 	{
-		uint64_t fieldrenge = uint64_t(m_FieldWidth) * uint64_t(m_FieldHeight);
-		for (uint64_t i = 0U; i < fieldrenge; i++)
+		for (uint64_t i = 0U; i < m_fieldSize; i++)
 		{
-			m_pfield[i] = c.a; //this is field with already encoded values on 8 bit value see CreateDaGreenColorArrayFromCL(const std::string& data) for more info
+			m_pfield[i] = encodedInitialPixel; //this is field with already encoded values on 8 bit value see CreateDaGreenColorArrayFromCL(const std::string& data) for more info
 		}
 	}
 

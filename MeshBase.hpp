@@ -27,7 +27,7 @@ namespace da
 		void SetFilePrefix(const std::string& s);
 		daTypes::PointUI32 GetCenterPoint();
 
-		virtual void InitFieldColor(daTypes::Color c)			= 0;
+		virtual void InitField(uint8_t encodedInitialPixel)		= 0;
 		virtual void DumpToFile(const std::string& outputPath)	= 0;
 	};
 }

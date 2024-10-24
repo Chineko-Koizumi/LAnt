@@ -7,48 +7,25 @@ namespace da
 	Ant::Ant
 	(
 		sf::RenderWindow* window,
-		uint16_t threadIndex,
-		daTypes::GreenColor* DaGreenColorTransitionArray,
+		daTypes::GreenColor* pDaGreenColorTransitionArray,
 		uint32_t Width,
 		uint32_t Height,
-		std::string& antPath
-	)
-		:m_pMesh(new Mesh(Width, Height, window))
-		, m_x(0)
-		, m_y(0)
-		, m_Width(Width)
-		, m_Height(Height)
-		, m_Facing(0U)
-		, m_NextTurn(0U)
-		, m_NextCheck(0)
-		, m_DistanceToYWall(0)
-		, m_DistanceToXWall(0)
-		, m_ThreadID(threadIndex)
-		, m_pMeshFieldCopy(nullptr)
+		const std::string& rAntPath
+	) 
+		: AntBase( pDaGreenColorTransitionArray, Width, Height, rAntPath )
+		, m_pMesh( new Mesh(Width, Height, window) )
 	{
-
 		SetOffset(m_pMesh->GetCenterPoint());
 
-		m_pMesh->InitFieldColor( daTypes::Color(DaGreenColorTransitionArray[0]) );
-		m_pMesh->SetFilePrefix(antPath);
+		m_pMesh->InitField( pDaGreenColorTransitionArray[0].a );
+		m_pMesh->SetFilePrefix(rAntPath);
 		
-		m_pDaGreenColorTransitionArray = DaGreenColorTransitionArray;
-
-		m_CurrentAntColorMaskedCount = antPath.size();
-		m_pColorMaskedTransitionArray = new uint8_t[m_CurrentAntColorMaskedCount];
-
-		for (size_t i = 0U; i < m_CurrentAntColorMaskedCount; i++)
-		{
-			m_pColorMaskedTransitionArray[i] = constants::TURN_MASK & DaGreenColorTransitionArray[i].a;
-		}
-
 		m_pMeshFieldCopy = m_pMesh->GetFieldPtr();
 	}
 
 	Ant::~Ant()
 	{
 		delete m_pMesh;
-		delete m_pColorMaskedTransitionArray;
 	}
 
 	void Ant::SetOffset(uint32_t x, uint32_t y)
@@ -77,16 +54,15 @@ namespace da
 
 #pragma region MegaAnt
 
-	MegaAnt::MegaAnt(uint64_t* loopEnd
-		, uint8_t threadIndex
-		, uint32_t Width
+	MegaAnt::MegaAnt(
+		  uint32_t Width
 		, uint32_t Height
 		, std::string& antPath
 		, daTypes::GreenColor* DaGreenColorTransitionArray
 		, uint8_t* ColorMaskedTransitionArray
 		, uint16_t ColorMaskedCount)
 
-		:Ant(nullptr, threadIndex, nullptr, Width, Height, antPath)
+		:Ant(nullptr, nullptr, Width, Height, antPath)
 		, m_pMegaMesh(new MeshMega(Width, Height, DaGreenColorTransitionArray))
 		, m_CurrentAntColorMaskedCount(ColorMaskedCount)
 		, m_pColorMaskedTransitionArray(ColorMaskedTransitionArray)
@@ -101,7 +77,7 @@ namespace da
 		}
 
 		m_pMegaMesh->SetFilePrefix(antPath);
-		m_pMegaMesh->InitFieldColor(daTypes::GreenColor{ 0U, m_pColorMaskedTransitionArray[0] } );
+		m_pMegaMesh->InitField( m_pColorMaskedTransitionArray[0] );
 
 		m_pMeshFieldCopy = m_pMegaMesh->GetFieldPtr();
 	}

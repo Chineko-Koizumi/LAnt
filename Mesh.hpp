@@ -22,12 +22,12 @@ namespace da
 
 	public:
 		Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window);
-		~Mesh();
+		virtual ~Mesh();
 
 		void DrawMesh();
 
 		void DumpToFile(const std::string& outputPath)	override;
-		void InitFieldColor(daTypes::Color c)			override;
+		void InitField(uint8_t encodedInitialPixel)		override;
 
 	private:
 		uint64_t TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y);
