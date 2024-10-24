@@ -5,6 +5,9 @@
 #include "WindowsFeatures.hpp"      // Windows winapi features
 #include "DrawingAppConstants.hpp"  // Usefull constants
 
+#include <chrono>
+#include <thread>
+#include <mutex>
 #include <fstream>      // Getting path data from file
 #include <time.h>       /* time_t, struct tm, time, localtime, strftime */
 

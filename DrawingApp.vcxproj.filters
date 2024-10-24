@@ -54,6 +54,9 @@
     <ClCompile Include="MeshBase.cpp">
       <Filter>DrawingApp\Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="MeshMega.cpp">
+      <Filter>DrawingApp\Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mesh.hpp">
@@ -78,6 +81,9 @@
       <Filter>DrawingApp</Filter>
     </ClInclude>
     <ClInclude Include="MeshBase.hpp">
+      <Filter>DrawingApp\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshMega.hpp">
       <Filter>DrawingApp\Mesh</Filter>
     </ClInclude>
   </ItemGroup>

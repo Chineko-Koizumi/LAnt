@@ -2,6 +2,7 @@
 #define ANT_HPP
 
 #include "Mesh.hpp"
+#include "MeshMega.hpp"
 
 namespace da 
 {
@@ -64,7 +65,7 @@ namespace da
 					if (m_CurrentAntColorMasked == m_CurrentAntColorMaskedCount) m_CurrentAntColorMasked = 0;
 
 					m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
-					m_pMesh->m_pfield->operator[](uint64_t(m_y)* m_Width + m_x).color = sf::Color(0U, m_pDaGreenColorTransitionArray[m_CurrentAntColorMasked].g, 0U);
+					m_pMesh->m_pfieldVertex->operator[](uint64_t(m_y)* m_Width + m_x).color = sf::Color(0U, m_pDaGreenColorTransitionArray[m_CurrentAntColorMasked].g, 0U);
 
 					switch (m_Facing)
 					{
@@ -83,7 +84,7 @@ namespace da
 					if (m_CurrentAntColorMasked == m_CurrentAntColorMaskedCount) m_CurrentAntColorMasked = 0;
 
 					m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
-					m_pMesh->m_pfield->operator[](uint64_t(m_y)* m_Width + m_x).color = sf::Color(0U, m_pDaGreenColorTransitionArray[m_CurrentAntColorMasked].g, 0U);
+					m_pMesh->	m_pfieldVertex->operator[](uint64_t(m_y)* m_Width + m_x).color = sf::Color(0U, m_pDaGreenColorTransitionArray[m_CurrentAntColorMasked].g, 0U);
 
 					switch (m_Facing)
 					{
@@ -152,7 +153,7 @@ namespace da
 	{
 	private:
 		uint8_t*	m_pMeshFieldCopy;
-		MegaMesh*	m_pMegaMesh;
+		MeshMega*	m_pMegaMesh;
 
 		uint8_t* m_pColorMaskedTransitionArray;
 

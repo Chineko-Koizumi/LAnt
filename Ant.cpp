@@ -87,7 +87,7 @@ namespace da
 		, uint16_t ColorMaskedCount)
 
 		:Ant(nullptr, threadIndex, nullptr, Width, Height, antPath)
-		, m_pMegaMesh(new MegaMesh(Width, Height, DaGreenColorTransitionArray))
+		, m_pMegaMesh(new MeshMega(Width, Height, DaGreenColorTransitionArray))
 		, m_CurrentAntColorMaskedCount(ColorMaskedCount)
 		, m_pColorMaskedTransitionArray(ColorMaskedTransitionArray)
 		, m_CurrentAntColorMasked(0U)
