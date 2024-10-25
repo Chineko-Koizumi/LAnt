@@ -60,6 +60,9 @@
     <ClCompile Include="AntBase.cpp">
       <Filter>DrawingApp\Ant</Filter>
     </ClCompile>
+    <ClCompile Include="AntMega.cpp">
+      <Filter>DrawingApp\Ant</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mesh.hpp">
@@ -90,6 +93,9 @@
       <Filter>DrawingApp\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="AntBase.hpp">
+      <Filter>DrawingApp\Ant</Filter>
+    </ClInclude>
+    <ClInclude Include="AntMega.hpp">
       <Filter>DrawingApp\Ant</Filter>
     </ClInclude>
   </ItemGroup>

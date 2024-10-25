@@ -1,5 +1,7 @@
+
 #include "Mesh.hpp"                 // Field for ant and ant itself
 #include "Ant.hpp"                  // Ant backend
+#include "AntMega.hpp"              // Ant Mega backend
 #include "GUIAnt.hpp"               // GUI with seperate window
 #include "InputParser.hpp"          // Main function argument parrser
 #include "WindowsFeatures.hpp"      // Windows winapi features
@@ -341,7 +343,7 @@ int main(int argc, char* argv[])
      
              uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(ANT_PATH_FROM_CL.size());
 
-             da::MegaAnt megaAnt(WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size());
+             da::AntMega megaAnt(WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size());
 
              uint64_t Progress = 0U;
              da::KeyboardMethods::m_RenderStepCount = 100000000;

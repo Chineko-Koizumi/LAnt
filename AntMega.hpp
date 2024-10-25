@@ -1,30 +1,30 @@
-#ifndef ANT_HPP
-#define ANT_HPP
-
-#include "Mesh.hpp"
-#include "MeshMega.hpp"
+#ifndef ANTMEGA_HPP
+#define ANTMEGA_HPP
 
 #include "AntBase.hpp"
+#include "MeshMega.hpp"
 
 namespace da 
 {
-	class Ant : public AntBase
+	class AntMega : public AntBase
 	{
 	private:
-		da::Mesh* m_pMesh;
+		MeshMega* m_pMegaMesh;
 
 	public:
-		Ant(
-			sf::RenderWindow* window,
-			daTypes::GreenColor* DaGreenColorTransitionArray,
-			uint32_t Width,
-			uint32_t Height,
-			const std::string& rAntPath
-		);
+		AntMega(
+			uint32_t Width
+			, uint32_t Height
+			, std::string& antPath
+			, daTypes::GreenColor* DaGreenColorTransitionArray
+			, uint8_t* ColorMaskedTransitionArray
+			, uint16_t ColorMaskedCount);
 
-		virtual ~Ant();
+		~AntMega();
 
-		virtual inline bool NextMove(uint64_t repetition)
+		virtual void DumpToFile(const std::string& outputPath) override;
+
+		virtual inline bool NextMove(uint64_t repetition) override
 		{
 			for (uint64_t i = repetition; i; --i)
 			{
@@ -39,7 +39,6 @@ namespace da
 					if (m_CurrentAntColorMasked == m_CurrentAntColorMaskedCount) m_CurrentAntColorMasked = 0;
 
 					m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
-					m_pMesh->m_pfieldVertex->operator[](uint64_t(m_y)* m_Width + m_x).color = sf::Color(0U, m_pDaGreenColorTransitionArray[m_CurrentAntColorMasked].g, 0U);
 
 					switch (m_Facing)
 					{
@@ -58,7 +57,6 @@ namespace da
 					if (m_CurrentAntColorMasked == m_CurrentAntColorMaskedCount) m_CurrentAntColorMasked = 0;
 
 					m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
-					m_pMesh->m_pfieldVertex->operator[](uint64_t(m_y)* m_Width + m_x).color = sf::Color(0U, m_pDaGreenColorTransitionArray[m_CurrentAntColorMasked].g, 0U);
 
 					switch (m_Facing)
 					{
@@ -91,10 +89,6 @@ namespace da
 
 			return true;
 		}
-		virtual void DumpToFile(const std::string& outputPath);
-		void DrawMesh();
-
-	private:
 	};
 }
 

@@ -159,6 +159,7 @@
   <ItemGroup>
     <ClCompile Include="Ant.cpp" />
     <ClCompile Include="AntBase.cpp" />
+    <ClCompile Include="AntMega.cpp" />
     <ClCompile Include="InputParser.cpp" />
     <ClCompile Include="GUIAnt.cpp" />
     <ClCompile Include="GUIBase.cpp" />
@@ -171,6 +172,7 @@
   <ItemGroup>
     <ClInclude Include="Ant.hpp" />
     <ClInclude Include="AntBase.hpp" />
+    <ClInclude Include="AntMega.hpp" />
     <ClInclude Include="DrawingAppConstants.hpp" />
     <ClInclude Include="InputParser.hpp" />
     <ClInclude Include="GUIAnt.hpp" />
