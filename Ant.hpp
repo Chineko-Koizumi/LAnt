@@ -24,41 +24,36 @@ namespace da
 
 		virtual ~Ant();
 
-		virtual inline bool NextMove(uint64_t repetition)
+		virtual inline uint64_t NextMove(uint64_t repetition)
 		{
 			for (uint64_t i = repetition; i; --i)
 			{
-				m_CurrentAntColorMasked = m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x];
+				m_CurrentAntColorMasked = m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x]; //current ant location 
+				m_CurrentTurn = m_CurrentAntColorMasked & constants::TURN_MASK; // decoding next turn
 
-				switch (constants::TURN_MASK & m_CurrentAntColorMasked)
+				m_CurrentAntColorMasked &= constants::COLOR_INDEX_MASK; // decoding current color
+				++m_CurrentAntColorMasked; //incrementing to get next color from path
+				if (m_CurrentAntColorMasked == m_CurrentAntColorMaskedCount) m_CurrentAntColorMasked = 0; // check for bounds
+
+				m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
+				m_pMesh->m_pfieldVertex->operator[](uint64_t(m_y)* m_Width + m_x).color = sf::Color(0U, m_pDaGreenColorTransitionArray[m_CurrentAntColorMasked].g, 0U);
+
+				switch (m_CurrentTurn)
 				{
+
 				case constants::LEFT:
-
-					m_CurrentAntColorMasked &= 0x0FU;
-					++m_CurrentAntColorMasked;
-					if (m_CurrentAntColorMasked == m_CurrentAntColorMaskedCount) m_CurrentAntColorMasked = 0;
-
-					m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
-					m_pMesh->m_pfieldVertex->operator[](uint64_t(m_y)* m_Width + m_x).color = sf::Color(0U, m_pDaGreenColorTransitionArray[m_CurrentAntColorMasked].g, 0U);
 
 					switch (m_Facing)
 					{
-					case 0U: --m_x; m_Facing = 3U; break;
-					case 1U: --m_y; --m_Facing; break;
-					case 2U: ++m_x; --m_Facing; break;
-					case 3U: ++m_y; --m_Facing; break;
+					case 0U: --m_x; m_Facing = 3U;	break;
+					case 1U: --m_y; --m_Facing;		break;
+					case 2U: ++m_x; --m_Facing;		break;
+					case 3U: ++m_y; --m_Facing;		break;
 					}
 
 					break;
 
 				case constants::RIGHT:
-
-					m_CurrentAntColorMasked &= 0x0FU;
-					++m_CurrentAntColorMasked;
-					if (m_CurrentAntColorMasked == m_CurrentAntColorMaskedCount) m_CurrentAntColorMasked = 0;
-
-					m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked;
-					m_pMesh->m_pfieldVertex->operator[](uint64_t(m_y)* m_Width + m_x).color = sf::Color(0U, m_pDaGreenColorTransitionArray[m_CurrentAntColorMasked].g, 0U);
 
 					switch (m_Facing)
 					{
@@ -73,11 +68,11 @@ namespace da
 
 				if (m_NextCheck <= 0)
 				{
-					if (m_x == m_Width - 1)		return false;
-					else if (m_x == 0)			return false;
-
-					if (m_y == m_Height - 1)	return false;
-					else if (m_y == 0)			return false;
+					if (m_x == m_Width - 1)		return i;
+					else if (m_x == 0)			return i;
+													   
+					if (m_y == m_Height - 1)	return i;
+					else if (m_y == 0)			return i;
 
 					m_DistanceToYWall = m_x < m_Width - 1 - m_x ? m_x : m_Width - 1 - m_x;
 					m_DistanceToXWall = m_y < m_Height - 1 - m_y ? m_y : m_Height - 1 - m_y;
@@ -89,7 +84,7 @@ namespace da
 				--m_NextCheck;
 			}
 
-			return true;
+			return 0U;
 		}
 		virtual void DumpToFile(const std::string& outputPath);
 		void DrawMesh();

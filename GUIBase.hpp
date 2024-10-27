@@ -13,16 +13,20 @@ namespace da
 		uint32_t m_WindowWidth;
 		uint32_t m_WindowHeight;
 
-		sf::Text* m_pGUITexts;
+		sf::Text*		m_pGUITexts;
+		std::string*	m_pGUITextsStrings;
 
 		sf::Font m_Font;
 
 	public:
 
 		GUIBase(uint32_t windowWidth, uint32_t windowHeight, uint16_t enumCount);
-		~GUIBase();
+		virtual ~GUIBase();
 
-		virtual void UpdateText(uint16_t name, const std::string& text) = 0;
+		sf::RenderWindow* GetWindowPtr();
+
+		virtual void UpdateText(uint16_t name, const std::string& text)			= 0;
+		virtual void UpdateTextAfter(uint16_t name, uint16_t charactersToSkip, const std::string& text)	= 0;
 		virtual void Redraw() = 0;
 
 	private:

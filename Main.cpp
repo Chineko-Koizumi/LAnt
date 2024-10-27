@@ -117,11 +117,13 @@ int main(int argc, char* argv[])
             if ( !da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, constants::SIZE_OF_VERTEX) ) break;
             
             da::GUIAnt windowGUI(WINDOW_WIDTH, WINDOW_HEIGHT);
-            windowGUI.UpdateText(da::GUIAnt::PATH, ANT_PATH_FROM_CL);
-            windowGUI.UpdateText(da::GUIAnt::MULTIPLIER, std::to_string( da::KeyboardMethods::m_RenderStepCount));
+            windowGUI.UpdateText(da::GUIAnt::PATH,          ANT_PATH_FROM_CL);
+            windowGUI.UpdateText(da::GUIAnt::SPEED,         std::string("Speed: " + std::to_string(da::KeyboardMethods::m_RenderStepCount)));
+            windowGUI.UpdateText(da::GUIAnt::MOVES,         std::string("Moves: " + std::to_string(0U)));
+            windowGUI.UpdateText(da::GUIAnt::EXIT_INFO,     std::string("\n"));
             windowGUI.Redraw();
 
-            sf::Event eventAnt; // for windows event pool
+            sf::Event eventAnt; // for windowAnt event pool and GUI window
             sf::RenderWindow windowAnt(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::None);
 
             daTypes::GreenColor* greenColors = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL);
@@ -129,7 +131,69 @@ int main(int argc, char* argv[])
 
             windowAnt.setActive(true);
 
+
+            uint64_t antMoves = 0U;
             bool exit = false;
+            while ( !exit )
+            {
+                if (windowAnt.pollEvent(eventAnt))
+                {
+                    switch (eventAnt.type )
+                    {
+                    case sf::Event::KeyPressed:
+                    {
+                        switch (eventAnt.key.code)
+                        {
+                        case sf::Keyboard::Escape:
+                        {
+                            windowGUI.UpdateTextAfter(da::GUIAnt::EXIT_INFO, 2U, std::string("Escape clicked\nClick any key to exit."));
+                            windowGUI.Redraw();
+                            exit = true;
+                            continue;
+                        }break;
+                        case sf::Keyboard::Right:
+                        {
+                            da::KeyboardMethods::SpeedUpRender();
+                            windowGUI.UpdateTextAfter(da::GUIAnt::SPEED, 8U, std::to_string(da::KeyboardMethods::m_RenderStepCount));
+                            windowGUI.Redraw();
+                        }break;
+                        case sf::Keyboard::Left:
+                        {
+                            da::KeyboardMethods::SpeedDownRender();
+                            windowGUI.UpdateTextAfter(da::GUIAnt::SPEED, 8U, std::to_string(da::KeyboardMethods::m_RenderStepCount));
+                            windowGUI.Redraw();
+                        }break;
+                        }
+                    }break;
+                    default: break;
+                    }
+                }
+
+                uint32_t movesLeft = ant.NextMove(da::KeyboardMethods::m_RenderStepCount);
+                if (movesLeft == 0)
+                {
+                    antMoves += da::KeyboardMethods::m_RenderStepCount;
+                    windowGUI.UpdateTextAfter(da::GUIAnt::MOVES, 8U, std::to_string(antMoves) );
+                }
+                else 
+
+                {
+                    antMoves += movesLeft;
+                    windowGUI.UpdateTextAfter(da::GUIAnt::MOVES,        8U, std::to_string(antMoves));
+                    windowGUI.UpdateTextAfter(da::GUIAnt::EXIT_INFO,    2U, std::string("Ant reached border\nClick any key to exit."));
+                    windowGUI.Redraw();
+                    break;
+                } 
+
+                ant.DrawMesh();
+                windowGUI.Redraw();
+            }
+
+            ant.DrawMesh();
+            ant.DumpToFile(OUTPUT_PATH_VAR);
+            delete[] greenColors;
+
+            exit = false;
             while ( !exit )
             {
                 if (windowAnt.pollEvent(eventAnt))
@@ -138,38 +202,12 @@ int main(int argc, char* argv[])
                     {
                     case sf::Event::KeyPressed:
                     {
-                        switch (eventAnt.key.code)
-                        {
-                        case sf::Keyboard::Escape:
-                        {
-                            exit = true;
-                            continue;
-                        }break;
-                        case sf::Keyboard::Right:
-                        {
-                            da::KeyboardMethods::SpeedUpRender();
-                            windowGUI.UpdateText(da::GUIAnt::MULTIPLIER, std::to_string(da::KeyboardMethods::m_RenderStepCount));
-                            windowGUI.Redraw();
-                        }break;
-                        case sf::Keyboard::Left:
-                        {
-                            da::KeyboardMethods::SpeedDownRender();
-                            windowGUI.UpdateText(da::GUIAnt::MULTIPLIER, std::to_string(da::KeyboardMethods::m_RenderStepCount));
-                            windowGUI.Redraw();
-                        }break;
-                        }
+                        exit = true;
+                        continue;
                     }break;
                     }
                 }
-
-                if (!ant.NextMove(da::KeyboardMethods::m_RenderStepCount))  break;
-
-                ant.DrawMesh();
             }
-
-            ant.DumpToFile(OUTPUT_PATH_VAR);
-            delete[] greenColors;
-
         }break;
 
         case da::ANT_PARALLEL_FILE: 
@@ -205,14 +243,13 @@ int main(int argc, char* argv[])
             }
             
             auto LambdaThread = [](
-                uint16_t threadIndex, 
-                uint16_t threadMax,
+                uint16_t threadIndex,
                 bool* thrStatus, 
-                std::vector< std::pair<std::string, daTypes::GreenColor* >>* vectorPaths,
-                uint64_t SimulationStepsThresholdFromArgument, 
-                std::mutex* mc, 
-                std::mutex* md, 
-                sf::RenderWindow* w)
+                std::vector< std::pair<std::string, daTypes::GreenColor* >>* pVectorPaths,
+                uint64_t SimulationStepsThreshold, 
+                std::mutex* pMutexAnt, 
+                std::mutex* pMutexDump, 
+                sf::RenderWindow* pWindow)
             {
                 std::thread::id thread_id = std::this_thread::get_id();
 
@@ -220,53 +257,63 @@ int main(int argc, char* argv[])
                 Output << thread_id;
                 std::string sThreadID = Output.str();
 
-                mc->lock();
+                pMutexAnt->lock();
                     da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Entering Thread : [" + sThreadID + "]"));
-                mc->unlock();
+                pMutexAnt->unlock();
               
-                uint16_t fileNumer = 0u;
-                uint64_t LambdaRenderStepCount = 0;
-                uint64_t Progress = 0;
+                uint16_t fileNumer = 0U;
+                uint64_t lambdaRenderStepCount = 0U;
+                uint64_t progress = 0U;
+                uint64_t antMoves = 0U;
                 while (true)
                 {
-                    mc->lock();
-                        if (vectorPaths->empty())
+                    pMutexAnt->lock();
+                        if (pVectorPaths->empty())
                         {
-                            mc->unlock();
+                            pMutexAnt->unlock();
                             break;
                         }
 
-                            daTypes::GreenColor* pGreenColor = vectorPaths->back().second;
-                            da::Ant ant(w, pGreenColor, WINDOW_WIDTH, WINDOW_HEIGHT, vectorPaths->back().first);
+                        daTypes::GreenColor* pGreenColor = pVectorPaths->back().second;
+                        da::Ant ant(pWindow, pGreenColor, WINDOW_WIDTH, WINDOW_HEIGHT, pVectorPaths->back().first);
 
-                        vectorPaths->pop_back();
-                    mc->unlock();
+                        pVectorPaths->pop_back();
+                    pMutexAnt->unlock();
 
-                    LambdaRenderStepCount = 10000000;
-                    Progress = 0;
-                    while (LambdaRenderStepCount != 0)
+                    lambdaRenderStepCount = 10000000U;
+                    progress = 0U;
+                    while (true)
                     {
-                        if (Progress > SimulationStepsThresholdFromArgument) break;
+                        if (progress > SimulationStepsThreshold) break;
                         
-                        mc->lock();
+                        pMutexAnt->lock();
 
-                            std::string ThreadText(6, ' ');
-                            ThreadText.replace(0, sThreadID.length(), sThreadID);
+                            std::string threadText(6U, ' ');
+                            threadText.replace(0U, sThreadID.length(), sThreadID);
 
                             Output.str("");
-                            Output<<da::WindowsFeatures::GenerateProgressBar((float(Progress) / SIMULATION_STEPS_THRESHOLD), 28) << " Thread: [" << ThreadText<<"] File number: " << fileNumer;
+                            Output<<da::WindowsFeatures::GenerateProgressBar((float(progress) / SIMULATION_STEPS_THRESHOLD), 28) << " Thread: [" << threadText<<"] File number: " << fileNumer;
                             da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, Output.str());
                         
-                       mc->unlock();
+                       pMutexAnt->unlock();
 
-                        if (!ant.NextMove(LambdaRenderStepCount)) break;
+                        uint32_t movesLeft = ant.NextMove(lambdaRenderStepCount);
+                        if (movesLeft == 0)
+                        {
+                            antMoves += lambdaRenderStepCount;
+                        }
+                        else
+                        {
+                            antMoves += movesLeft;
+                            break;
+                        }
                         
-                        Progress++;
+                        progress++;
                     }
 
-                    md->lock();
+                    pMutexDump->lock();
                         ant.DumpToFile(OUTPUT_PATH_VAR);
-                    md->unlock();
+                    pMutexDump->unlock();
 
                     fileNumer++;
 
@@ -276,23 +323,23 @@ int main(int argc, char* argv[])
                         pGreenColor = nullptr;
                     }
                 }
-                mc->lock();
+                pMutexAnt->lock();
 
-                    std::string ThreadText(6, ' ');
-                    ThreadText.replace(0, sThreadID.length(), sThreadID);
+                    std::string threadText(6U, ' ');
+                    threadText.replace(0, sThreadID.length(), sThreadID);
                     
-                    da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Thread: [" + ThreadText + "] Done generating                                            "));
+                    da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Thread: [" + threadText + "] Done generating                                            "));
 
-                mc->unlock();   
+                pMutexAnt->unlock();   
 
                 thrStatus[threadIndex] = false;
             };
 
-            for (uint16_t i = 0; i < Thread_count; ++i)
+            for (uint16_t i = 0U; i < Thread_count; ++i)
             {
                 threadsStatus[i] = true;
 
-                threads[i] = std::thread(LambdaThread, i, Thread_count, threadsStatus, &paths, SIMULATION_STEPS_THRESHOLD, &mtxCout, &mtxDumpFile, &window);
+                threads[i] = std::thread(LambdaThread, i, threadsStatus, &paths, SIMULATION_STEPS_THRESHOLD, &mtxCout, &mtxDumpFile, &window);
                 threads[i].detach();
             }
 
@@ -345,23 +392,31 @@ int main(int argc, char* argv[])
 
              da::AntMega megaAnt(WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size());
 
-             uint64_t Progress = 0U;
-             da::KeyboardMethods::m_RenderStepCount = 100000000;
-             while (da::KeyboardMethods::m_RenderStepCount != 0)
+             uint64_t progress = 0U;
+             uint64_t megaAntRenderStepCount = 100000000U;
+             uint64_t antMoves = 0U;
+             while (true)
              {
-                 if (Progress > SIMULATION_STEPS_THRESHOLD)
+                 if (progress > SIMULATION_STEPS_THRESHOLD)
                  {
-                     std::cout << std::endl << " " << (long double)SIMULATION_STEPS_THRESHOLD * da::KeyboardMethods::m_RenderStepCount << " moves, reached simulation limit" << std::endl;
-
-                     da::KeyboardMethods::m_RenderStepCount = 0;
+                     std::cout << std::endl << " " << (long double)SIMULATION_STEPS_THRESHOLD * megaAntRenderStepCount << " moves, reached simulation limit" << std::endl;
                      break;
                  }
                 
-                 da::WindowsFeatures::AntMovesAndProgressBar( Progress * da::KeyboardMethods::m_RenderStepCount, (float(Progress) / SIMULATION_STEPS_THRESHOLD), 28 );
+                 da::WindowsFeatures::AntMovesAndProgressBar( progress * megaAntRenderStepCount, (float(progress) / SIMULATION_STEPS_THRESHOLD), 28 );
 
-                 if (!megaAnt.NextMove(da::KeyboardMethods::m_RenderStepCount)) break;
+                 uint32_t movesLeft = megaAnt.NextMove(megaAntRenderStepCount);
+                 if (movesLeft == 0)
+                 {
+                     antMoves += megaAntRenderStepCount;
+                 }
+                 else
+                 {
+                     antMoves += movesLeft;
+                     break;
+                 }
                  
-                 ++Progress;
+                 ++progress;
              }
 
              megaAnt.DumpToFile(OUTPUT_PATH_VAR);
@@ -383,5 +438,7 @@ int main(int argc, char* argv[])
 #pragma endregion
 
     da::WindowsFeatures::RestoreOldConsoleMode();
+
+
 	return 0;
 }

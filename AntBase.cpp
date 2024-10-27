@@ -11,6 +11,7 @@ namespace da
 					, m_CurrentAntColorMaskedCount( rAntPath.size() )
 					, m_pColorMaskedTransitionArray( new uint8_t[m_CurrentAntColorMaskedCount] )
 					, m_CurrentAntColorMasked(0U)
+					, m_CurrentTurn(0U)
 					, m_pDaGreenColorTransitionArray(pDaGreenColorTransitionArray)
 					, m_x(0)
 					, m_y(0)

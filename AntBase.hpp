@@ -16,6 +16,7 @@ protected:
 	uint8_t* m_pColorMaskedTransitionArray;
 
 	uint8_t m_CurrentAntColorMasked;
+	uint8_t m_CurrentTurn;
 
 	daTypes::GreenColor* m_pDaGreenColorTransitionArray;
 
@@ -42,7 +43,7 @@ public:
 
 	virtual ~AntBase();
 
-	virtual inline bool NextMove(uint64_t repetition)		= 0;
+	virtual inline uint64_t NextMove(uint64_t repetition)	= 0;
 	virtual void DumpToFile(const std::string& outputPath)	= 0;
 
 	void SetOffset(uint32_t x, uint32_t y);
