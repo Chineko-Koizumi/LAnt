@@ -24,9 +24,9 @@ namespace da
 		virtual ~GUIBase();
 
 		sf::RenderWindow* GetWindowPtr();
+		void UpdateText(uint16_t name, const std::string& text);
+		void UpdateTextAfter(uint16_t name, uint16_t charactersToSkip, const std::string& text);
 
-		virtual void UpdateText(uint16_t name, const std::string& text)			= 0;
-		virtual void UpdateTextAfter(uint16_t name, uint16_t charactersToSkip, const std::string& text)	= 0;
 		virtual void Redraw() = 0;
 
 	private:

@@ -2,7 +2,8 @@
 #include "Mesh.hpp"                 // Field for ant and ant itself
 #include "Ant.hpp"                  // Ant backend
 #include "AntMega.hpp"              // Ant Mega backend
-#include "GUIAnt.hpp"               // GUI with seperate window
+#include "GUIAnt.hpp"               // GUIAnt with seperate window
+#include "GUIAntMega.hpp"           // GUIAntMega with seperate window
 #include "InputParser.hpp"          // Main function argument parrser
 #include "WindowsFeatures.hpp"      // Windows winapi features
 #include "DrawingAppConstants.hpp"  // Usefull constants
@@ -386,6 +387,12 @@ int main(int argc, char* argv[])
 
              std::cout << std::endl << std::endl << std::endl;//new lines as place for ant moves and progress bar;
 
+             da::GUIAntMega AntMegaGUI(WINDOW_WIDTH, WINDOW_HEIGHT);
+             AntMegaGUI.UpdateText(da::GUIAntMega::MOVES, std::string("Moves: 0"));
+             AntMegaGUI.UpdateText(da::GUIAntMega::THRESHOLD, std::string("Simulation threshold:   0%"));
+             AntMegaGUI.SetProgress(0.0f);
+             AntMegaGUI.Redraw();
+
              daTypes::GreenColor* daGreenColors = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
      
              uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(ANT_PATH_FROM_CL.size());
@@ -404,6 +411,14 @@ int main(int argc, char* argv[])
                  }
                 
                  da::WindowsFeatures::AntMovesAndProgressBar( progress * megaAntRenderStepCount, (float(progress) / SIMULATION_STEPS_THRESHOLD), 28 );
+                 
+                 float thresholdPercent = static_cast<float>(progress) / SIMULATION_STEPS_THRESHOLD;
+                 AntMegaGUI.UpdateTextAfter(da::GUIAntMega::MOVES, 8U, std::to_string(antMoves));
+
+                 char temp[10];
+                 snprintf(temp, sizeof buffer, "%3.0f", thresholdPercent * 100.0f);
+                 AntMegaGUI.UpdateTextAfter(da::GUIAntMega::THRESHOLD, 23U, std::string(temp) + "%");
+                 AntMegaGUI.SetProgress(thresholdPercent);
 
                  uint32_t movesLeft = megaAnt.NextMove(megaAntRenderStepCount);
                  if (movesLeft == 0)
@@ -417,6 +432,8 @@ int main(int argc, char* argv[])
                  }
                  
                  ++progress;
+
+                 AntMegaGUI.Redraw();
              }
 
              megaAnt.DumpToFile(OUTPUT_PATH_VAR);

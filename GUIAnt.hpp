@@ -25,8 +25,6 @@ namespace da
 		~GUIAnt();
 
 		void Redraw() override;
-		void UpdateText(uint16_t name, const std::string& text)									override;
-		void UpdateTextAfter(uint16_t name, uint16_t charactersToSkip, const std::string& text)	override;
 
 	private:
 
