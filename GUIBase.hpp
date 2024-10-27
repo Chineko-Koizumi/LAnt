@@ -3,6 +3,8 @@
 
 #include <SFML/Graphics.hpp>
 
+#include <cassert>
+
 namespace da 
 {
 	class GUIBase

@@ -12,7 +12,7 @@ namespace da
 	{
 		m_pWindow->setPosition(sf::Vector2i(0, 0));
 
-		m_Font.loadFromFile("Consolas.ttf");
+		if(!m_Font.loadFromFile("Consolas.ttf")) assert(false);
 	}
 
 	GUIBase::~GUIBase()

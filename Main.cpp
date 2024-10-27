@@ -387,39 +387,90 @@ int main(int argc, char* argv[])
 
              std::cout << std::endl << std::endl << std::endl;//new lines as place for ant moves and progress bar;
 
-             da::GUIAntMega AntMegaGUI(WINDOW_WIDTH, WINDOW_HEIGHT);
-             AntMegaGUI.UpdateText(da::GUIAntMega::MOVES, std::string("Moves: 0"));
-             AntMegaGUI.UpdateText(da::GUIAntMega::THRESHOLD, std::string("Simulation threshold:   0%"));
-             AntMegaGUI.SetProgress(0.0f);
-             AntMegaGUI.Redraw();
-
              daTypes::GreenColor* daGreenColors = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
      
              uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(ANT_PATH_FROM_CL.size());
 
              da::AntMega megaAnt(WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size());
 
-             uint64_t progress = 0U;
-             uint64_t megaAntRenderStepCount = 100000000U;
-             uint64_t antMoves = 0U;
-             while (true)
-             {
-                 if (progress > SIMULATION_STEPS_THRESHOLD)
+             std::atomic_uint64_t progress = 0U;
+             std::atomic_uint64_t antMoves = 0U;
+             std::atomic_bool exit = false;
+             uint64_t megaAntRenderStepCount = 250000000U;
+
+             auto LambdaThread = [](std::atomic_uint64_t* pProgress, std::atomic_uint64_t* pAntMoves, std::atomic_bool* pExit)
                  {
-                     std::cout << std::endl << " " << (long double)SIMULATION_STEPS_THRESHOLD * megaAntRenderStepCount << " moves, reached simulation limit" << std::endl;
-                     break;
-                 }
-                
+                     using namespace std::chrono_literals;
+
+                     da::GUIAntMega AntMegaGUI(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+                     AntMegaGUI.UpdateText(da::GUIAntMega::MOVES, std::string("Moves: 0"));
+                     AntMegaGUI.UpdateText(da::GUIAntMega::THRESHOLD, std::string("Simulation threshold:   0%"));
+                     AntMegaGUI.SetProgress(0.0f);
+                     AntMegaGUI.Redraw();
+
+                     bool isMouseDragging = false;
+                     sf::Event eventGUI;
+
+                     int16_t lastDownX = 0;
+                     int16_t lastDownY = 0;
+                     while (!*pExit)
+                     {
+                        if (AntMegaGUI.GetWindowPtr()->pollEvent(eventGUI))
+                        {
+                            switch (eventGUI.type)
+                            {
+                            case sf::Event::KeyPressed:
+                            {
+                                switch (eventGUI.key.code)
+                                {
+                                case sf::Keyboard::Escape:
+                                {
+                                    *pExit = true;
+                                }break;
+                                default:
+                                    break;
+                                }
+                                     
+                            }break;
+                            case sf::Event::MouseMoved:
+                                if (isMouseDragging) {
+                                    AntMegaGUI.GetWindowPtr()->setPosition(AntMegaGUI.GetWindowPtr()->getPosition() + sf::Vector2<int>(eventGUI.mouseMove.x - lastDownX, eventGUI.mouseMove.y - lastDownY));
+                                }
+                                break;
+                            case sf::Event::MouseButtonPressed:
+                                lastDownX = eventGUI.mouseButton.x;
+                                lastDownY = eventGUI.mouseButton.y;
+                                isMouseDragging = true;
+                                break;
+                            case sf::Event::MouseButtonReleased:
+                                isMouseDragging = false;
+                                break;
+                            }
+                        }
+
+                        uint64_t progress   = *pProgress;
+                        uint64_t moves      = *pAntMoves;
+
+                        float thresholdPercent = static_cast<float>(progress) / SIMULATION_STEPS_THRESHOLD;
+                        AntMegaGUI.UpdateTextAfter(da::GUIAntMega::MOVES, 8U, std::to_string(moves));
+
+                        char temp[10];
+                        snprintf(temp, sizeof buffer, "%3.0f", thresholdPercent * 100.0f);
+                        AntMegaGUI.UpdateTextAfter(da::GUIAntMega::THRESHOLD, 23U, std::string(temp) + "%");
+                        AntMegaGUI.SetProgress(thresholdPercent);
+
+                        AntMegaGUI.Redraw();
+                        std::this_thread::sleep_for(100ms);
+                     }
+                 };
+
+             std::thread threadGUI = std::thread(LambdaThread, &progress, &antMoves, &exit);
+
+             while (!exit)
+             {
                  da::WindowsFeatures::AntMovesAndProgressBar( progress * megaAntRenderStepCount, (float(progress) / SIMULATION_STEPS_THRESHOLD), 28 );
                  
-                 float thresholdPercent = static_cast<float>(progress) / SIMULATION_STEPS_THRESHOLD;
-                 AntMegaGUI.UpdateTextAfter(da::GUIAntMega::MOVES, 8U, std::to_string(antMoves));
-
-                 char temp[10];
-                 snprintf(temp, sizeof buffer, "%3.0f", thresholdPercent * 100.0f);
-                 AntMegaGUI.UpdateTextAfter(da::GUIAntMega::THRESHOLD, 23U, std::string(temp) + "%");
-                 AntMegaGUI.SetProgress(thresholdPercent);
-
                  uint32_t movesLeft = megaAnt.NextMove(megaAntRenderStepCount);
                  if (movesLeft == 0)
                  {
@@ -431,20 +482,24 @@ int main(int argc, char* argv[])
                      break;
                  }
                  
-                 ++progress;
+                 if (progress == SIMULATION_STEPS_THRESHOLD)
+                 {
 
-                 AntMegaGUI.Redraw();
+                     std::cout << std::endl << " " << (long double)SIMULATION_STEPS_THRESHOLD * megaAntRenderStepCount << " moves, reached simulation limit" << std::endl;
+                     break;
+                 }
+                 ++progress;
              }
 
              megaAnt.DumpToFile(OUTPUT_PATH_VAR);
-
-             delete[] daGreenColors;
 
              auto stop = std::chrono::high_resolution_clock::now();
              auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
              std::cout << " Whole operation took: " << duration.count() << "[ms]" << std::endl;
 
+             delete[] daGreenColors;
+             threadGUI.join();
          }break;
 
         default: 

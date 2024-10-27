@@ -13,6 +13,7 @@ namespace da
 			FIRST = 0U,
 			MOVES = FIRST,
 			THRESHOLD,
+			INFO,
 			LAST
 		};
 
