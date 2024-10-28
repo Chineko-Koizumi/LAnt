@@ -18,22 +18,34 @@ namespace da
 		};
 
 	private:
-		sf::RenderTexture m_ProgressBarRenderTexture;
+		struct ProgressBar
+		{
+			sf::RenderTexture m_ProgressBarRenderTexture;
 
-		sf::Texture m_ProgressBarInsideTexture;
-		sf::Texture m_ProgressBarOutsideTexture;
+			sf::Texture m_ProgressBarInsideTexture;
+			sf::Texture m_ProgressBarOutsideTexture;
 
-		uint16_t m_ProgressBarWidth;
-		uint16_t m_ProgressBarHeight;
+			uint16_t m_ProgressBarWidth{ 0U };
+			uint16_t m_ProgressBarHeight{ 0U };
 
-		sf::Sprite m_ProgressBarInsideSprite;
-		sf::Sprite m_ProgressBarOutsideSprite;
+			sf::Sprite m_ProgressBarInsideSprite;
+			sf::Sprite m_ProgressBarOutsideSprite;
+		};
+
+		ProgressBar m_ThreasholdBar;
+		ProgressBar m_CopyBar;
+
+		bool m_CopyStarted;
 
 	public:
 		GUIAntMega(uint32_t windowWidth, uint32_t windowHeight);
 		virtual ~GUIAntMega();
 
-		void SetProgress( float progressInPercent);
+		void InitThreasholdBar();
+		void InitCopyBar();
+
+		void SetProgressThreshold( float progressInPercent);
+		void SetProgressCopy( float progressInPercent);
 
 		virtual void Redraw();
 

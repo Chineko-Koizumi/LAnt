@@ -4,6 +4,9 @@
 #include "AntBase.hpp"
 #include "MeshMega.hpp"
 
+#include <queue>
+#include <mutex>
+
 namespace da 
 {
 	class AntMega : public AntBase
@@ -18,7 +21,9 @@ namespace da
 			, std::string& antPath
 			, daTypes::GreenColor* DaGreenColorTransitionArray
 			, uint8_t* ColorMaskedTransitionArray
-			, uint16_t ColorMaskedCount);
+			, uint16_t ColorMaskedCount
+			, std::queue<daTypes::TextureUpdateMSG>* pQueue
+			, std::mutex* pMutex);
 
 		~AntMega();
 

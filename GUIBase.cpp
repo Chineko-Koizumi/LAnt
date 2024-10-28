@@ -29,6 +29,12 @@ namespace da
 		m_pGUITexts[name].setString(text);
 	}
 
+	void GUIBase::UpdateText(uint16_t name, const char* text)
+	{
+		m_pGUITextsStrings[name] = std::string(text);
+		m_pGUITexts[name].setString(m_pGUITextsStrings[name]);
+	}
+
 	void GUIBase::UpdateTextAfter(uint16_t name, uint16_t charactersToSkip, const std::string& text)
 	{
 		m_pGUITextsStrings[name].erase(charactersToSkip - 1U); //needs to be offseted, this is index not count

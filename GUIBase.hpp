@@ -27,6 +27,7 @@ namespace da
 
 		sf::RenderWindow* GetWindowPtr();
 		void UpdateText(uint16_t name, const std::string& text);
+		void UpdateText(uint16_t name, const char* text);
 		void UpdateTextAfter(uint16_t name, uint16_t charactersToSkip, const std::string& text);
 
 		virtual void Redraw() = 0;

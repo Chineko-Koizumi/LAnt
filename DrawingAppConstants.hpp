@@ -46,36 +46,24 @@ namespace daTypes
 
     struct GreenColor
     {
-        uint8_t g; ///< Green component
-        uint8_t a; ///< Alpha (opacity) component
+        uint8_t g; /// Green component
+        uint8_t a; /// Alpha (opacity) component
     };
 
-    struct Color
+    enum MessageTypes : uint8_t
     {
-        uint8_t r; ///< Red component
-        uint8_t g; ///< Green component
-        uint8_t b; ///< Blue component
-        uint8_t a; ///< Alpha (opacity) component
-
-        Color(sf::Color c)
-            : r(c.r)
-            , g(c.g)
-            , b(c.b)
-            , a(c.a)
-        {}
-
-        Color(GreenColor c)
-            : r(0U)
-            , g(c.g)
-            , b(0U)
-            , a(c.a)
-        {}
+        TEXT_UPDATE = 0U,
+        PROGRESSBAR_UPDATE
     };
 
-    struct DaVertex
+    struct TextureUpdateMSG
     {
-        PointUI32 position;
-        Color color;
+        uint8_t type; /// type of msg, (0 text update, 1 progressbar float value)
+
+        uint8_t enumValue; /// enum indicating texture
+        char messageUpdate[50];
+        uint8_t* arg1[8];
+        uint8_t* arg2[8];
     };
 }
 

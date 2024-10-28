@@ -13,6 +13,7 @@
 #include <mutex>
 #include <fstream>      // Getting path data from file
 #include <time.h>       /* time_t, struct tm, time, localtime, strftime */
+#include <queue>
 
 static uint32_t WINDOW_WIDTH                = 0;
 static uint32_t WINDOW_HEIGHT               = 0;
@@ -391,22 +392,30 @@ int main(int argc, char* argv[])
      
              uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(ANT_PATH_FROM_CL.size());
 
-             da::AntMega megaAnt(WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size());
+             std::queue<daTypes::TextureUpdateMSG> queueMSG;
+             std::mutex mutexQueue;
+
+             da::AntMega megaAnt(WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size(), &queueMSG, &mutexQueue);
 
              std::atomic_uint64_t progress = 0U;
              std::atomic_uint64_t antMoves = 0U;
              std::atomic_bool exit = false;
              uint64_t megaAntRenderStepCount = 250000000U;
 
-             auto LambdaThread = [](std::atomic_uint64_t* pProgress, std::atomic_uint64_t* pAntMoves, std::atomic_bool* pExit)
+             auto LambdaThread = [](
+                 std::queue<daTypes::TextureUpdateMSG>* pQueue, 
+                 std::mutex* pMutexQueue, 
+                 std::atomic_uint64_t* pProgress, 
+                 std::atomic_uint64_t* pAntMoves, 
+                 std::atomic_bool* pExit)
                  {
                      using namespace std::chrono_literals;
 
-                     da::GUIAntMega AntMegaGUI(WINDOW_WIDTH, WINDOW_HEIGHT);
+                     da::GUIAntMega AntMegaGUI(1000U, 1000U);///@to_do get monitor resolution
 
                      AntMegaGUI.UpdateText(da::GUIAntMega::MOVES, std::string("Moves: 0"));
                      AntMegaGUI.UpdateText(da::GUIAntMega::THRESHOLD, std::string("Simulation threshold:   0%"));
-                     AntMegaGUI.SetProgress(0.0f);
+                     AntMegaGUI.SetProgressThreshold(0.0f);
                      AntMegaGUI.Redraw();
 
                      bool isMouseDragging = false;
@@ -433,20 +442,35 @@ int main(int argc, char* argv[])
                                 }
                                      
                             }break;
-                            case sf::Event::MouseMoved:
-                                if (isMouseDragging) {
-                                    AntMegaGUI.GetWindowPtr()->setPosition(AntMegaGUI.GetWindowPtr()->getPosition() + sf::Vector2<int>(eventGUI.mouseMove.x - lastDownX, eventGUI.mouseMove.y - lastDownY));
-                                }
-                                break;
-                            case sf::Event::MouseButtonPressed:
-                                lastDownX = eventGUI.mouseButton.x;
-                                lastDownY = eventGUI.mouseButton.y;
-                                isMouseDragging = true;
-                                break;
-                            case sf::Event::MouseButtonReleased:
-                                isMouseDragging = false;
-                                break;
+                            
                             }
+                        }
+
+                        if ( !pQueue->empty() ) 
+                        {
+                            daTypes::TextureUpdateMSG msg;
+
+                            pMutexQueue->lock();
+
+                                msg = pQueue->front();
+                                pQueue->pop();
+
+                            pMutexQueue->unlock();
+                            
+                            switch (msg.type)
+                            {
+                                case  daTypes::TEXT_UPDATE: 
+                                {
+                                    AntMegaGUI.UpdateText(msg.enumValue, msg.messageUpdate);
+                                }break;
+                                case daTypes::PROGRESSBAR_UPDATE:
+                                {
+                                    AntMegaGUI.SetProgressCopy( *reinterpret_cast<float*>( msg.arg1 ) );
+                                }break;
+
+                                default:
+                                break;
+                            } 
                         }
 
                         uint64_t progress   = *pProgress;
@@ -458,19 +482,17 @@ int main(int argc, char* argv[])
                         char temp[10];
                         snprintf(temp, sizeof buffer, "%3.0f", thresholdPercent * 100.0f);
                         AntMegaGUI.UpdateTextAfter(da::GUIAntMega::THRESHOLD, 23U, std::string(temp) + "%");
-                        AntMegaGUI.SetProgress(thresholdPercent);
+                        AntMegaGUI.SetProgressThreshold(thresholdPercent);
 
                         AntMegaGUI.Redraw();
                         std::this_thread::sleep_for(100ms);
                      }
                  };
 
-             std::thread threadGUI = std::thread(LambdaThread, &progress, &antMoves, &exit);
+             std::thread threadGUI = std::thread(LambdaThread, &queueMSG, &mutexQueue, &progress, &antMoves, &exit);
 
              while (!exit)
              {
-                 da::WindowsFeatures::AntMovesAndProgressBar( progress * megaAntRenderStepCount, (float(progress) / SIMULATION_STEPS_THRESHOLD), 28 );
-                 
                  uint32_t movesLeft = megaAnt.NextMove(megaAntRenderStepCount);
                  if (movesLeft == 0)
                  {
@@ -484,8 +506,19 @@ int main(int argc, char* argv[])
                  
                  if (progress == SIMULATION_STEPS_THRESHOLD)
                  {
+                     std::string msgS(std::to_string(antMoves) + " moves, reached simulation limit");
 
-                     std::cout << std::endl << " " << (long double)SIMULATION_STEPS_THRESHOLD * megaAntRenderStepCount << " moves, reached simulation limit" << std::endl;
+                     daTypes::TextureUpdateMSG msg;
+                     msg.type = daTypes::TEXT_UPDATE;
+                     msg.enumValue = da::GUIAntMega::INFO;
+                     strncpy_s(msg.messageUpdate, msgS.c_str(), msgS.size());
+
+                     mutexQueue.lock();
+
+                        queueMSG.push(msg);
+
+                     mutexQueue.unlock();
+
                      break;
                  }
                  ++progress;
@@ -495,6 +528,19 @@ int main(int argc, char* argv[])
 
              auto stop = std::chrono::high_resolution_clock::now();
              auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+             std::string msgS("Whole operation took: " + std::to_string(duration.count()) + "[ms]");
+
+             daTypes::TextureUpdateMSG msg;
+             msg.type = daTypes::TEXT_UPDATE;
+             msg.enumValue = da::GUIAntMega::INFO;
+             strncpy_s(msg.messageUpdate, msgS.c_str(), msgS.size());
+
+             mutexQueue.lock();
+
+                queueMSG.push(msg);
+
+             mutexQueue.unlock();
 
              std::cout << " Whole operation took: " << duration.count() << "[ms]" << std::endl;
 
