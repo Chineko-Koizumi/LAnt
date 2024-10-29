@@ -6,7 +6,7 @@
 #include "GUIAntMega.hpp"           // GUIAntMega with seperate window
 #include "InputParser.hpp"          // Main function argument parrser
 #include "WindowsFeatures.hpp"      // Windows winapi features
-#include "DrawingAppConstants.hpp"  // Usefull constants
+#include "IPC.hpp"
 
 #include <chrono>
 #include <thread>
@@ -392,19 +392,15 @@ int main(int argc, char* argv[])
      
              uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(ANT_PATH_FROM_CL.size());
 
-             std::queue<daTypes::TextureUpdateMSG> queueMSG;
-             std::mutex mutexQueue;
 
-             da::AntMega megaAnt(WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size(), &queueMSG, &mutexQueue);
+             da::AntMega megaAnt(WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size());
 
              std::atomic_uint64_t progress = 0U;
              std::atomic_uint64_t antMoves = 0U;
              std::atomic_bool exit = false;
              uint64_t megaAntRenderStepCount = 250000000U;
 
-             auto LambdaThread = [](
-                 std::queue<daTypes::TextureUpdateMSG>* pQueue, 
-                 std::mutex* pMutexQueue, 
+             auto LambdaThread = []( 
                  std::atomic_uint64_t* pProgress, 
                  std::atomic_uint64_t* pAntMoves, 
                  std::atomic_bool* pExit)
@@ -446,26 +442,37 @@ int main(int argc, char* argv[])
                             }
                         }
 
-                        if ( !pQueue->empty() ) 
+                        if ( ! IPC::_G_MSG_Queue.empty() )
                         {
-                            daTypes::TextureUpdateMSG msg;
+                            IPC::Message msg;
 
-                            pMutexQueue->lock();
+                            IPC::_G_MSG_MSGMutex.lock();
 
-                                msg = pQueue->front();
-                                pQueue->pop();
+                                msg = IPC::_G_MSG_Queue.front();
+                                IPC::_G_MSG_Queue.pop();
 
-                            pMutexQueue->unlock();
+                            IPC::_G_MSG_MSGMutex.unlock();
                             
-                            switch (msg.type)
+                            if (msg.dataType != IPC::MessageData::GUI_MESSAGE)
                             {
-                                case  daTypes::TEXT_UPDATE: 
+                                IPC::_G_MSG_MSGMutex.lock();
+                                    IPC::_G_MSG_Queue.push(msg);
+                                IPC::_G_MSG_MSGMutex.unlock();
+                            }
+
+                            IPC::GUIMessage* updateMsg = reinterpret_cast<IPC::GUIMessage*>(&msg);
+
+                            switch (updateMsg->type)
+                            {
+                                case IPC::GUIData::TEXT_UPDATE:
                                 {
-                                    AntMegaGUI.UpdateText(msg.enumValue, msg.messageUpdate);
+                                    AntMegaGUI.UpdateText(
+                                        updateMsg->message[0]   /* first byte is for enum indicating where put text*/, 
+                                        reinterpret_cast<char*>(& updateMsg->message[1])  /* adress of second byte is start of new string for Text*/);
                                 }break;
-                                case daTypes::PROGRESSBAR_UPDATE:
+                                case IPC::GUIData::PROGRESSBAR_UPDATE:
                                 {
-                                    AntMegaGUI.SetProgressCopy( *reinterpret_cast<float*>( msg.arg1 ) );
+                                    AntMegaGUI.SetProgressCopy( *reinterpret_cast<float*>( updateMsg->message ) );
                                 }break;
 
                                 default:
@@ -485,11 +492,11 @@ int main(int argc, char* argv[])
                         AntMegaGUI.SetProgressThreshold(thresholdPercent);
 
                         AntMegaGUI.Redraw();
-                        std::this_thread::sleep_for(100ms);
+                        std::this_thread::sleep_for(33ms);
                      }
                  };
 
-             std::thread threadGUI = std::thread(LambdaThread, &queueMSG, &mutexQueue, &progress, &antMoves, &exit);
+             std::thread threadGUI = std::thread(LambdaThread, &progress, &antMoves, &exit);
 
              while (!exit)
              {
@@ -508,16 +515,17 @@ int main(int argc, char* argv[])
                  {
                      std::string msgS(std::to_string(antMoves) + " moves, reached simulation limit");
 
-                     daTypes::TextureUpdateMSG msg;
-                     msg.type = daTypes::TEXT_UPDATE;
-                     msg.enumValue = da::GUIAntMega::INFO;
-                     strncpy_s(msg.messageUpdate, msgS.c_str(), msgS.size());
+                     IPC::GUIMessage updateMsg;
+                     updateMsg.dataType     = IPC::MessageData::GUI_MESSAGE;
+                     updateMsg.type         = IPC::GUIData::TEXT_UPDATE;
+                     updateMsg.message[0]   = da::GUIAntMega::INFO;
+                     memcpy_s(&updateMsg.message[1], msgS.size() + 1U, msgS.c_str(), msgS.size() + 1U);
 
-                     mutexQueue.lock();
+                     IPC::_G_MSG_MSGMutex.lock();
 
-                        queueMSG.push(msg);
+                        IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
 
-                     mutexQueue.unlock();
+                     IPC::_G_MSG_MSGMutex.unlock();
 
                      break;
                  }
@@ -531,16 +539,17 @@ int main(int argc, char* argv[])
 
              std::string msgS("Whole operation took: " + std::to_string(duration.count()) + "[ms]");
 
-             daTypes::TextureUpdateMSG msg;
-             msg.type = daTypes::TEXT_UPDATE;
-             msg.enumValue = da::GUIAntMega::INFO;
-             strncpy_s(msg.messageUpdate, msgS.c_str(), msgS.size());
+             IPC::GUIMessage updateMsg;
+             updateMsg.dataType = IPC::MessageData::GUI_MESSAGE;
+             updateMsg.type = IPC::GUIData::TEXT_UPDATE;
+             updateMsg.message[0] = da::GUIAntMega::INFO;
+             memcpy_s(&updateMsg.message[1], msgS.size() + 1U, msgS.c_str(), msgS.size() + 1U);
 
-             mutexQueue.lock();
+             IPC::_G_MSG_MSGMutex.lock();
 
-                queueMSG.push(msg);
+                IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
 
-             mutexQueue.unlock();
+             IPC::_G_MSG_MSGMutex.unlock();
 
              std::cout << " Whole operation took: " << duration.count() << "[ms]" << std::endl;
 

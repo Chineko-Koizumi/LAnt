@@ -104,6 +104,9 @@
     <ClInclude Include="GUIAntMega.hpp">
       <Filter>DrawingApp\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="IPC.hpp">
+      <Filter>DrawingApp</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShader.frag">

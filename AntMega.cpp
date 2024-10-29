@@ -9,12 +9,10 @@ namespace da
 		, std::string& antPath
 		, daTypes::GreenColor* DaGreenColorTransitionArray
 		, uint8_t* ColorMaskedTransitionArray
-		, uint16_t ColorMaskedCount
-		, std::queue<daTypes::TextureUpdateMSG>* pQueue
-		, std::mutex* pMutex)
+		, uint16_t ColorMaskedCount)
 
 			: AntBase(DaGreenColorTransitionArray, Width, Height, antPath)
-			, m_pMegaMesh(new MeshMega(Width, Height, DaGreenColorTransitionArray, pQueue, pMutex))
+			, m_pMegaMesh(new MeshMega(Width, Height, DaGreenColorTransitionArray))
 	{
 		SetOffset(m_pMegaMesh->GetCenterPoint());
 

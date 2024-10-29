@@ -94,14 +94,19 @@ namespace da
 
 	void GUIAntMega::SetProgressThreshold(float progressInPercent)
 	{
-		m_ThreasholdBar.m_ProgressBarInsideSprite.setTextureRect( sf::IntRect( 0,0, m_ThreasholdBar.m_ProgressBarWidth * progressInPercent, m_ThreasholdBar.m_ProgressBarHeight ) );
+		m_ThreasholdBar.m_ProgressBarInsideSprite.setTextureRect( sf::IntRect(0, 0, m_ThreasholdBar.m_ProgressBarWidth * progressInPercent, m_ThreasholdBar.m_ProgressBarHeight ) );
 	}
 
 	void da::GUIAntMega::SetProgressCopy(float progressInPercent)
 	{
 		m_CopyStarted = true;
 
-		m_CopyBar.m_ProgressBarInsideSprite.setTextureRect(sf::IntRect(0, 0, m_CopyBar.m_ProgressBarWidth * progressInPercent, m_CopyBar.m_ProgressBarHeight));
+		m_CopyBar.m_ProgressBarInsideSprite.setTextureRect(
+				sf::IntRect(
+					0, 
+					0,
+					m_CopyBar.m_ProgressBarWidth * 0.775f * progressInPercent,
+					m_CopyBar.m_ProgressBarHeight ));
 	}
 
 	void GUIAntMega::Redraw()

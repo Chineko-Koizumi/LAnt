@@ -1,5 +1,6 @@
 #include "MeshMega.hpp"
 #include "WindowsFeatures.hpp"
+#include "IPC.hpp"
 
 #include <fstream>
 #include <chrono>
@@ -12,13 +13,9 @@ namespace da
 	MeshMega::MeshMega(
 		  uint32_t width 
 		, uint32_t height 
-		, daTypes::GreenColor* daGreenColorTransitionArray /* Green color with encoded data one alpa channel*/
-		, std::queue<daTypes::TextureUpdateMSG>* pQueue
-	    , std::mutex* pMutex)
+		, daTypes::GreenColor* daGreenColorTransitionArray /* Green color with encoded data one alpa channel*/)
 			: MeshBase(width, height)
 			, m_pDaGreenColorTransitionArray(daGreenColorTransitionArray)
-			, m_pQueue(pQueue)
-			, m_pMutex(pMutex)
 	{}
 
 	MeshMega::~MeshMega()
@@ -63,23 +60,25 @@ namespace da
 			{
 				SSDump << DumpSplitter;
 				DumpSplitter = "";
-				if ((i % 100000000) == 0)
+				if ((i % 1000000) == 0)
 				{
 					Progress.clear();
 
 					Progress << "\x1b[2k\x1b[A" << "\x1b[2k\x1b[A" << " done in: " << floor(double(i) / m_fieldSize * 100.0f) << "%      " << "\n\r" << WindowsFeatures::GenerateProgressBar(float(i) / m_fieldSize, 28) << std::endl;
 					std::cout << Progress.str();
 
-					daTypes::TextureUpdateMSG msg;
-					msg.type = daTypes::PROGRESSBAR_UPDATE;
+					IPC::GUIMessage updateMsg;
+					updateMsg.dataType	= IPC::MessageData::GUI_MESSAGE;
+					updateMsg.type		= IPC::PROGRESSBAR_UPDATE;
+
 					float progressBarValue = static_cast<float>(i) / m_fieldSize;
-					memcpy_s(msg.arg1, sizeof(float), &progressBarValue, sizeof(float));
+					memcpy_s(updateMsg.message, sizeof(float), &progressBarValue, sizeof(float));
 
-					m_pMutex->lock();
+					IPC::_G_MSG_MSGMutex.lock();
 
-						m_pQueue->push(msg);
+						IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
 
-					m_pMutex->unlock();
+					IPC::_G_MSG_MSGMutex.unlock();
 				}
 			}
 		}
@@ -88,17 +87,19 @@ namespace da
 		Progress << "\x1b[2k\x1b[A" << "\x1b[2k\x1b[A" << " done in: 100%       " << "\n\r" << WindowsFeatures::GenerateProgressBar(1.0f, 28) << "\r";
 		std::cout << Progress.str();
 
+		IPC::GUIMessage updateMsg;
+		updateMsg.dataType = IPC::MessageData::GUI_MESSAGE;
+		updateMsg.type = IPC::PROGRESSBAR_UPDATE;
 
-		daTypes::TextureUpdateMSG msg;
-		msg.type = daTypes::PROGRESSBAR_UPDATE;
 		float progressBarValue = 1.0f;
-		memcpy_s(msg.arg1, sizeof(float), &progressBarValue, sizeof(float));
+		memcpy_s(updateMsg.message, sizeof(float), &progressBarValue, sizeof(float));
 
-		m_pMutex->lock();
+		IPC::_G_MSG_MSGMutex.lock();
 
-			m_pQueue->push(msg);
+			IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
 
-		m_pMutex->unlock();
+		IPC::_G_MSG_MSGMutex.unlock();
+
 
 		if (DumpSplitter.compare(std::string("")) != 0)
 		{

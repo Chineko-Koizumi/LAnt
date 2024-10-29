@@ -49,22 +49,6 @@ namespace daTypes
         uint8_t g; /// Green component
         uint8_t a; /// Alpha (opacity) component
     };
-
-    enum MessageTypes : uint8_t
-    {
-        TEXT_UPDATE = 0U,
-        PROGRESSBAR_UPDATE
-    };
-
-    struct TextureUpdateMSG
-    {
-        uint8_t type; /// type of msg, (0 text update, 1 progressbar float value)
-
-        uint8_t enumValue; /// enum indicating texture
-        char messageUpdate[50];
-        uint8_t* arg1[8];
-        uint8_t* arg2[8];
-    };
 }
 
 #endif

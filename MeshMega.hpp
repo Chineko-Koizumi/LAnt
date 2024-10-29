@@ -12,16 +12,12 @@ namespace da
 	private:
 		daTypes::GreenColor* m_pDaGreenColorTransitionArray;
 
-		std::queue<daTypes::TextureUpdateMSG>* m_pQueue;
-		std::mutex* m_pMutex;
-
 	public:
 		MeshMega(
 			  uint32_t width 
 			, uint32_t height 
-			, daTypes::GreenColor* daGreenColorTransitionArray
-			, std::queue<daTypes::TextureUpdateMSG>* pQueue
-			, std::mutex* pMutex);
+			, daTypes::GreenColor* daGreenColorTransitionArray);
+
 		virtual ~MeshMega();
 
 		void InitField(uint8_t encodedInitialPixel)			override;

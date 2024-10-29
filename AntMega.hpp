@@ -21,9 +21,7 @@ namespace da
 			, std::string& antPath
 			, daTypes::GreenColor* DaGreenColorTransitionArray
 			, uint8_t* ColorMaskedTransitionArray
-			, uint16_t ColorMaskedCount
-			, std::queue<daTypes::TextureUpdateMSG>* pQueue
-			, std::mutex* pMutex);
+			, uint16_t ColorMaskedCount);
 
 		~AntMega();
 
