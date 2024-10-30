@@ -8,11 +8,13 @@ namespace da
 		, m_pWindow(new sf::RenderWindow(sf::VideoMode(windowWidth, windowHeight), "GUI", sf::Style::Titlebar))
 		, m_pGUITexts(			enumCount > 0U ? new sf::Text[enumCount]	: nullptr)
 		, m_pGUITextsStrings(	enumCount > 0U ? new std::string[enumCount] : nullptr)
-		, m_Font()
+		, m_FontConsolas()
 	{
 		m_pWindow->setPosition(sf::Vector2i(0, 0));
 
-		if(!m_Font.loadFromFile("Consolas.ttf")) assert(false);
+		if(!m_FontConsolas.loadFromFile("./Fonts/Consolas.ttf"))		assert(false);
+		if(!m_FontTahoma.loadFromFile("./Fonts/Tahoma.ttf"))			assert(false);
+		if (!m_FontTahomaBold.loadFromFile("./Fonts/TahomaBold.ttf"))	assert(false);
 	}
 
 	GUIBase::~GUIBase()
@@ -39,6 +41,12 @@ namespace da
 	{
 		m_pGUITextsStrings[name].erase(charactersToSkip - 1U); //needs to be offseted, this is index not count
 		m_pGUITextsStrings[name].insert(charactersToSkip - 1U, text);
+		m_pGUITexts[name].setString(m_pGUITextsStrings[name]);
+	}
+
+	void da::GUIBase::AppendText(uint16_t name, const std::string& text)
+	{
+		m_pGUITextsStrings[name].insert(0, text + "\n");
 		m_pGUITexts[name].setString(m_pGUITextsStrings[name]);
 	}
 

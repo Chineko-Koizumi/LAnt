@@ -18,7 +18,13 @@ namespace da
 		sf::Text*		m_pGUITexts;
 		std::string*	m_pGUITextsStrings;
 
-		sf::Font m_Font;
+		sf::Font m_FontConsolas;
+		sf::Font m_FontTahoma;
+		sf::Font m_FontTahomaBold;
+
+		sf::Color m_ColorWindowsGreen{ 73U, 158U, 157U };
+		sf::Color m_ColorWindowsBlack{ 6U, 8U, 12U };
+		sf::Color m_ColorWindowsLightBlack{ 19U, 21U, 25U };
 
 	public:
 
@@ -29,6 +35,7 @@ namespace da
 		void UpdateText(uint16_t name, const std::string& text);
 		void UpdateText(uint16_t name, const char* text);
 		void UpdateTextAfter(uint16_t name, uint16_t charactersToSkip, const std::string& text);
+		void AppendText(uint16_t name, const std::string& text);
 
 		virtual void Redraw() = 0;
 

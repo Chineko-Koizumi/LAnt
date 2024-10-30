@@ -16,7 +16,7 @@ namespace da
 		float windowSpacing = static_cast<float>(windowHeight) / 30U;
 		for (Names name = Names::FIRST; name < Names::LAST; ++name)
 		{
-			m_pGUITexts[name].setFont(m_Font);
+			m_pGUITexts[name].setFont(m_FontConsolas);
 			m_pGUITexts[name].setFillColor(sf::Color(74U, 246U, 38U));
 			m_pGUITexts[name].setOutlineColor(sf::Color(74U, 246U, 38U));
 			m_pGUITexts[name].setString("");

@@ -10,55 +10,42 @@ namespace da
 		return name;
 	}
 
-	GUIAntMega::GUIAntMega(uint32_t windowWidth, uint32_t windowHeight)
-		: GUIBase(windowWidth / 2U, windowHeight / 3U, Names::LAST)
+	GUIAntMega::GUIAntMega(uint32_t windowWidth, uint32_t windowHeight, std::string& path)
+		: GUIBase(windowWidth, windowHeight, Names::LAST)
 		, m_CopyStarted(false)
+		, m_MaxPxPerSec(0U)
 	{
 		m_pWindow->setTitle("Ant MegaPath");
+
+		InitBackground();
 		InitThreasholdBar();
 		InitCopyBar();
+		InitText();
 
-		float windowSpacing = static_cast<float>(windowHeight) / 30U;
-		for (Names name = Names::FIRST; name < Names::LAST; ++name)
-		{
-			m_pGUITexts[name].setFont(m_Font);
-			m_pGUITexts[name].setFillColor(sf::Color(74U, 246U, 38U));
-			m_pGUITexts[name].setOutlineColor(sf::Color(74U, 246U, 38U));
-			m_pGUITexts[name].setString("");
-			m_pGUITextsStrings[name] = std::string("");
-			m_pGUITexts[name].setCharacterSize(windowSpacing);
-			m_pGUITexts[name].setLineSpacing(1.1f);
-
-			m_pGUITexts[name].setPosition(
-									0.0f, 
-									static_cast<float>(m_pGUITexts[name].getCharacterSize()) * m_pGUITexts[name].getLineSpacing() * name);
-		}
-
-		float progressBarYPos = m_pGUITexts[Names::THRESHOLD].getPosition().y + m_pGUITexts[Names::THRESHOLD].getCharacterSize() * 1.5f; // we need set possition referencing Text THRESHOLD
-		m_ThreasholdBar.m_ProgressBarOutsideSprite.setPosition(	0.0f, progressBarYPos);
-		m_ThreasholdBar.m_ProgressBarInsideSprite.setPosition(	0.0f, progressBarYPos);
-
-		m_pGUITexts[Names::INFO].setPosition(0.0f, progressBarYPos + m_ThreasholdBar.m_ProgressBarOutsideSprite.getGlobalBounds().height);
-		m_pGUITexts[Names::INFO].setCharacterSize(windowSpacing / 2U);
-
-		float copyBarYPos = m_pGUITexts[Names::INFO].getPosition().y + m_pGUITexts[Names::INFO].getCharacterSize() * 1.5f; // we need set possition referencing Text THRESHOLD
-		m_CopyBar.m_ProgressBarOutsideSprite.setPosition(0.0f, copyBarYPos);
-		m_CopyBar.m_ProgressBarInsideSprite.setPosition(0.0f, copyBarYPos);
+		UpdateText(Names::PATH, path);
 	}
 
 	GUIAntMega::~GUIAntMega()
 	{
 	}
 
-	void da::GUIAntMega::InitThreasholdBar()
+	void GUIAntMega::InitBackground()
+	{
+		m_BackgroundTexture.loadFromFile("./Sprites/GUI/AntMega/Background.png");
+		m_BackgroundSprite.setTexture(m_BackgroundTexture);
+
+		float scalingFactor = static_cast<float>(m_WindowWidth) / m_BackgroundTexture.getSize().x;
+		m_BackgroundSprite.setScale(scalingFactor, scalingFactor);
+		m_BackgroundSprite.setScale(scalingFactor, scalingFactor);
+	}
+
+	void GUIAntMega::InitThreasholdBar()
 	{
 		if (!m_ThreasholdBar.m_ProgressBarOutsideTexture.loadFromFile("./Sprites/GUI/AntMega/ProgressBarOutside.png"))	assert(false);
 		if (!m_ThreasholdBar.m_ProgressBarInsideTexture.loadFromFile("./Sprites/GUI/AntMega/ProgressBarInside.png"))	assert(false);
 
 		m_ThreasholdBar.m_ProgressBarWidth = m_ThreasholdBar.m_ProgressBarOutsideTexture.getSize().x;
 		m_ThreasholdBar.m_ProgressBarHeight = m_ThreasholdBar.m_ProgressBarOutsideTexture.getSize().y;
-
-		m_ThreasholdBar.m_ProgressBarRenderTexture.create(m_ThreasholdBar.m_ProgressBarWidth, m_ThreasholdBar.m_ProgressBarHeight);
 
 		m_ThreasholdBar.m_ProgressBarOutsideTexture.setSmooth(true);
 		m_ThreasholdBar.m_ProgressBarInsideTexture.setSmooth(true);
@@ -67,11 +54,18 @@ namespace da
 		m_ThreasholdBar.m_ProgressBarInsideSprite.setTexture(m_ThreasholdBar.m_ProgressBarInsideTexture);
 
 		float scalingFactor = static_cast<float>(m_WindowWidth) / m_ThreasholdBar.m_ProgressBarWidth;
-		m_ThreasholdBar.m_ProgressBarOutsideSprite.setScale(scalingFactor, scalingFactor);
-		m_ThreasholdBar.m_ProgressBarInsideSprite.setScale(scalingFactor, scalingFactor);
+		scalingFactor *= 0.33f;
+
+		m_ThreasholdBar.m_ProgressBarOutsideSprite.setScale(scalingFactor * 1.53f, scalingFactor);
+		m_ThreasholdBar.m_ProgressBarInsideSprite.setScale(scalingFactor * 1.53f, scalingFactor);
+
+		m_ThreasholdBar.m_ProgressBarOutsideSprite.setPosition(	static_cast<float>(m_WindowWidth) * 0.069f, static_cast<float>(m_WindowHeight) * 0.211f);
+		m_ThreasholdBar.m_ProgressBarInsideSprite.setPosition(	static_cast<float>(m_WindowWidth) * 0.069f, static_cast<float>(m_WindowHeight) * 0.211f);
+
+		m_ThreasholdBar.m_ProgressBarRenderTexture.create(m_WindowWidth, m_WindowHeight);
 	}
 
-	void da::GUIAntMega::InitCopyBar()
+	void GUIAntMega::InitCopyBar()
 	{
 		if (!m_CopyBar.m_ProgressBarOutsideTexture.loadFromFile("./Sprites/GUI/AntMega/CopingFileBackground.png"))	assert(false);
 		if (!m_CopyBar.m_ProgressBarInsideTexture.loadFromFile("./Sprites/GUI/AntMega/CopingProgressBar.png"))		assert(false);
@@ -79,17 +73,48 @@ namespace da
 		m_CopyBar.m_ProgressBarWidth = m_CopyBar.m_ProgressBarOutsideTexture.getSize().x;
 		m_CopyBar.m_ProgressBarHeight = m_CopyBar.m_ProgressBarOutsideTexture.getSize().y;
 
-		m_CopyBar.m_ProgressBarRenderTexture.create(m_CopyBar.m_ProgressBarWidth, m_CopyBar.m_ProgressBarHeight);
-
-		m_CopyBar.m_ProgressBarOutsideTexture.setSmooth(true);
-		m_CopyBar.m_ProgressBarInsideTexture.setSmooth(true);
+		m_CopyBar.m_ProgressBarOutsideTexture.setSmooth(false);
+		m_CopyBar.m_ProgressBarInsideTexture.setSmooth(false);
 
 		m_CopyBar.m_ProgressBarOutsideSprite.setTexture(m_CopyBar.m_ProgressBarOutsideTexture);
 		m_CopyBar.m_ProgressBarInsideSprite.setTexture(m_CopyBar.m_ProgressBarInsideTexture);
 
 		float scalingFactor = static_cast<float>(m_WindowWidth) / m_CopyBar.m_ProgressBarWidth;
+		scalingFactor *= 0.50f;
+
 		m_CopyBar.m_ProgressBarOutsideSprite.setScale(scalingFactor, scalingFactor);
 		m_CopyBar.m_ProgressBarInsideSprite.setScale(scalingFactor, scalingFactor);
+
+		m_CopyBar.m_ProgressBarOutsideSprite.setPosition(static_cast<float>(m_WindowWidth) * 0.355f, static_cast<float>(m_WindowHeight) * 0.400f);
+		m_CopyBar.m_ProgressBarInsideSprite.setPosition( static_cast<float>(m_WindowWidth) * 0.355f, static_cast<float>(m_WindowHeight) * 0.400f);
+
+		m_CopyBar.m_ProgressBarRenderTexture.create(m_WindowWidth, m_WindowHeight);
+	}
+
+	void GUIAntMega::InitText() 
+	{
+		float windowSpacing = static_cast<float>(m_WindowHeight) / 30U;
+		for (Names name = Names::FIRST; name < Names::LAST; ++name)
+		{
+			m_pGUITexts[name].setFont(m_FontTahoma);
+			m_pGUITexts[name].setFillColor(m_ColorWindowsBlack);
+			m_pGUITexts[name].setOutlineColor(m_ColorWindowsLightBlack);
+			m_pGUITexts[name].setString("");
+			m_pGUITextsStrings[name] = std::string("");
+			m_pGUITexts[name].setCharacterSize(windowSpacing);
+			m_pGUITexts[name].setLineSpacing(1.1f);
+			m_pGUITexts[name].setPosition(m_aTextsPos[name]);
+		}
+
+		m_pGUITexts[Names::PATH].setFont(m_FontTahomaBold);
+		m_pGUITexts[Names::PATH].setFillColor(sf::Color::White);
+
+		m_pGUITexts[Names::INFO].setCharacterSize(m_pGUITexts[Names::PATH].getCharacterSize() * 0.50f);
+
+		m_pGUITexts[Names::GENERATING_SPEED].setCharacterSize(m_pGUITexts[Names::GENERATING_SPEED].getCharacterSize() * 0.70f);
+
+		m_pGUITexts[Names::MAX_SPEED].setCharacterSize(m_pGUITexts[Names::MAX_SPEED].getCharacterSize() * 0.70f);
+		UpdateText(Names::MAX_SPEED, std::to_string(m_MaxPxPerSec) + " px/s");
 	}
 
 	void GUIAntMega::SetProgressThreshold(float progressInPercent)
@@ -97,7 +122,7 @@ namespace da
 		m_ThreasholdBar.m_ProgressBarInsideSprite.setTextureRect( sf::IntRect(0, 0, m_ThreasholdBar.m_ProgressBarWidth * progressInPercent, m_ThreasholdBar.m_ProgressBarHeight ) );
 	}
 
-	void da::GUIAntMega::SetProgressCopy(float progressInPercent)
+	void GUIAntMega::SetProgressCopy(float progressInPercent)
 	{
 		m_CopyStarted = true;
 
@@ -105,14 +130,55 @@ namespace da
 				sf::IntRect(
 					0, 
 					0,
-					m_CopyBar.m_ProgressBarWidth * 0.775f * progressInPercent,
+					m_CopyBar.m_ProgressBarWidth * 0.775f * progressInPercent, // shift because progress bar is asymetrical
 					m_CopyBar.m_ProgressBarHeight ));
+	}
+
+	void GUIAntMega::setPxPerS(uint64_t pxPerSec)
+	{
+		static uint8_t firsReadings = 0U;
+		static uint8_t itt = 0U;
+
+		if (firsReadings < PX_READINGS_SIZE)
+		{
+			pxReadings[firsReadings] = pxPerSec;
+
+			UpdateText(da::GUIAntMega::GENERATING_SPEED, std::to_string(pxReadings[0]) + " px/s");
+			++firsReadings;
+			return;
+		}
+
+		switch (itt)
+		{
+			case 0U:	pxReadings[itt] = pxPerSec;		++itt;	break;
+			case 1U:	pxReadings[itt] = pxPerSec;		++itt;	break;
+			case 2U:	pxReadings[itt] = pxPerSec;		++itt;	break;
+			case 3U:	pxReadings[itt] = pxPerSec;		++itt;	break;
+			case 4U:	pxReadings[itt] = pxPerSec;		++itt;	break;
+			case 5U:	pxReadings[itt] = pxPerSec;		++itt;	break;
+			case 6U:	pxReadings[itt] = pxPerSec;		++itt;	break;
+			case 7U:	pxReadings[itt] = pxPerSec;		++itt;	break;
+			case 8U:	pxReadings[itt] = pxPerSec;		++itt;	break;
+			case 9U:	pxReadings[itt] = pxPerSec;		itt=0;	break;
+		}
+		uint64_t avgPxPerSec = (pxReadings[0] + pxReadings[1] + pxReadings[2] + pxReadings[3] + pxReadings[4] + pxReadings[5] + pxReadings[6] + pxReadings[7] + pxReadings[8] + pxReadings[4]) / PX_READINGS_SIZE;
+		if (m_MaxPxPerSec < avgPxPerSec)m_MaxPxPerSec = avgPxPerSec;
+	
+		UpdateText(da::GUIAntMega::GENERATING_SPEED, std::to_string(avgPxPerSec) + " px/s");
+		UpdateText(Names::MAX_SPEED, std::to_string(m_MaxPxPerSec) + " px/s");
+	}
+
+	bool GUIAntMega::IsCopyStarted()
+	{
+		return m_CopyStarted;
 	}
 
 	void GUIAntMega::Redraw()
 	{
-		m_pWindow->clear(sf::Color::Black);
+		m_pWindow->clear(m_ColorWindowsGreen);
 	
+		m_pWindow->draw(m_BackgroundSprite);
+
 				m_ThreasholdBar.m_ProgressBarRenderTexture.draw(m_ThreasholdBar.m_ProgressBarOutsideSprite);
 				m_ThreasholdBar.m_ProgressBarRenderTexture.draw(m_ThreasholdBar.m_ProgressBarInsideSprite);
 				m_ThreasholdBar.m_ProgressBarRenderTexture.display();

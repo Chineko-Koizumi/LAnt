@@ -392,13 +392,12 @@ int main(int argc, char* argv[])
      
              uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(ANT_PATH_FROM_CL.size());
 
-
              da::AntMega megaAnt(WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size());
 
              std::atomic_uint64_t progress = 0U;
              std::atomic_uint64_t antMoves = 0U;
              std::atomic_bool exit = false;
-             uint64_t megaAntRenderStepCount = 250000000U;
+             uint64_t megaAntRenderStepCount = 50000000U;
 
              auto LambdaThread = []( 
                  std::atomic_uint64_t* pProgress, 
@@ -406,11 +405,13 @@ int main(int argc, char* argv[])
                  std::atomic_bool* pExit)
                  {
                      using namespace std::chrono_literals;
+                     auto start = std::chrono::high_resolution_clock::now();
 
-                     da::GUIAntMega AntMegaGUI(1000U, 1000U);///@to_do get monitor resolution
+                     da::GUIAntMega AntMegaGUI(1280U, 960U, ANT_PATH_FROM_CL);///@to_do get monitor resolution
 
-                     AntMegaGUI.UpdateText(da::GUIAntMega::MOVES, std::string("Moves: 0"));
-                     AntMegaGUI.UpdateText(da::GUIAntMega::THRESHOLD, std::string("Simulation threshold:   0%"));
+                     AntMegaGUI.UpdateText(da::GUIAntMega::MOVES, std::string(" Moves: 0"));
+                     AntMegaGUI.UpdateText(da::GUIAntMega::THRESHOLD, std::string(" Simulation threshold:   0%"));
+                     AntMegaGUI.UpdateText(da::GUIAntMega::INFO, std::string(" Mesh size: ") + std::to_string(WINDOW_WIDTH) + "x" + std::to_string(WINDOW_HEIGHT));
                      AntMegaGUI.SetProgressThreshold(0.0f);
                      AntMegaGUI.Redraw();
 
@@ -466,9 +467,23 @@ int main(int argc, char* argv[])
                             {
                                 case IPC::GUIData::TEXT_UPDATE:
                                 {
-                                    AntMegaGUI.UpdateText(
-                                        updateMsg->message[0]   /* first byte is for enum indicating where put text*/, 
-                                        reinterpret_cast<char*>(& updateMsg->message[1])  /* adress of second byte is start of new string for Text*/);
+                                    switch (updateMsg->message[0])
+                                    {
+                                        case da::GUIAntMega::INFO:
+                                        {
+                                            AntMegaGUI.AppendText(
+                                                updateMsg->message[0]   /* first byte is for enum indicating where put text*/,
+                                                reinterpret_cast<char*>(&updateMsg->message[1])  /* adress of second byte is start of new string for Text*/);
+                                        }break;
+                                        default: 
+                                        {
+                                            AntMegaGUI.UpdateText(
+                                                updateMsg->message[0]   /* first byte is for enum indicating where put text*/,
+                                                reinterpret_cast<char*>(&updateMsg->message[1])  /* adress of second byte is start of new string for Text*/);
+                                        }
+                                        break;
+                                    }
+  
                                 }break;
                                 case IPC::GUIData::PROGRESSBAR_UPDATE:
                                 {
@@ -480,16 +495,22 @@ int main(int argc, char* argv[])
                             } 
                         }
 
-                        uint64_t progress   = *pProgress;
-                        uint64_t moves      = *pAntMoves;
+                        if ( !AntMegaGUI.IsCopyStarted() )
+                        {
+                            auto timeStamp = std::chrono::high_resolution_clock::now();
+                            auto cycleTime = std::chrono::duration_cast<std::chrono::milliseconds>(timeStamp - start);
 
-                        float thresholdPercent = static_cast<float>(progress) / SIMULATION_STEPS_THRESHOLD;
-                        AntMegaGUI.UpdateTextAfter(da::GUIAntMega::MOVES, 8U, std::to_string(moves));
+                            uint64_t pxPerSec = *pAntMoves / (cycleTime.count() + 1U) * 1000U;
+                            AntMegaGUI.setPxPerS(pxPerSec);
 
-                        char temp[10];
-                        snprintf(temp, sizeof buffer, "%3.0f", thresholdPercent * 100.0f);
-                        AntMegaGUI.UpdateTextAfter(da::GUIAntMega::THRESHOLD, 23U, std::string(temp) + "%");
-                        AntMegaGUI.SetProgressThreshold(thresholdPercent);
+                            float thresholdPercent = static_cast<float>(*pProgress) / SIMULATION_STEPS_THRESHOLD;
+                            AntMegaGUI.UpdateTextAfter(da::GUIAntMega::MOVES, 8U, std::to_string(*pAntMoves));
+
+                            char temp[10];
+                            snprintf(temp, sizeof buffer, "%3.0f", thresholdPercent * 100.0f);
+                            AntMegaGUI.UpdateTextAfter(da::GUIAntMega::THRESHOLD, 23U, std::string(temp) + "%");
+                            AntMegaGUI.SetProgressThreshold(thresholdPercent);
+                        }
 
                         AntMegaGUI.Redraw();
                         std::this_thread::sleep_for(33ms);
@@ -513,7 +534,7 @@ int main(int argc, char* argv[])
                  
                  if (progress == SIMULATION_STEPS_THRESHOLD)
                  {
-                     std::string msgS(std::to_string(antMoves) + " moves, reached simulation limit");
+                     std::string msgS(" Reached simulation limit, moves: " + std::to_string(antMoves));
 
                      IPC::GUIMessage updateMsg;
                      updateMsg.dataType     = IPC::MessageData::GUI_MESSAGE;
@@ -537,7 +558,7 @@ int main(int argc, char* argv[])
              auto stop = std::chrono::high_resolution_clock::now();
              auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-             std::string msgS("Whole operation took: " + std::to_string(duration.count()) + "[ms]");
+             std::string msgS(" Whole operation took: " + std::to_string(duration.count()) + "[ms]");
 
              IPC::GUIMessage updateMsg;
              updateMsg.dataType = IPC::MessageData::GUI_MESSAGE;

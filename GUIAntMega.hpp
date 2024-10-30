@@ -11,13 +11,30 @@ namespace da
 		enum Names : uint16_t
 		{
 			FIRST = 0U,
-			MOVES = FIRST,
+			PATH = FIRST,
+			MOVES,
 			THRESHOLD,
 			INFO,
+			GENERATING_SPEED,
+			MAX_SPEED,
+			COPYING_PROGRESS,
 			LAST
 		};
 
 	private:
+		sf::Texture m_BackgroundTexture;
+		sf::Sprite m_BackgroundSprite;
+
+		sf::Vector2f m_aTextsPos[LAST]
+		{
+			  sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.085f,	static_cast<float>(m_WindowHeight) * 0.062f)
+			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.060f,	static_cast<float>(m_WindowHeight) * 0.110f)
+			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.060f,	static_cast<float>(m_WindowHeight) * 0.160f)
+			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.060f,	static_cast<float>(m_WindowHeight) * 0.278f)
+			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.060f,	static_cast<float>(m_WindowHeight) * 0.596f)
+			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.230f,	static_cast<float>(m_WindowHeight) * 0.596f)
+		};
+
 		struct ProgressBar
 		{
 			sf::RenderTexture m_ProgressBarRenderTexture;
@@ -37,19 +54,29 @@ namespace da
 
 		bool m_CopyStarted;
 
-	public:
-		GUIAntMega(uint32_t windowWidth, uint32_t windowHeight);
-		virtual ~GUIAntMega();
+		static constexpr uint8_t PX_READINGS_SIZE = 10U;
+		uint64_t pxReadings[PX_READINGS_SIZE];
 
-		void InitThreasholdBar();
-		void InitCopyBar();
+		uint64_t m_MaxPxPerSec;
+
+	public:
+		GUIAntMega(uint32_t windowWidth, uint32_t windowHeight, std::string& path);
+		virtual ~GUIAntMega();
 
 		void SetProgressThreshold( float progressInPercent);
 		void SetProgressCopy( float progressInPercent);
 
-		virtual void Redraw();
+		void setPxPerS(uint64_t pxPerSec);
+
+		bool IsCopyStarted();
+
+		virtual void Redraw() override;
 
 	private:
+		void InitBackground();
+		void InitThreasholdBar();
+		void InitCopyBar();
+		void InitText();
 
 	};
 
