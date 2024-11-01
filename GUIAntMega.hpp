@@ -1,7 +1,9 @@
 #ifndef GUIANTMEGA_HPP
 #define GUIANTMEGA_HPP
 
+
 #include "GUIBase.hpp"
+#include "Animation.hpp"
 
 namespace da
 {
@@ -17,6 +19,8 @@ namespace da
 			INFO,
 			GENERATING_SPEED,
 			MAX_SPEED,
+			OUTPUT_FILE,
+			SOURCE_DESTINATION,
 			COPYING_PROGRESS,
 			LAST
 		};
@@ -27,14 +31,16 @@ namespace da
 
 		sf::Vector2f m_aTextsPos[LAST]
 		{
-			  sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.085f,	static_cast<float>(m_WindowHeight) * 0.062f)
-			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.060f,	static_cast<float>(m_WindowHeight) * 0.110f)
-			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.060f,	static_cast<float>(m_WindowHeight) * 0.160f)
-			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.060f,	static_cast<float>(m_WindowHeight) * 0.278f)
-			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.060f,	static_cast<float>(m_WindowHeight) * 0.596f)
-			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.230f,	static_cast<float>(m_WindowHeight) * 0.596f)
-		};
-
+			  sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.085f,	static_cast<float>(m_WindowHeight) * 0.069f)	/*PATH*/
+			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.060f,	static_cast<float>(m_WindowHeight) * 0.110f)	/*MOVES*/
+			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.060f,	static_cast<float>(m_WindowHeight) * 0.160f)	/*THRESHOLD*/
+			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.060f,	static_cast<float>(m_WindowHeight) * 0.278f)	/*INFO*/
+			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.060f,	static_cast<float>(m_WindowHeight) * 0.596f)	/*GENERATING_SPEED*/
+			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.230f,	static_cast<float>(m_WindowHeight) * 0.596f)	/*MAX_SPEED*/
+			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.375f,	static_cast<float>(m_WindowHeight) * 0.548f)	/*OUTPUT_FILE*/
+			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.375f,	static_cast<float>(m_WindowHeight) * 0.578f)	/*SOURCE_DESTINATION*/
+		};																												
+																													
 		struct ProgressBar
 		{
 			sf::RenderTexture m_ProgressBarRenderTexture;
@@ -54,7 +60,9 @@ namespace da
 
 		bool m_CopyStarted;
 
-		static constexpr uint8_t PX_READINGS_SIZE = 10U;
+		Animation m_CopyAnimation;
+
+		static constexpr uint8_t PX_READINGS_SIZE = 5U;
 		uint64_t pxReadings[PX_READINGS_SIZE];
 
 		uint64_t m_MaxPxPerSec;
@@ -69,6 +77,7 @@ namespace da
 		void setPxPerS(uint64_t pxPerSec);
 
 		bool IsCopyStarted();
+		void SetCopyStarted(bool setValue);
 
 		virtual void Redraw() override;
 

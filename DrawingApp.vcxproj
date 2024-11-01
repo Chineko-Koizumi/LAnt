@@ -162,6 +162,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Ant.cpp" />
     <ClCompile Include="AntBase.cpp" />
     <ClCompile Include="AntMega.cpp" />
@@ -179,6 +180,7 @@
     <ClCompile Include="WindowsFeatures.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Animation.hpp" />
     <ClInclude Include="Ant.hpp" />
     <ClInclude Include="AntBase.hpp" />
     <ClInclude Include="AntMega.hpp" />

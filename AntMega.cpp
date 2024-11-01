@@ -4,13 +4,11 @@
 namespace da 
 {
 	AntMega::AntMega(
-		uint32_t Width
+		  uint32_t Width
 		, uint32_t Height
 		, std::string& antPath
 		, daTypes::GreenColor* DaGreenColorTransitionArray
-		, uint8_t* ColorMaskedTransitionArray
 		, uint16_t ColorMaskedCount)
-
 			: AntBase(DaGreenColorTransitionArray, Width, Height, antPath)
 			, m_pMegaMesh(new MeshMega(Width, Height, DaGreenColorTransitionArray))
 	{

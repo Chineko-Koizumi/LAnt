@@ -20,7 +20,7 @@ namespace IPC
     PACK(struct Message
     {
         uint8_t dataType;       // indicator for what structure is inside message
-        uint8_t message[50];   // table of binary data
+        uint8_t message[100];   // table of binary data
     };)
 
     enum MessageData : uint8_t
@@ -33,13 +33,14 @@ namespace IPC
     {
         uint8_t dataType;
         uint8_t type; /// type of msg, (0 text update, 1 progressbar float value)
-        uint8_t message[49];
+        uint8_t message[99];
     };)
 
     enum GUIData : uint8_t
     {
         TEXT_UPDATE = 0U,
-        PROGRESSBAR_UPDATE
+        PROGRESSBAR_UPDATE,
+        COPY_WINDOW_UPDATE
     };
 
 	inline std::queue<Message> _G_MSG_Queue{};

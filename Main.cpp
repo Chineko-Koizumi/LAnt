@@ -386,13 +386,9 @@ int main(int argc, char* argv[])
 
              auto start = std::chrono::high_resolution_clock::now();
 
-             std::cout << std::endl << std::endl << std::endl;//new lines as place for ant moves and progress bar;
-
              daTypes::GreenColor* daGreenColors = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
      
-             uint8_t* ColorMaskedTransitionArray = (uint8_t*)_alloca(ANT_PATH_FROM_CL.size());
-
-             da::AntMega megaAnt(WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ColorMaskedTransitionArray, ANT_PATH_FROM_CL.size());
+             da::AntMega megaAnt(WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ANT_PATH_FROM_CL.size());
 
              std::atomic_uint64_t progress = 0U;
              std::atomic_uint64_t antMoves = 0U;
@@ -443,7 +439,7 @@ int main(int argc, char* argv[])
                             }
                         }
 
-                        if ( ! IPC::_G_MSG_Queue.empty() )
+                        for (uint8_t i = 0U; ! IPC::_G_MSG_Queue.empty() && i < 5U; ++i )
                         {
                             IPC::Message msg;
 
@@ -459,6 +455,7 @@ int main(int argc, char* argv[])
                                 IPC::_G_MSG_MSGMutex.lock();
                                     IPC::_G_MSG_Queue.push(msg);
                                 IPC::_G_MSG_MSGMutex.unlock();
+                                break;
                             }
 
                             IPC::GUIMessage* updateMsg = reinterpret_cast<IPC::GUIMessage*>(&msg);
@@ -488,6 +485,10 @@ int main(int argc, char* argv[])
                                 case IPC::GUIData::PROGRESSBAR_UPDATE:
                                 {
                                     AntMegaGUI.SetProgressCopy( *reinterpret_cast<float*>( updateMsg->message ) );
+                                }break;
+                                case IPC::GUIData::COPY_WINDOW_UPDATE:
+                                {
+                                    AntMegaGUI.SetCopyStarted( *reinterpret_cast<bool*>( updateMsg->message ) );
                                 }break;
 
                                 default:
@@ -571,8 +572,6 @@ int main(int argc, char* argv[])
                 IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
 
              IPC::_G_MSG_MSGMutex.unlock();
-
-             std::cout << " Whole operation took: " << duration.count() << "[ms]" << std::endl;
 
              delete[] daGreenColors;
              threadGUI.join();

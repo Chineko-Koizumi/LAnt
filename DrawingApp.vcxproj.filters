@@ -28,6 +28,9 @@
     <Filter Include="DrawingApp\InputParser">
       <UniqueIdentifier>{a12bebd5-6dfe-47e9-ba0d-4a17d6963958}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DrawingApp\GUI\Animation">
+      <UniqueIdentifier>{55b165bf-8e8e-43f1-927c-0eaa749a5a79}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -65,6 +68,9 @@
     </ClCompile>
     <ClCompile Include="GUIAntMega.cpp">
       <Filter>DrawingApp\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>DrawingApp\GUI\Animation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -106,6 +112,9 @@
     </ClInclude>
     <ClInclude Include="IPC.hpp">
       <Filter>DrawingApp</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.hpp">
+      <Filter>DrawingApp\GUI\Animation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
