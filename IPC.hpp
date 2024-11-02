@@ -60,6 +60,19 @@ namespace IPC
         _G_MSG_Mutex.unlock();
     }
 
+    static void SendMessege(messageType type, GUIData dataType, void* pData, uint8_t dataSize)
+    {
+        Message msg;
+
+        msg.messageType = type;
+        msg.message[0] = dataType;
+        memcpy_s(&msg.message[1], dataSize, pData, dataSize);
+
+        _G_MSG_Mutex.lock();
+            _G_MSG_Queue.push(msg);
+        _G_MSG_Mutex.unlock();
+    }
+
 }
 
 #endif

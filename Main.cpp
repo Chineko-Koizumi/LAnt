@@ -494,9 +494,7 @@ int main(int argc, char* argv[])
                                 }break;
                                 default: 
                                 {
-                                    IPC::_G_MSG_Mutex.lock();
-                                        IPC::_G_MSG_Queue.push(msg);
-                                    IPC::_G_MSG_Mutex.unlock();
+                                    IPC::SendMessege(&msg);
 
                                     i = 10U; /// THIS IS LOOP VALUE TO GET OUT OF IT!!!
                                     continue;
