@@ -25,6 +25,12 @@ namespace da
 			LAST
 		};
 
+		enum Updates : uint16_t
+		{
+			PROGRESSBAR_UPDATE = 0U,
+			COPY_WINDOW_UPDATE
+		};
+
 	private:
 		sf::Texture m_BackgroundTexture;
 		sf::Sprite m_BackgroundSprite;
