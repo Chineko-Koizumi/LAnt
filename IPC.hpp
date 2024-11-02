@@ -9,7 +9,6 @@
 #define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
 #endif
 
-
 #include "DrawingAppConstants.hpp"
 
 #include <mutex>
@@ -19,21 +18,28 @@ namespace IPC
 { 
     PACK(struct Message
     {
-        uint8_t dataType;       // indicator for what structure is inside message
-        uint8_t message[100];   // table of binary data
+        uint8_t messageType;       // indicator for what structure is inside message
+        uint8_t message[100U];  // table of binary data
     };)
 
-    enum MessageData : uint8_t
+    enum messageType : uint8_t
     {
-        GUI_MESSAGE = 0U
+        GUI_MESSAGE_TEXT_UPDATE = 0U,
+        GUI_MESSAGE_VALUE_UPDATE
     };
 
-
-    PACK(struct GUIMessage
+    PACK(struct GUIMessageTextUpdate
     {
-        uint8_t dataType;
-        uint8_t type; /// type of msg, (0 text update, 1 progressbar float value)
-        uint8_t message[99];
+        const uint8_t messageType = GUI_MESSAGE_TEXT_UPDATE;
+        uint8_t textName; 
+        uint8_t message[99U];
+    };)
+
+    PACK(struct GUIMessageValueUpdate
+    {
+        const uint8_t messageType = GUI_MESSAGE_VALUE_UPDATE;
+        uint8_t valueName; 
+        uint8_t message[8U];
     };)
 
     enum GUIData : uint8_t
@@ -43,13 +49,17 @@ namespace IPC
         COPY_WINDOW_UPDATE
     };
 
-	inline std::queue<Message> _G_MSG_Queue{};
-	inline std::mutex _G_MSG_MSGMutex{};
+    inline std::queue<Message> _G_MSG_Queue{};
+    inline std::mutex _G_MSG_Mutex{};
+    inline uint8_t _G_MSG_Universal_Buffer[100U]{};
+
+    static void SendMessege(Message* pMsg) 
+    {
+        _G_MSG_Mutex.lock();
+            _G_MSG_Queue.push(*pMsg);
+        _G_MSG_Mutex.unlock();
+    }
+
 }
-
-
-
-
-
 
 #endif

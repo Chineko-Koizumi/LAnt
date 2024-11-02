@@ -37,32 +37,28 @@ namespace da
 
 		std::filesystem::create_directories(outputPath);
 
-		IPC::GUIMessage updateMsg;
-		updateMsg.dataType = IPC::MessageData::GUI_MESSAGE;
-		updateMsg.type = IPC::TEXT_UPDATE;
-		updateMsg.message[0] = da::GUIAntMega::OUTPUT_FILE;
+		IPC::GUIMessageTextUpdate updateTextMsg;
+		updateTextMsg.textName = da::GUIAntMega::OUTPUT_FILE;
 
-		memcpy_s(&updateMsg.message[1], FileName.size() + 1, FileName.c_str(), FileName.size() + 1);
+		memcpy_s(updateTextMsg.message, FileName.size() + 1, FileName.c_str(), FileName.size() + 1);
 
-		IPC::_G_MSG_MSGMutex.lock();
+		IPC::_G_MSG_Mutex.lock();
 
-			IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
+			IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateTextMsg));
 
-		IPC::_G_MSG_MSGMutex.unlock();
+		IPC::_G_MSG_Mutex.unlock();
 
 		std::string FileNameWithPath("From DrawingApp to " + outputPath + FileName);
 
-		updateMsg.dataType = IPC::MessageData::GUI_MESSAGE;
-		updateMsg.type = IPC::TEXT_UPDATE;
-		updateMsg.message[0] = da::GUIAntMega::SOURCE_DESTINATION;
+		updateTextMsg.textName = da::GUIAntMega::SOURCE_DESTINATION;
 
-		memcpy_s(&updateMsg.message[1], FileNameWithPath.size() + 1, FileNameWithPath.c_str(), FileNameWithPath.size() + 1);
+		memcpy_s(updateTextMsg.message, FileNameWithPath.size() + 1, FileNameWithPath.c_str(), FileNameWithPath.size() + 1);
 
-		IPC::_G_MSG_MSGMutex.lock();
+		IPC::_G_MSG_Mutex.lock();
 
-			IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
+			IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateTextMsg));
 
-		IPC::_G_MSG_MSGMutex.unlock();
+		IPC::_G_MSG_Mutex.unlock();
 
 		std::ofstream SSDump;
 		SSDump.open(outputPath + FileName);
@@ -95,17 +91,18 @@ namespace da
 					Progress << "\x1b[2k\x1b[A" << "\x1b[2k\x1b[A" << " done in: " << floor(double(i) / m_fieldSize * 100.0f) << "%      " << "\n\r" << WindowsFeatures::GenerateProgressBar(float(i) / m_fieldSize, 28) << std::endl;
 					std::cout << Progress.str();
 
-					updateMsg.dataType	= IPC::MessageData::GUI_MESSAGE;
-					updateMsg.type		= IPC::PROGRESSBAR_UPDATE;
+					IPC::GUIMessageValueUpdate updateValuetMsg;
+
+					updateValuetMsg.valueName	= IPC::PROGRESSBAR_UPDATE;
 
 					float progressBarValue = static_cast<float>(i) / m_fieldSize;
-					memcpy_s(updateMsg.message, sizeof(float), &progressBarValue, sizeof(float));
+					memcpy_s(updateValuetMsg.message, sizeof(float), &progressBarValue, sizeof(float));
 
-					IPC::_G_MSG_MSGMutex.lock();
+					IPC::_G_MSG_Mutex.lock();
 
-						IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
+						IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateValuetMsg));
 
-					IPC::_G_MSG_MSGMutex.unlock();
+					IPC::_G_MSG_Mutex.unlock();
 				}
 			}
 		}
@@ -114,19 +111,18 @@ namespace da
 		Progress << "\x1b[2k\x1b[A" << "\x1b[2k\x1b[A" << " done in: 100%       " << "\n\r" << WindowsFeatures::GenerateProgressBar(1.0f, 28) << "\r";
 		std::cout << Progress.str();
 
+		IPC::GUIMessageValueUpdate updateValuetMsg;
 
-		updateMsg.dataType = IPC::MessageData::GUI_MESSAGE;
-		updateMsg.type = IPC::PROGRESSBAR_UPDATE;
+		updateValuetMsg.valueName = IPC::PROGRESSBAR_UPDATE;
 
 		float progressBarValue = 1.0f;
-		memcpy_s(updateMsg.message, sizeof(float), &progressBarValue, sizeof(float));
+		memcpy_s(updateValuetMsg.message, sizeof(float), &progressBarValue, sizeof(float));
 
-		IPC::_G_MSG_MSGMutex.lock();
+		IPC::_G_MSG_Mutex.lock();
 
-			IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
+			IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateValuetMsg));
 
-		IPC::_G_MSG_MSGMutex.unlock();
-
+		IPC::_G_MSG_Mutex.unlock();
 
 		if (DumpSplitter.compare(std::string("")) != 0)
 		{
@@ -142,49 +138,45 @@ namespace da
 
 		std::string generetingSummary(" File saved under: " + outputPath + FileName);
 
-		updateMsg.dataType = IPC::MessageData::GUI_MESSAGE;
-		updateMsg.type = IPC::GUIData::COPY_WINDOW_UPDATE;
-		updateMsg.message[0] = static_cast<uint8_t>(false);
+		updateValuetMsg.valueName = IPC::GUIData::COPY_WINDOW_UPDATE;
+		updateValuetMsg.message[0] = static_cast<uint8_t>(false);
 
-		IPC::_G_MSG_MSGMutex.lock();
+		IPC::_G_MSG_Mutex.lock();
 
-			IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
+			IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateValuetMsg));
 
-		IPC::_G_MSG_MSGMutex.unlock();
+		IPC::_G_MSG_Mutex.unlock();
+
+		updateTextMsg.textName = da::GUIAntMega::INFO;
+
+		memcpy_s(updateTextMsg.message, generetingSummary.size() + 1U, generetingSummary.c_str(), generetingSummary.size() + 1U);
+
+		IPC::_G_MSG_Mutex.lock();
+
+			IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateTextMsg));
+
+		IPC::_G_MSG_Mutex.unlock();
+
+		updateTextMsg.textName = da::GUIAntMega::SOURCE_DESTINATION;
+		updateTextMsg.message[0] = ' ';
+		updateTextMsg.message[1] = '\0';
 
 
-		updateMsg.dataType = IPC::MessageData::GUI_MESSAGE;
-		updateMsg.type = IPC::GUIData::TEXT_UPDATE;
-		updateMsg.message[0] = da::GUIAntMega::INFO;
-		memcpy_s(&updateMsg.message[1], generetingSummary.size() + 1U, generetingSummary.c_str(), generetingSummary.size() + 1U);
+		IPC::_G_MSG_Mutex.lock();
 
-		IPC::_G_MSG_MSGMutex.lock();
+			IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateTextMsg));
 
-			IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
+		IPC::_G_MSG_Mutex.unlock();
 
-		IPC::_G_MSG_MSGMutex.unlock();
+		updateTextMsg.textName = da::GUIAntMega::OUTPUT_FILE;
+		updateTextMsg.message[0] = ' ';
+		updateTextMsg.message[1] = '\0';
 
-		updateMsg.dataType = IPC::MessageData::GUI_MESSAGE;
-		updateMsg.type = IPC::TEXT_UPDATE;
-		updateMsg.message[0] = da::GUIAntMega::SOURCE_DESTINATION;
-		updateMsg.message[1] = '\0';
+		IPC::_G_MSG_Mutex.lock();
 
-		IPC::_G_MSG_MSGMutex.lock();
+			IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateTextMsg));
 
-			IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
-
-		IPC::_G_MSG_MSGMutex.unlock();
-
-		updateMsg.dataType = IPC::MessageData::GUI_MESSAGE;
-		updateMsg.type = IPC::TEXT_UPDATE;
-		updateMsg.message[0] = da::GUIAntMega::OUTPUT_FILE;
-		updateMsg.message[1] = '\0';
-
-		IPC::_G_MSG_MSGMutex.lock();
-
-		IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
-
-		IPC::_G_MSG_MSGMutex.unlock();
+		IPC::_G_MSG_Mutex.unlock();
 
 	}
 }

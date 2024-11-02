@@ -443,57 +443,65 @@ int main(int argc, char* argv[])
                         {
                             IPC::Message msg;
 
-                            IPC::_G_MSG_MSGMutex.lock();
+                            IPC::_G_MSG_Mutex.lock();
 
                                 msg = IPC::_G_MSG_Queue.front();
                                 IPC::_G_MSG_Queue.pop();
 
-                            IPC::_G_MSG_MSGMutex.unlock();
+                            IPC::_G_MSG_Mutex.unlock();
                             
-                            if (msg.dataType != IPC::MessageData::GUI_MESSAGE)
+                            switch (msg.messageType)
                             {
-                                IPC::_G_MSG_MSGMutex.lock();
-                                    IPC::_G_MSG_Queue.push(msg);
-                                IPC::_G_MSG_MSGMutex.unlock();
-                                break;
-                            }
-
-                            IPC::GUIMessage* updateMsg = reinterpret_cast<IPC::GUIMessage*>(&msg);
-
-                            switch (updateMsg->type)
-                            {
-                                case IPC::GUIData::TEXT_UPDATE:
+                                case IPC::messageType::GUI_MESSAGE_TEXT_UPDATE: 
                                 {
-                                    switch (updateMsg->message[0])
+                                    IPC::GUIMessageTextUpdate* updateMsg = reinterpret_cast<IPC::GUIMessageTextUpdate*>(&msg);
+
+                                    switch (updateMsg->textName)
                                     {
                                         case da::GUIAntMega::INFO:
                                         {
                                             AntMegaGUI.AppendText(
-                                                updateMsg->message[0]   /* first byte is for enum indicating where put text*/,
-                                                reinterpret_cast<char*>(&updateMsg->message[1])  /* adress of second byte is start of new string for Text*/);
+                                                updateMsg->textName,
+                                                reinterpret_cast<char*>(&updateMsg->message)  /* adress of second byte is start of new string for Text*/);
                                         }break;
-                                        default: 
+                                        default:
                                         {
                                             AntMegaGUI.UpdateText(
-                                                updateMsg->message[0]   /* first byte is for enum indicating where put text*/,
-                                                reinterpret_cast<char*>(&updateMsg->message[1])  /* adress of second byte is start of new string for Text*/);
-                                        }
-                                        break;
+                                                updateMsg->textName,
+                                                reinterpret_cast<char*>(&updateMsg->message)  /* adress of second byte is start of new string for Text*/);
+                                        }break;
                                     }
-  
-                                }break;
-                                case IPC::GUIData::PROGRESSBAR_UPDATE:
-                                {
-                                    AntMegaGUI.SetProgressCopy( *reinterpret_cast<float*>( updateMsg->message ) );
-                                }break;
-                                case IPC::GUIData::COPY_WINDOW_UPDATE:
-                                {
-                                    AntMegaGUI.SetCopyStarted( *reinterpret_cast<bool*>( updateMsg->message ) );
-                                }break;
 
-                                default:
-                                break;
-                            } 
+                                }break;
+                                case IPC::messageType::GUI_MESSAGE_VALUE_UPDATE:
+                                {
+                                    IPC::GUIMessageValueUpdate* updateMsg = reinterpret_cast<IPC::GUIMessageValueUpdate*>(&msg);
+
+                                    switch (updateMsg->valueName)
+                                    {
+                                        case IPC::GUIData::PROGRESSBAR_UPDATE:
+                                        {
+                                            AntMegaGUI.SetProgressCopy(*reinterpret_cast<float*>(updateMsg->message));
+                                        }break;
+                                        case IPC::GUIData::COPY_WINDOW_UPDATE:
+                                        {
+                                            AntMegaGUI.SetCopyStarted(*reinterpret_cast<bool*>(updateMsg->message));
+                                        }break;
+                                        default:
+                                            break;
+                                    }
+
+                                }break;
+                                default: 
+                                {
+                                    IPC::_G_MSG_Mutex.lock();
+                                        IPC::_G_MSG_Queue.push(msg);
+                                    IPC::_G_MSG_Mutex.unlock();
+
+                                    i = 10U; /// THIS IS LOOP VALUE TO GET OUT OF IT!!!
+                                    continue;
+                                }break;
+                            }
                         }
 
                         if ( !AntMegaGUI.IsCopyStarted() )
@@ -537,17 +545,16 @@ int main(int argc, char* argv[])
                  {
                      std::string msgS(" Reached simulation limit, moves: " + std::to_string(antMoves));
 
-                     IPC::GUIMessage updateMsg;
-                     updateMsg.dataType     = IPC::MessageData::GUI_MESSAGE;
-                     updateMsg.type         = IPC::GUIData::TEXT_UPDATE;
-                     updateMsg.message[0]   = da::GUIAntMega::INFO;
-                     memcpy_s(&updateMsg.message[1], msgS.size() + 1U, msgS.c_str(), msgS.size() + 1U);
+                     IPC::GUIMessageTextUpdate updateMsg;
+                     updateMsg.textName     = da::GUIAntMega::INFO;
 
-                     IPC::_G_MSG_MSGMutex.lock();
+                     memcpy_s(updateMsg.message, msgS.size() + 1U, msgS.c_str(), msgS.size() + 1U);
+
+                     IPC::_G_MSG_Mutex.lock();
 
                         IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
 
-                     IPC::_G_MSG_MSGMutex.unlock();
+                     IPC::_G_MSG_Mutex.unlock();
 
                      break;
                  }
@@ -561,17 +568,16 @@ int main(int argc, char* argv[])
 
              std::string msgS(" Whole operation took: " + std::to_string(duration.count()) + "[ms]");
 
-             IPC::GUIMessage updateMsg;
-             updateMsg.dataType = IPC::MessageData::GUI_MESSAGE;
-             updateMsg.type = IPC::GUIData::TEXT_UPDATE;
-             updateMsg.message[0] = da::GUIAntMega::INFO;
-             memcpy_s(&updateMsg.message[1], msgS.size() + 1U, msgS.c_str(), msgS.size() + 1U);
+             IPC::GUIMessageTextUpdate updateMsg;
+             updateMsg.textName     = da::GUIAntMega::INFO;
 
-             IPC::_G_MSG_MSGMutex.lock();
+             memcpy_s(updateMsg.message, msgS.size() + 1U, msgS.c_str(), msgS.size() + 1U);
+
+             IPC::_G_MSG_Mutex.lock();
 
                 IPC::_G_MSG_Queue.push(*reinterpret_cast<IPC::Message*>(&updateMsg));
 
-             IPC::_G_MSG_MSGMutex.unlock();
+             IPC::_G_MSG_Mutex.unlock();
 
              delete[] daGreenColors;
              threadGUI.join();
