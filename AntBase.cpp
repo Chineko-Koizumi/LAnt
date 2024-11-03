@@ -25,7 +25,7 @@ namespace da
 	{
 		for (size_t i = 0U; i < m_CurrentAntColorMaskedCount; i++)
 		{
-			m_pColorMaskedTransitionArray[i] = constants::TURN_MASK & m_pDaGreenColorTransitionArray[i].a;
+			m_pColorMaskedTransitionArray[i] = daConstants::TURN_MASK & m_pDaGreenColorTransitionArray[i].a;
 		}
 	}
 

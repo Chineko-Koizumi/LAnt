@@ -27,7 +27,8 @@ namespace da
 
 		enum Updates : uint16_t
 		{
-			PROGRESSBAR_UPDATE = 0U,
+			THRESHOLD_PROGRESSBAR_UPDATE= 0U,
+			COPY_PROGRESSBAR_UPDATE, 
 			COPY_WINDOW_UPDATE
 		};
 
@@ -82,8 +83,8 @@ namespace da
 
 		void setPxPerS(uint64_t pxPerSec);
 
-		bool IsCopyStarted();
-		void SetCopyStarted(bool setValue);
+		bool IsCopying();
+		void SetCopying(bool setValue);
 
 		virtual void Redraw() override;
 

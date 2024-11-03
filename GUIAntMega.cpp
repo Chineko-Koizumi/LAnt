@@ -87,7 +87,7 @@ namespace da
 		m_CopyBar.m_ProgressBarInsideSprite.setScale(scalingFactor, scalingFactor);
 
 		m_CopyBar.m_ProgressBarOutsideSprite.setPosition(static_cast<float>(m_WindowWidth) * 0.355f, static_cast<float>(m_WindowHeight) * 0.400f);
-		m_CopyBar.m_ProgressBarInsideSprite.setPosition( static_cast<float>(m_WindowWidth) * 0.355f, static_cast<float>(m_WindowHeight) * 0.400f);
+		m_CopyBar.m_ProgressBarInsideSprite.setPosition( static_cast<float>(m_WindowWidth) * 0.375f, static_cast<float>(m_WindowHeight) * 0.400f);
 
 		m_CopyBar.m_ProgressBarRenderTexture.create(m_WindowWidth, m_WindowHeight);
 	}
@@ -128,18 +128,16 @@ namespace da
 		m_ThreasholdBar.m_ProgressBarInsideSprite.setTextureRect( sf::IntRect(
 																	0, 
 																	0, 
-																	m_ThreasholdBar.m_ProgressBarWidth * progressInPercent, 
+																	m_ThreasholdBar.m_ProgressBarWidth * progressInPercent,
 																	m_ThreasholdBar.m_ProgressBarHeight ) );
 	}
 
 	void GUIAntMega::SetProgressCopy(float progressInPercent)
 	{
-		m_CopyStarted = true;
-
 		m_CopyBar.m_ProgressBarInsideSprite.setTextureRect(sf::IntRect(
-																0, 
 																0,
-																m_CopyBar.m_ProgressBarWidth * 0.775f * progressInPercent, // shift because progress bar is asymetrical
+																0, 
+																m_CopyBar.m_ProgressBarWidth * 0.734f * progressInPercent, // shift because progress bar is asymetrical
 																m_CopyBar.m_ProgressBarHeight ) );
 	}
 
@@ -176,12 +174,12 @@ namespace da
 		}
 	}
 
-	bool GUIAntMega::IsCopyStarted()
+	bool GUIAntMega::IsCopying()
 	{
 		return m_CopyStarted;
 	}
 
-	void GUIAntMega::SetCopyStarted(bool setValue)
+	void GUIAntMega::SetCopying(bool setValue)
 	{
 		 m_CopyStarted = setValue;
 	}

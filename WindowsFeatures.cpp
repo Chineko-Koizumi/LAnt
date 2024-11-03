@@ -24,14 +24,14 @@ namespace da
 
 		GlobalMemoryStatusEx(&statex);
 
-		return statex.ullAvailPhys / constants::KB;
+		return statex.ullAvailPhys / daConstants::KB;
 	}
 
 	uint32_t WindowsFeatures::GetThreadCountForMeshSize(uint64_t windowWidth, uint64_t windowHeight)
 	{
 		uint32_t processor_count = std::thread::hardware_concurrency();
 
-		uint64_t takenMemory = windowWidth * windowHeight * constants::SIZE_OF_VERTEX / constants::KB; //memory in KB taken by vertex array
+		uint64_t takenMemory = windowWidth * windowHeight * daConstants::SIZE_OF_VERTEX / daConstants::KB; //memory in KB taken by vertex array
 		uint64_t freeMemory = GetFreeMemoryInKB();
 
 		for (; 0 < processor_count; processor_count--)
@@ -44,7 +44,7 @@ namespace da
 
 	bool WindowsFeatures::IsEnoughFreeMemory(uint64_t windowWidth, uint64_t windowHeight, uint64_t sizeOfItem)
 	{
-		uint64_t TakenMemory = windowWidth * windowHeight * sizeOfItem / constants::KB;
+		uint64_t TakenMemory = windowWidth * windowHeight * sizeOfItem / daConstants::KB;
 		if (TakenMemory > WindowsFeatures::GetFreeMemoryInKB())
 		{
 			std::cout << " Not enough free memory for this mesh size" << std::endl;

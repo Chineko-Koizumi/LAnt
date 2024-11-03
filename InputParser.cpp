@@ -48,14 +48,14 @@ namespace da
         // Alfa channel bits 5 to 7 are used as alfa channel value 
         for (size_t i = 0; i < colorCount; i++)
         {
-            int temp = (data[i] == 'L') ? constants::LEFT : constants::RIGHT;
+            int temp = (data[i] == 'L') ? daConstants::LEFT : daConstants::RIGHT;
             int temp2 = (i != colorCount - 1U) ? (i + 1U) : 0U;
 
             pColorArray[i] = sf::Color(
                 0U,
-                static_cast<uint8_t>(constants::COLOR_RANGE_8BIT * (static_cast<float>(i) / colorCount)),
+                static_cast<uint8_t>(daConstants::COLOR_RANGE_8BIT * (static_cast<float>(i) / colorCount)),
                 0U,
-                static_cast<uint8_t>(constants::ALFA_BASE_VALUE + temp2 + temp));
+                static_cast<uint8_t>(daConstants::ALFA_BASE_VALUE + temp2 + temp));
         }
 
         return pColorArray;
@@ -75,12 +75,12 @@ namespace da
         // Alfa channel bits 5 to 7 are used as alfa channel value 
         for (size_t i = 0; i < colorCount; i++)
         {
-            uint8_t temp = (data[i] == 'L') ? constants::LEFT : constants::RIGHT;
+            uint8_t temp = (data[i] == 'L') ? daConstants::LEFT : daConstants::RIGHT;
             uint8_t temp2 = (i != colorCount - 1U) ? (i + 1U) : 0U;                 // @Bug only 15 colors possible
 
             pGreenColorArray[i] = daTypes::GreenColor{
-                                        static_cast<uint8_t>(constants::COLOR_RANGE_8BIT * (static_cast<float>(i) / colorCount)),
-                                        static_cast<uint8_t>(constants::ALFA_BASE_VALUE + temp2 + temp)
+                                        static_cast<uint8_t>(daConstants::COLOR_RANGE_8BIT * (static_cast<float>(i) / colorCount)),
+                                        static_cast<uint8_t>(daConstants::ALFA_BASE_VALUE + temp2 + temp)
             };
         }
 

@@ -1,10 +1,11 @@
 #ifndef DRAWINGAPPCONSTANTS_HPP
 #define DRAWINGAPPCONSTANTS_HPP
 #include <stdint.h>
+#include <string>
 
 #include <SFML/Graphics/Color.hpp>
 
-namespace constants 
+namespace daConstants 
 {
 	static const uint8_t COLOR_RANGE_8BIT	= 255U;
 	static const uint8_t ALFA_BASE_VALUE	= 224U;	//1110 0000
@@ -49,6 +50,17 @@ namespace daTypes
         uint8_t g; /// Green component
         uint8_t a; /// Alpha (opacity) component
     };
+}
+
+namespace daFunctions 
+{
+  inline void AddCommasToStringNumber(std::string& numberInString )
+    {
+        for (int16_t i = numberInString.size() - 3; i > 0; i -= 3)
+        {
+            numberInString.insert(i, ",");
+        }
+    }
 }
 
 #endif

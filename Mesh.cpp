@@ -40,7 +40,7 @@ namespace da
 		for (uint64_t i = 0; i < m_fieldSize; i++)
 		{
 			m_pfieldVertex->operator[](i).color = sf::Color(0u, 0u,  0u);
-			m_pfield[i] = constants::TURN_MASK & encodedInitialPixel;
+			m_pfield[i] = daConstants::TURN_MASK & encodedInitialPixel;
 		}
 	}
 

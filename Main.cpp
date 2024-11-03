@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
     {
         case da::ANT_GUI:
         {
-            if ( !da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, constants::SIZE_OF_VERTEX) ) break;
+            if ( !da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, daConstants::SIZE_OF_VERTEX) ) break;
             
             da::GUIAnt windowGUI(WINDOW_WIDTH, WINDOW_HEIGHT);
             windowGUI.UpdateText(da::GUIAnt::PATH,          ANT_PATH_FROM_CL);
@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
 
         case da::ANT_PARALLEL_FILE: 
         {
-            if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, constants::SIZE_OF_VERTEX)) break;
+            if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, daConstants::SIZE_OF_VERTEX)) break;
 
             std::mutex mtxCout, mtxDumpFile;
             std::thread* threads;
@@ -382,7 +382,7 @@ int main(int argc, char* argv[])
 
          case da::ANT_NOGUI_LARGE_FILE:
          {
-             if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, constants::SIZE_OF_MASKED_COLOR)) break;
+             if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, daConstants::SIZE_OF_MASKED_COLOR)) break;
 
              auto start = std::chrono::high_resolution_clock::now();
 
@@ -411,30 +411,35 @@ int main(int argc, char* argv[])
                      AntMegaGUI.SetProgressThreshold(0.0f);
                      AntMegaGUI.Redraw();
 
-                     bool isMouseDragging = false;
                      sf::Event eventGUI;
-
-                     int16_t lastDownX = 0;
-                     int16_t lastDownY = 0;
-                     while (!*pExit)
+                     bool exitLoop = false;
+                     bool exitHold = false;
+                     while ( !exitLoop )
                      {
                         if (AntMegaGUI.GetWindowPtr()->pollEvent(eventGUI))
                         {
-                            switch (eventGUI.type)
+                            switch (eventGUI.type)  
                             {
-                            case sf::Event::KeyPressed:
-                            {
-                                switch (eventGUI.key.code)
+                                case sf::Event::KeyPressed:
                                 {
-                                case sf::Keyboard::Escape:
-                                {
-                                    *pExit = true;
-                                }break;
-                                default:
-                                    break;
-                                }
+                                    switch (eventGUI.key.code)
+                                    {
+                                    case sf::Keyboard::Enter:
+                                    {
+                                        *pExit = true;
+                                    }break;
+                                    case sf::Keyboard::Escape:
+                                    {
+                                        if ( *pExit )
+                                        {
+                                            exitLoop = true;
+                                        }  
+                                    }break;
+                                    default:
+                                        break;
+                                    }
                                      
-                            }break;
+                                }break;
                             
                             }
                         }
@@ -460,13 +465,27 @@ int main(int argc, char* argv[])
                                         {
                                             AntMegaGUI.AppendText(
                                                 msg.valueName,
-                                                reinterpret_cast<char*>(msg.message)  /* adress of second byte is start of new string for Text*/);
+                                                reinterpret_cast<char*>(msg.message) );
+                                        }break;
+                                        case da::GUIAntMega::MOVES:
+                                        {
+                                            AntMegaGUI.UpdateTextAfter(
+                                                msg.valueName,
+                                                8U,
+                                                reinterpret_cast<char*>(msg.message) );
+                                        }break;
+                                        case da::GUIAntMega::THRESHOLD:
+                                        {
+                                            AntMegaGUI.UpdateTextAfter(
+                                                msg.valueName,
+                                                23U,
+                                                reinterpret_cast<char*>(msg.message) );
                                         }break;
                                         default:
                                         {
                                             AntMegaGUI.UpdateText(
                                                 msg.valueName,
-                                                reinterpret_cast<char*>(msg.message)  /* adress of second byte is start of new string for Text*/);
+                                                reinterpret_cast<char*>(msg.message) );
                                         }break;
                                     }
 
@@ -475,13 +494,17 @@ int main(int argc, char* argv[])
                                 {
                                     switch (msg.valueName)
                                     {
-                                        case da::GUIAntMega::PROGRESSBAR_UPDATE:
+                                        case da::GUIAntMega::COPY_PROGRESSBAR_UPDATE:
                                         {
                                             AntMegaGUI.SetProgressCopy(*reinterpret_cast<float*>(msg.message));
                                         }break;
                                         case da::GUIAntMega::COPY_WINDOW_UPDATE:
                                         {
-                                            AntMegaGUI.SetCopyStarted(*reinterpret_cast<bool*>(msg.message));
+                                            AntMegaGUI.SetCopying(*reinterpret_cast<bool*>(msg.message));
+                                        }break;
+                                        case da::GUIAntMega::THRESHOLD_PROGRESSBAR_UPDATE: 
+                                        {
+                                            AntMegaGUI.SetProgressThreshold(*reinterpret_cast<float*>(msg.message));
                                         }break;
                                         default:
                                             break;
@@ -498,7 +521,8 @@ int main(int argc, char* argv[])
                             }
                         }
 
-                        if ( !AntMegaGUI.IsCopyStarted() )
+                        static bool copyNotStarted = true;
+                        if ( !AntMegaGUI.IsCopying() && copyNotStarted)
                         {
                             auto timeStamp = std::chrono::high_resolution_clock::now();
                             auto cycleTime = std::chrono::duration_cast<std::chrono::milliseconds>(timeStamp - start);
@@ -506,15 +530,20 @@ int main(int argc, char* argv[])
                             uint64_t pxPerSec = *pAntMoves / (cycleTime.count() + 1U) * 1000U;
                             AntMegaGUI.setPxPerS(pxPerSec);
 
-                            float thresholdPercent = static_cast<float>(*pProgress) / SIMULATION_STEPS_THRESHOLD;
-                            AntMegaGUI.UpdateTextAfter(da::GUIAntMega::MOVES, 8U, std::to_string(*pAntMoves));
+                            std::string formatNumber(std::to_string(*pAntMoves));
 
+                            daFunctions::AddCommasToStringNumber(formatNumber);
+
+                            AntMegaGUI.UpdateTextAfter(da::GUIAntMega::MOVES, 8U, formatNumber);
+
+                            float thresholdPercent = static_cast<float>(*pProgress) / SIMULATION_STEPS_THRESHOLD;
                             char temp[10];
                             snprintf(temp, sizeof buffer, "%3.0f", thresholdPercent * 100.0f);
                             AntMegaGUI.UpdateTextAfter(da::GUIAntMega::THRESHOLD, 23U, std::string(temp) + "%");
                             AntMegaGUI.SetProgressThreshold(thresholdPercent);
                         }
-
+                        else copyNotStarted = false;
+                        
                         AntMegaGUI.Redraw();
                         std::this_thread::sleep_for(33ms);
                      }
@@ -532,18 +561,38 @@ int main(int argc, char* argv[])
                  else
                  {
                      antMoves += movesLeft;
+
+                     std::string formatedMoves = std::to_string(antMoves);
+
+                     daFunctions::AddCommasToStringNumber(formatedMoves);
+
+                     std::string msgS(" Ant hit wall, moves: " + formatedMoves);
+
+                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, static_cast<const void*>(msgS.c_str()), msgS.size() + 1U);
+                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::MOVES, static_cast<const void*>(formatedMoves.c_str()), formatedMoves.size() + 1U);
                      break;
                  }
                  
+                 ++progress;
                  if (progress == SIMULATION_STEPS_THRESHOLD)
                  {
-                     std::string msgS(" Reached simulation limit, moves: " + std::to_string(antMoves));
+                     std::string formatedMoves = std::to_string(antMoves);
 
-                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, static_cast<const void*>(msgS.c_str()), msgS.size() + 1U);
+                     daFunctions::AddCommasToStringNumber(formatedMoves);
+
+                     std::string msgS(" Reached simulation limit, moves: " + formatedMoves);
+
+                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO,   static_cast<const void*>(msgS.c_str()), msgS.size() + 1U);
+                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::MOVES,  static_cast<const void*>(formatedMoves.c_str()), formatedMoves.size() + 1U);
+
+                     std::string thresholdFull("100%");
+                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::THRESHOLD, static_cast<const void*>(thresholdFull.c_str()), thresholdFull.size() + 1U);
+
+                     float thresholdFloat = 100.0f;
+                     IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, da::GUIAntMega::THRESHOLD_PROGRESSBAR_UPDATE, static_cast<const void*>(&thresholdFloat), sizeof(float));
 
                      break;
                  }
-                 ++progress;
              }
 
              megaAnt.DumpToFile(OUTPUT_PATH_VAR);
@@ -567,7 +616,6 @@ int main(int argc, char* argv[])
 #pragma endregion
 
     da::WindowsFeatures::RestoreOldConsoleMode();
-
 
 	return 0;
 }

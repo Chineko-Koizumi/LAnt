@@ -40,6 +40,9 @@ namespace da
 		std::string FileNameWithPath("From DrawingApp to " + outputPath + FileName);
 		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::SOURCE_DESTINATION, static_cast<const void*>(FileNameWithPath.c_str()), FileNameWithPath.size() + 1U);
 
+		bool isCopying = true;
+		IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_WINDOW_UPDATE, static_cast<const void*>(&isCopying), sizeof(float));
+
 		std::ofstream SSDump;
 		SSDump.open(outputPath + FileName);
 
@@ -48,10 +51,8 @@ namespace da
 		SSDump << 255 << std::endl;
 
 		auto start = std::chrono::high_resolution_clock::now();
-		std::cout << std::endl << " Dumping started" << std::endl << std::endl << std::endl;
 
 		std::string DumpSplitter = "";
-		std::stringstream Progress;
 		for (uint64_t i = 0; i < m_fieldSize; i++)
 		{
 			DumpSplitter += std::to_string(0);
@@ -66,23 +67,14 @@ namespace da
 				DumpSplitter = "";
 				if ((i % 1000000) == 0)
 				{
-					Progress.clear();
-
-					Progress << "\x1b[2k\x1b[A" << "\x1b[2k\x1b[A" << " done in: " << floor(double(i) / m_fieldSize * 100.0f) << "%      " << "\n\r" << WindowsFeatures::GenerateProgressBar(float(i) / m_fieldSize, 28) << std::endl;
-					std::cout << Progress.str();
-
 					float progressBarValue = static_cast<float>(i) / m_fieldSize;
-					IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::PROGRESSBAR_UPDATE, static_cast<const void*>(&progressBarValue), sizeof(float));
+					IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_PROGRESSBAR_UPDATE, static_cast<const void*>(&progressBarValue), sizeof(float));
 				}
 			}
 		}
 
-		Progress.clear();
-		Progress << "\x1b[2k\x1b[A" << "\x1b[2k\x1b[A" << " done in: 100%       " << "\n\r" << WindowsFeatures::GenerateProgressBar(1.0f, 28) << "\r";
-		std::cout << Progress.str();
-
 		float progressBarValue = 1.0f;
-		IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::PROGRESSBAR_UPDATE, static_cast<const void*>(&progressBarValue), sizeof(float));
+		IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_PROGRESSBAR_UPDATE, static_cast<const void*>(&progressBarValue), sizeof(float));
 
 		if (DumpSplitter.compare(std::string("")) != 0)
 		{
@@ -94,19 +86,18 @@ namespace da
 
 		SSDump.close();
 
-		std::cout << std::endl << " File generated in: " << duration.count() << "[ms] screenshot saved as " << FileName << std::endl;
+		std::string generetingSummary2(" File saved under: " + outputPath + FileName);
+		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::INFO, static_cast<const void*>(generetingSummary2.c_str()), generetingSummary2.size() + 1U);
 
-		std::string generetingSummary(" File saved under: " + outputPath + FileName);
-		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::INFO, static_cast<const void*>(generetingSummary.c_str()), generetingSummary.size() + 1U);
-
-		bool isCopying = false;
-		IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_WINDOW_UPDATE, static_cast<const void*>(&isCopying), sizeof(float));
+		std::string generetingSummary1(" File generated in: " + std::to_string( duration.count()) + "[ms]");
+		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::INFO, static_cast<const void*>(generetingSummary1.c_str()), generetingSummary1.size() + 1U);
 
 		char emptyMsg[1];
-
 		emptyMsg[0] = '\0';
-
 		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::SOURCE_DESTINATION, static_cast<const void*>(emptyMsg), 1U);
 		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::OUTPUT_FILE, static_cast<const void*>(emptyMsg), 1U);
+
+		isCopying = false;
+		IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_WINDOW_UPDATE, static_cast<const void*>(&isCopying), sizeof(float));
 	}
 }

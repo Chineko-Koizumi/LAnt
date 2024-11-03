@@ -29,9 +29,9 @@ namespace da
 			for (uint64_t i = repetition; i; --i)
 			{
 				m_CurrentAntColorMasked = m_pMeshFieldCopy[uint64_t(m_y) * m_Width + m_x]; //current ant location 
-				m_CurrentTurn = m_CurrentAntColorMasked & constants::TURN_MASK; // decoding next turn
+				m_CurrentTurn = m_CurrentAntColorMasked & daConstants::TURN_MASK; // decoding next turn
 
-				m_CurrentAntColorMasked &= constants::COLOR_INDEX_MASK; // decoding current color
+				m_CurrentAntColorMasked &= daConstants::COLOR_INDEX_MASK; // decoding current color
 				++m_CurrentAntColorMasked; //incrementing to get next color from path
 				if (m_CurrentAntColorMasked == m_CurrentAntColorMaskedCount) m_CurrentAntColorMasked = 0; // check for bounds
 
@@ -41,7 +41,7 @@ namespace da
 				switch (m_CurrentTurn)
 				{
 
-				case constants::LEFT:
+				case daConstants::LEFT:
 
 					switch (m_Facing)
 					{
@@ -53,7 +53,7 @@ namespace da
 
 					break;
 
-				case constants::RIGHT:
+				case daConstants::RIGHT:
 
 					switch (m_Facing)
 					{

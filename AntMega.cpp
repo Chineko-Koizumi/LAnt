@@ -16,7 +16,7 @@ namespace da
 
 		for (size_t i = 0U; i < m_CurrentAntColorMaskedCount; i++)
 		{
-			m_pColorMaskedTransitionArray[i] = constants::TURN_MASK & DaGreenColorTransitionArray[i].a;
+			m_pColorMaskedTransitionArray[i] = daConstants::TURN_MASK & DaGreenColorTransitionArray[i].a;
 		}
 
 		m_pMegaMesh->SetFilePrefix(antPath);
