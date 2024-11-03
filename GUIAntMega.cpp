@@ -1,4 +1,5 @@
 #include "GUIAntMega.hpp"
+#include "IPC.hpp"
 
 namespace da 
 {
@@ -11,7 +12,7 @@ namespace da
 	}
 
 	GUIAntMega::GUIAntMega(uint32_t windowWidth, uint32_t windowHeight, std::string& path)
-		: GUIBase(windowWidth, windowHeight, Names::LAST)
+		: GUIBase(windowWidth, windowHeight, LAST)
 		, m_CopyStarted(false)
 		, m_MaxPxPerSec(0U)
 		, m_CopyAnimation(26U, 50U, static_cast<float>(m_WindowWidth) * 0.370f, static_cast<float>(m_WindowHeight) * 0.435f, 1.75f, "./Sprites/GUI/AntMega/CopyAnimation.png")
@@ -23,7 +24,7 @@ namespace da
 		InitCopyBar();
 		InitText();
 
-		UpdateText(Names::PATH, path);
+		UpdateText(PATH, path);
 	}
 
 	GUIAntMega::~GUIAntMega()
@@ -95,7 +96,7 @@ namespace da
 	void GUIAntMega::InitText() 
 	{
 		float windowSpacing = static_cast<float>(m_WindowHeight) / 30U;
-		for (Names name = Names::FIRST; name < Names::LAST; ++name)
+		for (Names name = FIRST; name < LAST; ++name)
 		{
 			m_pGUITexts[name].setFont(m_FontTahoma);
 			m_pGUITexts[name].setFillColor(m_ColorWindowsBlack);
@@ -107,20 +108,20 @@ namespace da
 			m_pGUITexts[name].setPosition(m_aTextsPos[name]);
 		}
 
-		m_pGUITexts[Names::PATH].setFont(m_FontTahomaBold);
-		m_pGUITexts[Names::PATH].setFillColor(sf::Color::White);
-		m_pGUITexts[Names::PATH].setCharacterSize(m_pGUITexts[Names::PATH].getCharacterSize() * 0.70f);
+		m_pGUITexts[PATH].setFont(m_FontTahomaBold);
+		m_pGUITexts[PATH].setFillColor(sf::Color::White);
+		m_pGUITexts[PATH].setCharacterSize(m_pGUITexts[PATH].getCharacterSize() * 0.70f);
 
-		m_pGUITexts[Names::INFO].setCharacterSize(m_pGUITexts[Names::INFO].getCharacterSize() * 0.50f);
+		m_pGUITexts[INFO].setCharacterSize(m_pGUITexts[INFO].getCharacterSize() * 0.50f);
 
-		m_pGUITexts[Names::GENERATING_SPEED].setCharacterSize(m_pGUITexts[Names::GENERATING_SPEED].getCharacterSize() * 0.70f);
+		m_pGUITexts[GENERATING_SPEED].setCharacterSize(m_pGUITexts[GENERATING_SPEED].getCharacterSize() * 0.70f);
 
-		m_pGUITexts[Names::MAX_SPEED].setCharacterSize(m_pGUITexts[Names::MAX_SPEED].getCharacterSize() * 0.70f);
-		UpdateText(Names::MAX_SPEED, std::to_string(m_MaxPxPerSec) + " px/s");
+		m_pGUITexts[MAX_SPEED].setCharacterSize(m_pGUITexts[MAX_SPEED].getCharacterSize() * 0.70f);
+		UpdateText(MAX_SPEED, std::to_string(m_MaxPxPerSec) + " px/s");
 
-		m_pGUITexts[Names::OUTPUT_FILE].setCharacterSize(m_pGUITexts[Names::OUTPUT_FILE].getCharacterSize() * 0.50f);
+		m_pGUITexts[OUTPUT_FILE].setCharacterSize(m_pGUITexts[OUTPUT_FILE].getCharacterSize() * 0.50f);
 
-		m_pGUITexts[Names::SOURCE_DESTINATION].setCharacterSize(m_pGUITexts[Names::SOURCE_DESTINATION].getCharacterSize() * 0.50f);
+		m_pGUITexts[SOURCE_DESTINATION].setCharacterSize(m_pGUITexts[SOURCE_DESTINATION].getCharacterSize() * 0.50f);
 	}
 
 	void GUIAntMega::SetProgressThreshold(float progressInPercent)
@@ -150,7 +151,7 @@ namespace da
 		{
 			pxReadings[firsReadings] = pxPerSec;
 
-			UpdateText(da::GUIAntMega::GENERATING_SPEED, std::to_string(pxReadings[0]) + " px/s");
+			UpdateText(GENERATING_SPEED, std::to_string(pxReadings[0]) + " px/s");
 			++firsReadings;
 			return;
 		}
@@ -169,8 +170,8 @@ namespace da
 			uint64_t avgPxPerSec = (pxReadings[0] + pxReadings[1] + pxReadings[2] + pxReadings[3] + pxReadings[4]) / PX_READINGS_SIZE;
 			if (m_MaxPxPerSec < avgPxPerSec)m_MaxPxPerSec = avgPxPerSec;
 
-			UpdateText(da::GUIAntMega::GENERATING_SPEED, std::to_string(avgPxPerSec) + " px/s");
-			UpdateText(Names::MAX_SPEED, std::to_string(m_MaxPxPerSec) + " px/s");
+			UpdateText(GENERATING_SPEED, std::to_string(avgPxPerSec) + " px/s");
+			UpdateText(MAX_SPEED, std::to_string(m_MaxPxPerSec) + " px/s");
 		}
 	}
 
@@ -182,6 +183,78 @@ namespace da
 	void GUIAntMega::SetCopying(bool setValue)
 	{
 		 m_CopyStarted = setValue;
+	}
+
+	void GUIAntMega::FetchDataForGUI(uint8_t msgCountPerFetch)
+	{
+		IPC::Message msg;
+
+		for (uint8_t i = 0U; i < msgCountPerFetch; ++i)
+		{
+			if (!IPC::GetMessage(&msg)) break;
+
+			switch (msg.messageType)
+			{
+			case IPC::messageType::GUI_MESSAGE_TEXT_UPDATE:
+			{
+				switch (msg.valueName)
+				{
+				case INFO:
+				{
+					AppendText(
+						msg.valueName,
+						reinterpret_cast<char*>(msg.message));
+				}break;
+				case MOVES:
+				{
+					UpdateTextAfter(
+						msg.valueName,
+						8U,
+						reinterpret_cast<char*>(msg.message));
+				}break;
+				case THRESHOLD:
+				{
+					UpdateTextAfter(
+						msg.valueName,
+						23U,
+						reinterpret_cast<char*>(msg.message));
+				}break;
+				default:
+				{
+					UpdateText(
+						msg.valueName,
+						reinterpret_cast<char*>(msg.message));
+				}break;
+				}
+
+			}break;
+			case IPC::messageType::GUI_MESSAGE_VALUE_UPDATE:
+			{
+				switch (msg.valueName)
+				{
+				case COPY_PROGRESSBAR_UPDATE:
+				{
+					SetProgressCopy(*reinterpret_cast<float*>(msg.message));
+				}break;
+				case COPY_WINDOW_UPDATE:
+				{
+					SetCopying(*reinterpret_cast<bool*>(msg.message));
+				}break;
+				case THRESHOLD_PROGRESSBAR_UPDATE:
+				{
+					SetProgressThreshold(*reinterpret_cast<float*>(msg.message));
+				}break;
+				default:
+					break;
+				}
+
+			}break;
+			default:
+			{
+				IPC::SendMessege(&msg);
+			}break;
+			}
+		}
 	}
 
 	void GUIAntMega::Redraw()
@@ -211,7 +284,7 @@ namespace da
 				m_pWindow->draw(m_CopyAnimation.GetCurrentFrame());
 			}
 
-			for (Names name = Names::FIRST; name < Names::LAST; ++name)
+			for (Names name = FIRST; name < LAST; ++name)
 			{
 				m_pWindow->draw(m_pGUITexts[name]);
 			}

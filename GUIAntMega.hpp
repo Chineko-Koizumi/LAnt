@@ -86,6 +86,7 @@ namespace da
 		bool IsCopying();
 		void SetCopying(bool setValue);
 
+		virtual void FetchDataForGUI(uint8_t msgCountPerFetch) override;
 		virtual void Redraw() override;
 
 	private:

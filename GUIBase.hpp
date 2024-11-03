@@ -37,6 +37,7 @@ namespace da
 		void UpdateTextAfter(uint16_t name, uint16_t charactersToSkip, const std::string& text);
 		void AppendText(uint16_t name, const std::string& text);
 
+		virtual void FetchDataForGUI(uint8_t msgCountPerFetch) = 0;
 		virtual void Redraw() = 0;
 
 	private:

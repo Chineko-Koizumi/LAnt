@@ -28,6 +28,12 @@ namespace da
 
 	GUIAnt::~GUIAnt() {}
 
+	void GUIAnt::FetchDataForGUI(uint8_t msgCountPerFetch)
+	{
+
+		//to do: implement body for message fetching 
+	}
+
 	void GUIAnt::Redraw()
 	{
 		m_pWindow->clear(sf::Color::Black);

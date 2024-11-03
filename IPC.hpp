@@ -32,14 +32,14 @@ namespace IPC
     inline std::queue<Message> _G_MSG_Queue{};
     inline std::mutex _G_MSG_Mutex{};
 
-    static inline void SendMessege(Message* pMsg)
+    inline void SendMessege(Message* pMsg)
     {
         _G_MSG_Mutex.lock();
             _G_MSG_Queue.push(*pMsg);
         _G_MSG_Mutex.unlock();
     }
 
-    static inline void SendMessege(messageType type, uint16_t valueName, const void* pData, uint8_t dataSize)
+    inline void SendMessege(messageType type, uint16_t valueName, const void* pData, uint8_t dataSize)
     {
         Message msg;
 
@@ -52,6 +52,19 @@ namespace IPC
         _G_MSG_Mutex.unlock();
     }
 
+    inline bool GetMessage(Message* pMsg)
+    {
+        if (_G_MSG_Queue.empty()) return false;
+
+        _G_MSG_Mutex.lock();
+
+            *pMsg = _G_MSG_Queue.front();
+            _G_MSG_Queue.pop();
+
+        _G_MSG_Mutex.unlock();
+
+        return true;
+    }
 }
 
 #endif

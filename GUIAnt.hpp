@@ -24,6 +24,7 @@ namespace da
 		GUIAnt(uint32_t windowWidth, uint32_t windowHeight);
 		~GUIAnt();
 
+		virtual void FetchDataForGUI(uint8_t msgCountPerFetch) override;
 		void Redraw() override;
 
 	private:
