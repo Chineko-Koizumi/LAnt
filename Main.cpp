@@ -403,7 +403,7 @@ int main(int argc, char* argv[])
                      using namespace std::chrono_literals;
                      auto start = std::chrono::high_resolution_clock::now();
 
-                     da::GUIAntMega AntMegaGUI(1280U, 960U, ANT_PATH_FROM_CL);///@to_do get monitor resolution
+                     da::GUIAntMega AntMegaGUI(1280U, 960U, ANT_PATH_FROM_CL);///to do: get monitor resolution
 
                      AntMegaGUI.UpdateText(da::GUIAntMega::MOVES, std::string(" Moves: 0"));
                      AntMegaGUI.UpdateText(da::GUIAntMega::THRESHOLD, std::string(" Simulation threshold:   0%"));
@@ -413,7 +413,7 @@ int main(int argc, char* argv[])
 
                      sf::Event eventGUI;
                      bool exitLoop = false;
-                     bool exitHold = false;
+
                      while ( !exitLoop )
                      {
                         if (AntMegaGUI.GetWindowPtr()->pollEvent(eventGUI))
@@ -488,12 +488,9 @@ int main(int argc, char* argv[])
                      antMoves += movesLeft;
 
                      std::string formatedMoves = std::to_string(antMoves);
-
                      daFunctions::AddCommasToStringNumber(formatedMoves);
 
-                     std::string msgS(" Ant hit wall, moves: " + formatedMoves);
-
-                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, static_cast<const void*>(msgS.c_str()), msgS.size() + 1U);
+                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, std::string(" Ant hit wall, moves: " + formatedMoves));
                      IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::MOVES, static_cast<const void*>(formatedMoves.c_str()), formatedMoves.size() + 1U);
                      break;
                  }
@@ -505,13 +502,9 @@ int main(int argc, char* argv[])
 
                      daFunctions::AddCommasToStringNumber(formatedMoves);
 
-                     std::string msgS(" Reached simulation limit, moves: " + formatedMoves);
-
-                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO,   static_cast<const void*>(msgS.c_str()), msgS.size() + 1U);
+                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, std::string(" Reached simulation limit, moves: " + formatedMoves));
                      IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::MOVES,  static_cast<const void*>(formatedMoves.c_str()), formatedMoves.size() + 1U);
-
-                     std::string thresholdFull("100%");
-                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::THRESHOLD, static_cast<const void*>(thresholdFull.c_str()), thresholdFull.size() + 1U);
+                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::THRESHOLD, std::string("100%"));
 
                      float thresholdFloat = 100.0f;
                      IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, da::GUIAntMega::THRESHOLD_PROGRESSBAR_UPDATE, static_cast<const void*>(&thresholdFloat), sizeof(float));
@@ -525,9 +518,7 @@ int main(int argc, char* argv[])
              auto stop = std::chrono::high_resolution_clock::now();
              auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-             std::string msgS(" Whole operation took: " + std::to_string(duration.count()) + "[ms]");
-
-             IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, static_cast<const void*>(msgS.c_str()), msgS.size() + 1U);
+             IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, std::string(" Whole operation took: " + std::to_string(duration.count()) + "[ms]"));
 
              delete[] daGreenColors;
              threadGUI.join();

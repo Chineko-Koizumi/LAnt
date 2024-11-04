@@ -33,12 +33,11 @@ namespace da
 	void MeshMega::DumpToFile(const std::string& outputPath)
 	{
 		std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + ".ppm");
-		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::OUTPUT_FILE, static_cast<const void*>(FileName.c_str()), FileName.size() + 1U);
+		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::OUTPUT_FILE, FileName);
 
 		std::filesystem::create_directories(outputPath);
 
-		std::string FileNameWithPath("From DrawingApp to " + outputPath + FileName);
-		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::SOURCE_DESTINATION, static_cast<const void*>(FileNameWithPath.c_str()), FileNameWithPath.size() + 1U);
+		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::SOURCE_DESTINATION, std::string("From DrawingApp to " + outputPath + FileName));
 
 		bool isCopying = true;
 		IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_WINDOW_UPDATE, static_cast<const void*>(&isCopying), sizeof(float));
@@ -86,11 +85,8 @@ namespace da
 
 		SSDump.close();
 
-		std::string generetingSummary2(" File saved under: " + outputPath + FileName);
-		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::INFO, static_cast<const void*>(generetingSummary2.c_str()), generetingSummary2.size() + 1U);
-
-		std::string generetingSummary1(" File generated in: " + std::to_string( duration.count()) + "[ms]");
-		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::INFO, static_cast<const void*>(generetingSummary1.c_str()), generetingSummary1.size() + 1U);
+		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::INFO, std::string(" File saved under: " + outputPath + FileName));
+		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::INFO, std::string(" File generated in: " + std::to_string(duration.count()) + "[ms]"));
 
 		char emptyMsg[1];
 		emptyMsg[0] = '\0';

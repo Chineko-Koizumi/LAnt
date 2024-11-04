@@ -168,10 +168,13 @@ namespace da
 		if (itt == 0U) 
 		{
 			uint64_t avgPxPerSec = (pxReadings[0] + pxReadings[1] + pxReadings[2] + pxReadings[3] + pxReadings[4]) / PX_READINGS_SIZE;
-			if (m_MaxPxPerSec < avgPxPerSec)m_MaxPxPerSec = avgPxPerSec;
+			if (m_MaxPxPerSec < avgPxPerSec) 
+			{ 
+				m_MaxPxPerSec = avgPxPerSec; 
+				UpdateText(MAX_SPEED, std::to_string(m_MaxPxPerSec) + " px/s");
+			}
 
 			UpdateText(GENERATING_SPEED, std::to_string(avgPxPerSec) + " px/s");
-			UpdateText(MAX_SPEED, std::to_string(m_MaxPxPerSec) + " px/s");
 		}
 	}
 

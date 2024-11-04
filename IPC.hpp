@@ -52,15 +52,26 @@ namespace IPC
         _G_MSG_Mutex.unlock();
     }
 
+    inline void SendMessege(messageType type, uint16_t valueName, const std::string& rMessage)
+    {
+        Message msg;
+
+        msg.messageType = type;
+        msg.valueName = valueName;
+        memcpy_s(msg.message, rMessage.size() + 1, rMessage.c_str(), rMessage.size() + 1);
+
+        _G_MSG_Mutex.lock();
+            _G_MSG_Queue.push(msg);
+        _G_MSG_Mutex.unlock();
+    }
+
     inline bool GetMessage(Message* pMsg)
     {
         if (_G_MSG_Queue.empty()) return false;
 
         _G_MSG_Mutex.lock();
-
             *pMsg = _G_MSG_Queue.front();
             _G_MSG_Queue.pop();
-
         _G_MSG_Mutex.unlock();
 
         return true;
