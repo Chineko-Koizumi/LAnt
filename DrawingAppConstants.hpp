@@ -56,7 +56,7 @@ namespace daFunctions
 {
   inline void AddCommasToStringNumber(std::string& numberInString )
     {
-        for (int16_t i = numberInString.size() - 3; i > 0; i -= 3)
+        for (int16_t i = static_cast<int16_t>( numberInString.size() - 3); i > 0; i -= 3)
         {
             numberInString.insert(i, ",");
         }

@@ -15,8 +15,8 @@
 #include <time.h>       /* time_t, struct tm, time, localtime, strftime */
 #include <queue>
 
-static uint32_t WINDOW_WIDTH                = 0;
-static uint32_t WINDOW_HEIGHT               = 0;
+static uint32_t MESH_WIDTH                = 0;
+static uint32_t MESH_HEIGHT               = 0;
 static uint64_t SIMULATION_STEPS_THRESHOLD  = 0;
 static uint8_t GENERATION_TYPE              = 0;
 
@@ -63,18 +63,23 @@ namespace da
 
 int main(int argc, char* argv[])
 {
-    if (!strcmp(argv[1], "-CLG")) //generete from command line
+
+    if (argc < 2 || argc > 6)
     {
-        WINDOW_WIDTH                = atoi(argv[2]);
-        WINDOW_HEIGHT               = atoi(argv[3]);
+        GENERATION_TYPE = da::MenuOptions::EXIT;
+    }
+    else if (!strcmp(argv[1], "-CLG")) //generete from command line
+    {
+        MESH_WIDTH                = atoi(argv[2]);
+        MESH_HEIGHT               = atoi(argv[3]);
         ANT_PATH_FROM_CL            = std::string(argv[4]);
 
         GENERATION_TYPE = da::MenuOptions::ANT_GUI;
     }
     else if (!strcmp(argv[1], "-FPG")) //generete from file, parrallel
     {
-        WINDOW_WIDTH                = atoi(argv[2]);
-        WINDOW_HEIGHT               = atoi(argv[3]);
+        MESH_WIDTH                = atoi(argv[2]);
+        MESH_HEIGHT               = atoi(argv[3]);
         SIMULATION_STEPS_THRESHOLD  = atoi(argv[4]);
         ANT_PATHS_FILE_PATH         = std::string(argv[5]);
 
@@ -82,8 +87,8 @@ int main(int argc, char* argv[])
     }
     else if (!strcmp(argv[1], "-CLMG")) //generete mega file from command line
     {
-        WINDOW_WIDTH                = atoi(argv[2]);
-        WINDOW_HEIGHT               = atoi(argv[3]);
+        MESH_WIDTH                = atoi(argv[2]);
+        MESH_HEIGHT               = atoi(argv[3]);
         SIMULATION_STEPS_THRESHOLD  = atoi(argv[4]);
         ANT_PATH_FROM_CL            = std::string(argv[5]);
 
@@ -98,17 +103,20 @@ int main(int argc, char* argv[])
 
     std::ifstream infile(ANT_PATHS_FILE_PATH);
 
-    time_t rawtime;
-    struct tm timeinfo;
-    char buffer[80];
+    {// no need to use those variables outside this braces
 
-    time(&rawtime);
-    localtime_s(&timeinfo, &rawtime);
+        time_t rawtime;
+        struct tm timeinfo;
+        char buffer[80];
 
-    strftime(buffer, 80, "%F(%Hh%Mm%Ss)/", &timeinfo);
+        time(&rawtime);
+        localtime_s(&timeinfo, &rawtime);
 
-    OUTPUT_PATH_VAR += OUTPUT_PATH_CONST;
-    OUTPUT_PATH_VAR += buffer;
+        strftime(buffer, 80, "%F(%Hh%Mm%Ss)/", &timeinfo);
+
+        OUTPUT_PATH_VAR += OUTPUT_PATH_CONST;
+        OUTPUT_PATH_VAR += buffer;
+    }
 
 #pragma region Window
     
@@ -116,9 +124,9 @@ int main(int argc, char* argv[])
     {
         case da::ANT_GUI:
         {
-            if ( !da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, daConstants::SIZE_OF_VERTEX) ) break;
+            if ( !da::WindowsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_VERTEX) ) break;
             
-            da::GUIAnt windowGUI(WINDOW_WIDTH, WINDOW_HEIGHT);
+            da::GUIAnt windowGUI(MESH_WIDTH, MESH_HEIGHT);
             windowGUI.UpdateText(da::GUIAnt::PATH,          ANT_PATH_FROM_CL);
             windowGUI.UpdateText(da::GUIAnt::SPEED,         std::string("Speed: " + std::to_string(da::KeyboardMethods::m_RenderStepCount)));
             windowGUI.UpdateText(da::GUIAnt::MOVES,         std::string("Moves: " + std::to_string(0U)));
@@ -126,10 +134,10 @@ int main(int argc, char* argv[])
             windowGUI.Redraw();
 
             sf::Event eventAnt; // for windowAnt event pool and GUI window
-            sf::RenderWindow windowAnt(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::None);
+            sf::RenderWindow windowAnt(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
 
             daTypes::GreenColor* greenColors = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL);
-            da::Ant ant(&windowAnt, greenColors, WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL);
+            da::Ant ant(&windowAnt, greenColors, MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL);
 
             windowAnt.setActive(true);
 
@@ -171,7 +179,7 @@ int main(int argc, char* argv[])
                     }
                 }
 
-                uint32_t movesLeft = ant.NextMove(da::KeyboardMethods::m_RenderStepCount);
+                uint64_t movesLeft = ant.NextMove(da::KeyboardMethods::m_RenderStepCount);
                 if (movesLeft == 0)
                 {
                     antMoves += da::KeyboardMethods::m_RenderStepCount;
@@ -214,18 +222,18 @@ int main(int argc, char* argv[])
 
         case da::ANT_PARALLEL_FILE: 
         {
-            if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, daConstants::SIZE_OF_VERTEX)) break;
+            if (!da::WindowsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_VERTEX)) break;
 
             std::mutex mtxCout, mtxDumpFile;
             std::thread* threads;
             bool* threadsStatus;
 
-            uint16_t Thread_count = da::WindowsFeatures::GetThreadCountForMeshSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+            uint16_t Thread_count = da::WindowsFeatures::GetThreadCountForMeshSize(MESH_WIDTH, MESH_HEIGHT);
 
             threads = new std::thread[Thread_count];
             threadsStatus = new bool[Thread_count];
 
-            sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Langton's Ant", sf::Style::None);
+            sf::RenderWindow window(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
             window.setActive(false);
 
             da::WindowsFeatures::InitTerminalForThreads(Thread_count);
@@ -277,7 +285,7 @@ int main(int argc, char* argv[])
                         }
 
                         daTypes::GreenColor* pGreenColor = pVectorPaths->back().second;
-                        da::Ant ant(pWindow, pGreenColor, WINDOW_WIDTH, WINDOW_HEIGHT, pVectorPaths->back().first);
+                        da::Ant ant(pWindow, pGreenColor, MESH_WIDTH, MESH_HEIGHT, pVectorPaths->back().first);
 
                         pVectorPaths->pop_back();
                     pMutexAnt->unlock();
@@ -299,7 +307,7 @@ int main(int argc, char* argv[])
                         
                        pMutexAnt->unlock();
 
-                        uint32_t movesLeft = ant.NextMove(lambdaRenderStepCount);
+                        uint64_t movesLeft = ant.NextMove(lambdaRenderStepCount);
                         if (movesLeft == 0)
                         {
                             antMoves += lambdaRenderStepCount;
@@ -382,13 +390,13 @@ int main(int argc, char* argv[])
 
          case da::ANT_NOGUI_LARGE_FILE:
          {
-             if (!da::WindowsFeatures::IsEnoughFreeMemory(WINDOW_WIDTH, WINDOW_HEIGHT, daConstants::SIZE_OF_MASKED_COLOR)) break;
+             if (!da::WindowsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_MASKED_COLOR)) break;
 
              auto start = std::chrono::high_resolution_clock::now();
 
              daTypes::GreenColor* daGreenColors = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
      
-             da::AntMega megaAnt(WINDOW_WIDTH, WINDOW_HEIGHT, ANT_PATH_FROM_CL, daGreenColors, ANT_PATH_FROM_CL.size());
+             da::AntMega megaAnt(MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL, daGreenColors);
 
              std::atomic_uint64_t progress = 0U;
              std::atomic_uint64_t antMoves = 0U;
@@ -404,11 +412,8 @@ int main(int argc, char* argv[])
                      auto start = std::chrono::high_resolution_clock::now();
 
                      da::GUIAntMega AntMegaGUI(1280U, 960U, ANT_PATH_FROM_CL);///to do: get monitor resolution
-
-                     AntMegaGUI.UpdateText(da::GUIAntMega::MOVES, std::string(" Moves: 0"));
-                     AntMegaGUI.UpdateText(da::GUIAntMega::THRESHOLD, std::string(" Simulation threshold:   0%"));
-                     AntMegaGUI.UpdateText(da::GUIAntMega::INFO, std::string(" Mesh size: ") + std::to_string(WINDOW_WIDTH) + "x" + std::to_string(WINDOW_HEIGHT));
-                     AntMegaGUI.SetProgressThreshold(0.0f);
+                    
+                     AntMegaGUI.UpdateText(da::GUIAntMega::INFO, std::string(" Mesh size: ") + std::to_string(MESH_WIDTH) + "x" + std::to_string(MESH_HEIGHT));
                      AntMegaGUI.Redraw();
 
                      sf::Event eventGUI;
@@ -446,8 +451,7 @@ int main(int argc, char* argv[])
 
                         AntMegaGUI.FetchDataForGUI( 5U );
 
-                        static bool copyNotStarted = true;
-                        if ( !AntMegaGUI.IsCopying() && copyNotStarted)
+                        if ( AntMegaGUI.GetState() == da::GUIAntMega::States::GENERATING)
                         {
                             auto timeStamp = std::chrono::high_resolution_clock::now();
                             auto cycleTime = std::chrono::duration_cast<std::chrono::milliseconds>(timeStamp - start);
@@ -463,11 +467,11 @@ int main(int argc, char* argv[])
 
                             float thresholdPercent = static_cast<float>(*pProgress) / SIMULATION_STEPS_THRESHOLD;
                             char temp[10];
-                            snprintf(temp, sizeof buffer, "%3.0f", thresholdPercent * 100.0f);
+                            snprintf(temp, sizeof(temp), "%3.0f", thresholdPercent * 100.0f);
+
                             AntMegaGUI.UpdateTextAfter(da::GUIAntMega::THRESHOLD, 23U, std::string(temp) + "%");
                             AntMegaGUI.SetProgressThreshold(thresholdPercent);
                         }
-                        else copyNotStarted = false;
                         
                         AntMegaGUI.Redraw();
                         std::this_thread::sleep_for(33ms);
@@ -478,7 +482,7 @@ int main(int argc, char* argv[])
 
              while (!exit)
              {
-                 uint32_t movesLeft = megaAnt.NextMove(megaAntRenderStepCount);
+                 uint64_t movesLeft = megaAnt.NextMove(megaAntRenderStepCount);
                  if (movesLeft == 0)
                  {
                      antMoves += megaAntRenderStepCount;
@@ -491,7 +495,7 @@ int main(int argc, char* argv[])
                      daFunctions::AddCommasToStringNumber(formatedMoves);
 
                      IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, std::string(" Ant hit wall, moves: " + formatedMoves));
-                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::MOVES, static_cast<const void*>(formatedMoves.c_str()), formatedMoves.size() + 1U);
+                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::MOVES, formatedMoves);
                      break;
                  }
                  
@@ -503,7 +507,7 @@ int main(int argc, char* argv[])
                      daFunctions::AddCommasToStringNumber(formatedMoves);
 
                      IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, std::string(" Reached simulation limit, moves: " + formatedMoves));
-                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::MOVES,  static_cast<const void*>(formatedMoves.c_str()), formatedMoves.size() + 1U);
+                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::MOVES, formatedMoves);
                      IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::THRESHOLD, std::string("100%"));
 
                      float thresholdFloat = 100.0f;

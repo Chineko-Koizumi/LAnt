@@ -1,7 +1,6 @@
 #ifndef GUIANTMEGA_HPP
 #define GUIANTMEGA_HPP
 
-
 #include "GUIBase.hpp"
 #include "Animation.hpp"
 
@@ -10,6 +9,13 @@ namespace da
 	class GUIAntMega : public GUIBase
 	{
 	public:
+		enum States : uint16_t
+		{
+			GENERATING = 0U,
+			COPING,
+			IDLE_AFTER_COPING
+		};
+
 		enum Names : uint16_t
 		{
 			FIRST = 0U,
@@ -27,12 +33,13 @@ namespace da
 
 		enum Updates : uint16_t
 		{
-			THRESHOLD_PROGRESSBAR_UPDATE= 0U,
+			THRESHOLD_PROGRESSBAR_UPDATE = 0U,
 			COPY_PROGRESSBAR_UPDATE, 
-			COPY_WINDOW_UPDATE
+			GUI_STATE_UPDATE
 		};
 
 	private:
+
 		sf::Texture m_BackgroundTexture;
 		sf::Sprite m_BackgroundSprite;
 
@@ -65,14 +72,14 @@ namespace da
 		ProgressBar m_ThreasholdBar;
 		ProgressBar m_CopyBar;
 
-		bool m_CopyStarted;
-
 		Animation m_CopyAnimation;
 
 		static constexpr uint8_t PX_READINGS_SIZE = 5U;
 		uint64_t pxReadings[PX_READINGS_SIZE];
 
 		uint64_t m_MaxPxPerSec;
+
+		uint16_t m_CurrentState;
 
 	public:
 		GUIAntMega(uint32_t windowWidth, uint32_t windowHeight, std::string& path);
@@ -83,8 +90,8 @@ namespace da
 
 		void setPxPerS(uint64_t pxPerSec);
 
-		bool IsCopying();
-		void SetCopying(bool setValue);
+		void SetState(uint16_t stateNum);
+		uint16_t GetState();
 
 		virtual void FetchDataForGUI(uint8_t msgCountPerFetch) override;
 		virtual void Redraw() override;

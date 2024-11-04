@@ -39,17 +39,17 @@ namespace da
     {
         if (!CheckAndInsert(data)) return nullptr;
 
-        uint8_t colorCount = data.size();
+        uint8_t colorCount = static_cast<uint8_t>( data.size() );
         sf::Color* pColorArray = new sf::Color[colorCount];
 
         //encoding information for ant on alfa channel bits 
         // Alfa channel bits 0 to 3 are for encoding index of next color in ants path
         // Alfa channel bit 4 => 0 turn left, 1(16 or 0001 0000) turn right
         // Alfa channel bits 5 to 7 are used as alfa channel value 
-        for (size_t i = 0; i < colorCount; i++)
+        for (uint8_t i = 0; i < colorCount; i++)
         {
-            int temp = (data[i] == 'L') ? daConstants::LEFT : daConstants::RIGHT;
-            int temp2 = (i != colorCount - 1U) ? (i + 1U) : 0U;
+            uint8_t temp = (data[i] == 'L') ? daConstants::LEFT : daConstants::RIGHT;
+            uint8_t temp2 = (i != colorCount - 1U) ? (i + 1U) : 0U;
 
             pColorArray[i] = sf::Color(
                 0U,
@@ -66,7 +66,7 @@ namespace da
     {
         if (!CheckAndInsert(data)) return nullptr;
 
-        uint8_t colorCount = data.size();
+        uint8_t colorCount = static_cast<uint8_t>( data.size() );
         daTypes::GreenColor* pGreenColorArray = new daTypes::GreenColor[colorCount];
 
         //encoding information for ant on alfa channel bits 
@@ -76,7 +76,7 @@ namespace da
         for (size_t i = 0; i < colorCount; i++)
         {
             uint8_t temp = (data[i] == 'L') ? daConstants::LEFT : daConstants::RIGHT;
-            uint8_t temp2 = (i != colorCount - 1U) ? (i + 1U) : 0U;                 // @Bug only 15 colors possible
+            uint8_t temp2 = static_cast<uint8_t>( (i != colorCount - 1U) ? (i + 1U) : 0U ); // @Bug only 15 colors possible
 
             pGreenColorArray[i] = daTypes::GreenColor{
                                         static_cast<uint8_t>(daConstants::COLOR_RANGE_8BIT * (static_cast<float>(i) / colorCount)),

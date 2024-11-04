@@ -5,7 +5,7 @@ namespace da
 {
 	GUIAntMega::Names& operator++ (GUIAntMega::Names& name)
 	{
-		uint8_t temp = name;
+		uint16_t temp = name;
 		name = static_cast<GUIAntMega::Names>(++temp);
 
 		return name;
@@ -13,9 +13,9 @@ namespace da
 
 	GUIAntMega::GUIAntMega(uint32_t windowWidth, uint32_t windowHeight, std::string& path)
 		: GUIBase(windowWidth, windowHeight, LAST)
-		, m_CopyStarted(false)
 		, m_MaxPxPerSec(0U)
 		, m_CopyAnimation(26U, 50U, static_cast<float>(m_WindowWidth) * 0.370f, static_cast<float>(m_WindowHeight) * 0.435f, 1.75f, "./Sprites/GUI/AntMega/CopyAnimation.png")
+		, m_CurrentState(GENERATING)
 	{
 		m_pWindow->setTitle("Ant MegaPath");
 
@@ -25,6 +25,10 @@ namespace da
 		InitText();
 
 		UpdateText(PATH, path);
+		UpdateText(da::GUIAntMega::MOVES, std::string(" Moves: 0"));
+		UpdateText(da::GUIAntMega::THRESHOLD, std::string(" Simulation threshold:   0%"));
+		SetProgressThreshold(0.0f);
+		Redraw();
 	}
 
 	GUIAntMega::~GUIAntMega()
@@ -46,8 +50,8 @@ namespace da
 		if (!m_ThreasholdBar.m_ProgressBarOutsideTexture.loadFromFile("./Sprites/GUI/AntMega/ProgressBarOutside.png"))	assert(false);
 		if (!m_ThreasholdBar.m_ProgressBarInsideTexture.loadFromFile("./Sprites/GUI/AntMega/ProgressBarInside.png"))	assert(false);
 
-		m_ThreasholdBar.m_ProgressBarWidth = m_ThreasholdBar.m_ProgressBarOutsideTexture.getSize().x;
-		m_ThreasholdBar.m_ProgressBarHeight = m_ThreasholdBar.m_ProgressBarOutsideTexture.getSize().y;
+		m_ThreasholdBar.m_ProgressBarWidth	= static_cast<uint16_t>( m_ThreasholdBar.m_ProgressBarOutsideTexture.getSize().x );
+		m_ThreasholdBar.m_ProgressBarHeight = static_cast<uint16_t>( m_ThreasholdBar.m_ProgressBarOutsideTexture.getSize().y );
 
 		m_ThreasholdBar.m_ProgressBarOutsideTexture.setSmooth(true);
 		m_ThreasholdBar.m_ProgressBarInsideTexture.setSmooth(true);
@@ -72,8 +76,8 @@ namespace da
 		if (!m_CopyBar.m_ProgressBarOutsideTexture.loadFromFile("./Sprites/GUI/AntMega/CopingFileBackground.png"))	assert(false);
 		if (!m_CopyBar.m_ProgressBarInsideTexture.loadFromFile("./Sprites/GUI/AntMega/CopingProgressBar.png"))		assert(false);
 
-		m_CopyBar.m_ProgressBarWidth = m_CopyBar.m_ProgressBarOutsideTexture.getSize().x;
-		m_CopyBar.m_ProgressBarHeight = m_CopyBar.m_ProgressBarOutsideTexture.getSize().y;
+		m_CopyBar.m_ProgressBarWidth  = static_cast<uint16_t>( m_CopyBar.m_ProgressBarOutsideTexture.getSize().x );
+		m_CopyBar.m_ProgressBarHeight = static_cast<uint16_t>( m_CopyBar.m_ProgressBarOutsideTexture.getSize().y );
 
 		m_CopyBar.m_ProgressBarOutsideTexture.setSmooth(false);
 		m_CopyBar.m_ProgressBarInsideTexture.setSmooth(false);
@@ -103,25 +107,35 @@ namespace da
 			m_pGUITexts[name].setOutlineColor(m_ColorWindowsLightBlack);
 			m_pGUITexts[name].setString("");
 			m_pGUITextsStrings[name] = std::string("");
-			m_pGUITexts[name].setCharacterSize(windowSpacing);
+			m_pGUITexts[name].setCharacterSize(static_cast<unsigned int>(windowSpacing) );
 			m_pGUITexts[name].setLineSpacing(1.1f);
 			m_pGUITexts[name].setPosition(m_aTextsPos[name]);
 		}
 
 		m_pGUITexts[PATH].setFont(m_FontTahomaBold);
 		m_pGUITexts[PATH].setFillColor(sf::Color::White);
-		m_pGUITexts[PATH].setCharacterSize(m_pGUITexts[PATH].getCharacterSize() * 0.70f);
+		m_pGUITexts[PATH].setCharacterSize(static_cast<unsigned int>( m_pGUITexts[PATH].getCharacterSize() * 0.70f ));
 
-		m_pGUITexts[INFO].setCharacterSize(m_pGUITexts[INFO].getCharacterSize() * 0.50f);
+		m_pGUITexts[INFO].setCharacterSize(static_cast<unsigned int>( m_pGUITexts[INFO].getCharacterSize() * 0.50f ) );
 
-		m_pGUITexts[GENERATING_SPEED].setCharacterSize(m_pGUITexts[GENERATING_SPEED].getCharacterSize() * 0.70f);
+		m_pGUITexts[GENERATING_SPEED].setCharacterSize(static_cast<unsigned int>( m_pGUITexts[GENERATING_SPEED].getCharacterSize() * 0.70f ) );
 
-		m_pGUITexts[MAX_SPEED].setCharacterSize(m_pGUITexts[MAX_SPEED].getCharacterSize() * 0.70f);
+		m_pGUITexts[MAX_SPEED].setCharacterSize(static_cast<unsigned int>( m_pGUITexts[MAX_SPEED].getCharacterSize() * 0.70f ) );
 		UpdateText(MAX_SPEED, std::to_string(m_MaxPxPerSec) + " px/s");
 
-		m_pGUITexts[OUTPUT_FILE].setCharacterSize(m_pGUITexts[OUTPUT_FILE].getCharacterSize() * 0.50f);
+		m_pGUITexts[OUTPUT_FILE].setCharacterSize(static_cast<unsigned int>( m_pGUITexts[OUTPUT_FILE].getCharacterSize() * 0.50f ) );
 
-		m_pGUITexts[SOURCE_DESTINATION].setCharacterSize(m_pGUITexts[SOURCE_DESTINATION].getCharacterSize() * 0.50f);
+		m_pGUITexts[SOURCE_DESTINATION].setCharacterSize( static_cast<unsigned int>( m_pGUITexts[SOURCE_DESTINATION].getCharacterSize() * 0.50f ) );
+	}
+
+	void GUIAntMega::SetState(uint16_t stateNum)
+	{
+		m_CurrentState = stateNum;
+	}
+
+	uint16_t GUIAntMega::GetState()
+	{
+		return m_CurrentState;
 	}
 
 	void GUIAntMega::SetProgressThreshold(float progressInPercent)
@@ -129,8 +143,8 @@ namespace da
 		m_ThreasholdBar.m_ProgressBarInsideSprite.setTextureRect( sf::IntRect(
 																	0, 
 																	0, 
-																	m_ThreasholdBar.m_ProgressBarWidth * progressInPercent,
-																	m_ThreasholdBar.m_ProgressBarHeight ) );
+																	static_cast<int>( m_ThreasholdBar.m_ProgressBarWidth * progressInPercent),
+																	static_cast<int>( m_ThreasholdBar.m_ProgressBarHeight ) ) );
 	}
 
 	void GUIAntMega::SetProgressCopy(float progressInPercent)
@@ -138,8 +152,8 @@ namespace da
 		m_CopyBar.m_ProgressBarInsideSprite.setTextureRect(sf::IntRect(
 																0,
 																0, 
-																m_CopyBar.m_ProgressBarWidth * 0.734f * progressInPercent, // shift because progress bar is asymetrical
-																m_CopyBar.m_ProgressBarHeight ) );
+																static_cast<int>( m_CopyBar.m_ProgressBarWidth * 0.734f * progressInPercent ), // shift because progress bar is asymetrical
+																static_cast<int>( m_CopyBar.m_ProgressBarHeight ) ) );
 	}
 
 	void GUIAntMega::setPxPerS(uint64_t pxPerSec)
@@ -176,16 +190,6 @@ namespace da
 
 			UpdateText(GENERATING_SPEED, std::to_string(avgPxPerSec) + " px/s");
 		}
-	}
-
-	bool GUIAntMega::IsCopying()
-	{
-		return m_CopyStarted;
-	}
-
-	void GUIAntMega::SetCopying(bool setValue)
-	{
-		 m_CopyStarted = setValue;
 	}
 
 	void GUIAntMega::FetchDataForGUI(uint8_t msgCountPerFetch)
@@ -239,9 +243,9 @@ namespace da
 				{
 					SetProgressCopy(*reinterpret_cast<float*>(msg.message));
 				}break;
-				case COPY_WINDOW_UPDATE:
+				case GUI_STATE_UPDATE:
 				{
-					SetCopying(*reinterpret_cast<bool*>(msg.message));
+					SetState(*reinterpret_cast<uint16_t*>(msg.message));
 				}break;
 				case THRESHOLD_PROGRESSBAR_UPDATE:
 				{
@@ -274,19 +278,22 @@ namespace da
 
 			m_pWindow->draw(outputThresholdSprite);
 
-			if (m_CopyStarted) 
+			switch (m_CurrentState)
 			{
-				m_CopyBar.m_ProgressBarRenderTexture.draw(m_CopyBar.m_ProgressBarOutsideSprite);
-				m_CopyBar.m_ProgressBarRenderTexture.draw(m_CopyBar.m_ProgressBarInsideSprite);
-				m_CopyBar.m_ProgressBarRenderTexture.display();
+				case COPING:
+				{
+					m_CopyBar.m_ProgressBarRenderTexture.draw(m_CopyBar.m_ProgressBarOutsideSprite);
+					m_CopyBar.m_ProgressBarRenderTexture.draw(m_CopyBar.m_ProgressBarInsideSprite);
+					m_CopyBar.m_ProgressBarRenderTexture.display();
 
-				sf::Sprite outputCopySprite(m_CopyBar.m_ProgressBarRenderTexture.getTexture());
+					sf::Sprite outputCopySprite(m_CopyBar.m_ProgressBarRenderTexture.getTexture());
 
-				m_pWindow->draw(outputCopySprite);
+					m_pWindow->draw(outputCopySprite);
 
-				m_pWindow->draw(m_CopyAnimation.GetCurrentFrame());
+					m_pWindow->draw(m_CopyAnimation.GetCurrentFrame());	
+				}break;
 			}
-
+				
 			for (Names name = FIRST; name < LAST; ++name)
 			{
 				m_pWindow->draw(m_pGUITexts[name]);

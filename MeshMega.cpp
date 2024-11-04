@@ -38,9 +38,7 @@ namespace da
 		std::filesystem::create_directories(outputPath);
 
 		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::SOURCE_DESTINATION, std::string("From DrawingApp to " + outputPath + FileName));
-
-		bool isCopying = true;
-		IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_WINDOW_UPDATE, static_cast<const void*>(&isCopying), sizeof(float));
+		IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::GUI_STATE_UPDATE, GUIAntMega::States::COPING);
 
 		std::ofstream SSDump;
 		SSDump.open(outputPath + FileName);
@@ -64,16 +62,12 @@ namespace da
 			{
 				SSDump << DumpSplitter;
 				DumpSplitter = "";
-				if ((i % 1000000) == 0)
-				{
-					float progressBarValue = static_cast<float>(i) / m_fieldSize;
-					IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_PROGRESSBAR_UPDATE, static_cast<const void*>(&progressBarValue), sizeof(float));
-				}
+
+				if ((i % 1000000) == 0) IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_PROGRESSBAR_UPDATE, static_cast<float>(i) / m_fieldSize);
 			}
 		}
 
-		float progressBarValue = 1.0f;
-		IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_PROGRESSBAR_UPDATE, static_cast<const void*>(&progressBarValue), sizeof(float));
+		IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_PROGRESSBAR_UPDATE, 1.0f);
 
 		if (DumpSplitter.compare(std::string("")) != 0)
 		{
@@ -86,14 +80,13 @@ namespace da
 		SSDump.close();
 
 		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::INFO, std::string(" File saved under: " + outputPath + FileName));
-		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::INFO, std::string(" File generated in: " + std::to_string(duration.count()) + "[ms]"));
+		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::INFO, std::string(" File dumped to disk in: " + std::to_string(duration.count()) + "[ms]"));
 
 		char emptyMsg[1];
 		emptyMsg[0] = '\0';
 		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::SOURCE_DESTINATION, static_cast<const void*>(emptyMsg), 1U);
 		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::OUTPUT_FILE, static_cast<const void*>(emptyMsg), 1U);
 
-		isCopying = false;
-		IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_WINDOW_UPDATE, static_cast<const void*>(&isCopying), sizeof(float));
+		IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::GUI_STATE_UPDATE, GUIAntMega::States::IDLE_AFTER_COPING);
 	}
 }

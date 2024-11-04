@@ -7,8 +7,7 @@ namespace da
 		  uint32_t Width
 		, uint32_t Height
 		, std::string& antPath
-		, daTypes::GreenColor* DaGreenColorTransitionArray
-		, uint16_t ColorMaskedCount)
+		, daTypes::GreenColor* DaGreenColorTransitionArray)
 			: AntBase(DaGreenColorTransitionArray, Width, Height, antPath)
 			, m_pMegaMesh(new MeshMega(Width, Height, DaGreenColorTransitionArray))
 	{

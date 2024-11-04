@@ -4,7 +4,7 @@ namespace da
 {
 	GUIAnt::Names& operator++ (GUIAnt::Names& name)
 	{
-		uint8_t temp = name;
+		uint16_t temp = name;
 		name = static_cast<GUIAnt::Names>(++temp);
 
 		return name;
@@ -21,8 +21,8 @@ namespace da
 			m_pGUITexts[name].setOutlineColor(sf::Color(74U, 246U, 38U));
 			m_pGUITexts[name].setString("");
 			m_pGUITextsStrings[name] = std::string("");
-			m_pGUITexts[name].setCharacterSize(windowSpacing);
-			m_pGUITexts[name].setPosition(0.0f, m_pGUITexts[name].getCharacterSize() * name);
+			m_pGUITexts[name].setCharacterSize( static_cast<unsigned int>( windowSpacing ) );
+			m_pGUITexts[name].setPosition(0.0f, static_cast<float>(m_pGUITexts[name].getCharacterSize() * name ) );
 		}
 	}
 
@@ -30,7 +30,7 @@ namespace da
 
 	void GUIAnt::FetchDataForGUI(uint8_t msgCountPerFetch)
 	{
-
+		msgCountPerFetch;
 		//to do: implement body for message fetching 
 	}
 

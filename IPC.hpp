@@ -65,6 +65,32 @@ namespace IPC
         _G_MSG_Mutex.unlock();
     }
 
+    inline void SendMessege(messageType type, uint16_t valueName, uint16_t value16_t)
+    {
+        Message msg;
+
+        msg.messageType = type;
+        msg.valueName = valueName;
+        memcpy_s(msg.message, sizeof(uint16_t), &value16_t, sizeof(uint16_t));
+
+        _G_MSG_Mutex.lock();
+            _G_MSG_Queue.push(msg);
+        _G_MSG_Mutex.unlock();
+    }
+
+    inline void SendMessege(messageType type, uint16_t valueName, float valueFloat)
+    {
+        Message msg;
+
+        msg.messageType = type;
+        msg.valueName = valueName;
+        memcpy_s(msg.message, sizeof(float), &valueFloat, sizeof(float));
+
+        _G_MSG_Mutex.lock();
+        _G_MSG_Queue.push(msg);
+        _G_MSG_Mutex.unlock();
+    }
+
     inline bool GetMessage(Message* pMsg)
     {
         if (_G_MSG_Queue.empty()) return false;
