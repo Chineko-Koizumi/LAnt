@@ -82,7 +82,7 @@ namespace da
 		uint16_t m_CurrentState;
 
 	public:
-		GUIAntMega(uint32_t windowWidth, uint32_t windowHeight, std::string& path);
+		GUIAntMega( uint32_t windowHeight, std::string& path);
 		virtual ~GUIAntMega();
 
 		void SetProgressThreshold( float progressInPercent);
@@ -94,7 +94,7 @@ namespace da
 		uint16_t GetState();
 
 		virtual void FetchDataForGUI(uint8_t msgCountPerFetch) override;
-		virtual void Redraw() override;
+		virtual void Redraw(bool clearScreen, bool pushToScreen) override;
 
 	private:
 		void InitBackground();

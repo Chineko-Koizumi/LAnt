@@ -87,7 +87,7 @@ namespace da
 			return 0U;
 		}
 		virtual void DumpToFile(const std::string& outputPath);
-		void DrawMesh();
+		void DrawMesh(bool clearScreen, bool pushToScreen);
 
 	private:
 	};

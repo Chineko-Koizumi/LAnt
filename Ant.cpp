@@ -31,8 +31,8 @@ namespace da
 		m_pMesh->DumpToFile(outputPath);
 	}
 
-	void Ant::DrawMesh()
+	void Ant::DrawMesh(bool clearScreen, bool pushToScreen)
 	{
-		m_pMesh->DrawMesh();
+		m_pMesh->DrawMesh(clearScreen, pushToScreen);
 	}
 }

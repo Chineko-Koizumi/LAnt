@@ -11,8 +11,8 @@ namespace da
 		return name;
 	}
 
-	GUIAntMega::GUIAntMega(uint32_t windowWidth, uint32_t windowHeight, std::string& path)
-		: GUIBase(windowWidth, windowHeight, LAST)
+	GUIAntMega::GUIAntMega( uint32_t windowHeight, std::string& path)
+		: GUIBase(windowHeight* daConstants::GUI_ANT_MEGA_ASPECT_RATIO, windowHeight, LAST)
 		, m_MaxPxPerSec(0U)
 		, m_CopyAnimation(26U, 50U, static_cast<float>(m_WindowWidth) * 0.370f, static_cast<float>(m_WindowHeight) * 0.435f, 1.75f, "./Sprites/GUI/AntMega/CopyAnimation.png")
 		, m_CurrentState(GENERATING)
@@ -28,7 +28,7 @@ namespace da
 		UpdateText(da::GUIAntMega::MOVES, std::string(" Moves: 0"));
 		UpdateText(da::GUIAntMega::THRESHOLD, std::string(" Simulation threshold:   0%"));
 		SetProgressThreshold(0.0f);
-		Redraw();
+		Redraw(true, true);
 	}
 
 	GUIAntMega::~GUIAntMega()
@@ -264,9 +264,9 @@ namespace da
 		}
 	}
 
-	void GUIAntMega::Redraw()
+	void GUIAntMega::Redraw(bool clearScreen, bool pushToScreen)
 	{
-		m_pWindow->clear(m_ColorWindowsGreen);
+		if(clearScreen) m_pWindow->clear(sf::Color::Black);
 	
 		m_pWindow->draw(m_BackgroundSprite);
 
@@ -299,6 +299,6 @@ namespace da
 				m_pWindow->draw(m_pGUITexts[name]);
 			}
 
-		m_pWindow->display();
+		if(pushToScreen) m_pWindow->display();
 	}
 }

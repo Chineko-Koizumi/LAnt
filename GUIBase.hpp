@@ -26,9 +26,13 @@ namespace da
 		sf::Color m_ColorWindowsBlack{ 6U, 8U, 12U };
 		sf::Color m_ColorWindowsLightBlack{ 19U, 21U, 25U };
 
+		bool m_ExternalWindowPointer;
+
 	public:
 
 		GUIBase(uint32_t windowWidth, uint32_t windowHeight, uint16_t enumCount);
+		GUIBase(uint32_t windowWidth, uint32_t windowHeight, uint16_t enumCount, sf::RenderWindow* pExistingWindow);
+
 		virtual ~GUIBase();
 
 		sf::RenderWindow* GetWindowPtr();
@@ -38,7 +42,7 @@ namespace da
 		void AppendText(uint16_t name, const std::string& text);
 
 		virtual void FetchDataForGUI(uint8_t msgCountPerFetch) = 0;
-		virtual void Redraw() = 0;
+		virtual void Redraw(bool clearScreen, bool pushToScreen) = 0;
 
 	private:
 		

@@ -24,7 +24,7 @@ namespace da
 		Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window);
 		virtual ~Mesh();
 
-		void DrawMesh();
+		void DrawMesh(bool clearScreen, bool pushToScreen);
 
 		void DumpToFile(const std::string& outputPath)	override;
 		void InitField(uint8_t encodedInitialPixel)		override;

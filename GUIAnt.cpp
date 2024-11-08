@@ -10,8 +10,8 @@ namespace da
 		return name;
 	}
 
-	GUIAnt::GUIAnt(uint32_t windowWidth, uint32_t windowHeight)
-		:GUIBase(windowWidth / 2U, windowHeight / 3U, Names::LAST)
+	GUIAnt::GUIAnt(uint32_t windowWidth, uint32_t windowHeight, sf::RenderWindow* pExistingWindow)
+		:GUIBase(windowWidth, windowHeight, Names::LAST, pExistingWindow)
 	{	
 		float windowSpacing = static_cast<float>(windowHeight) / 30U;
 		for (Names name = Names::FIRST; name < Names::LAST; ++name)
@@ -34,14 +34,14 @@ namespace da
 		//to do: implement body for message fetching 
 	}
 
-	void GUIAnt::Redraw()
+	void GUIAnt::Redraw(bool clearScreen, bool pushToScreen)
 	{
-		m_pWindow->clear(sf::Color::Black);
+		if(clearScreen) m_pWindow->clear(sf::Color::Black);
 
 		for (Names name = Names::FIRST; name < Names::LAST; ++name)
 		{
 			m_pWindow->draw(m_pGUITexts[name]);
 		}
-		m_pWindow->display();
+		if(pushToScreen) m_pWindow->display();
 	}
 }

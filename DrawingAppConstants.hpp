@@ -1,5 +1,5 @@
-#ifndef DRAWINGAPPCONSTANTS_HPP
-#define DRAWINGAPPCONSTANTS_HPP
+#ifndef DRAWINGAPPCONSTANTSANTS_HPP
+#define DRAWINGAPPCONSTANTSANTS_HPP
 #include <stdint.h>
 #include <string>
 
@@ -7,22 +7,31 @@
 
 namespace daConstants 
 {
-	static const uint8_t COLOR_RANGE_8BIT	= 255U;
-	static const uint8_t ALFA_BASE_VALUE	= 224U;	//1110 0000
+    static constexpr uint8_t COLOR_RANGE_8BIT = 255U;
+    static constexpr uint8_t ALFA_BASE_VALUE = 224U;	//1110 0000
+           
+    static constexpr uint8_t TURN_MASK = 16U;	//0001 0000
+    static constexpr uint8_t COLOR_INDEX_MASK = 15U;	//0000 1111
+           
+    static constexpr uint8_t LEFT = 0U;	//0000 0000
+    static constexpr uint8_t RIGHT = 16U;	//0001 0000
+           
+    static constexpr uint32_t SIZE_OF_VERTEX = 20U;
+    static constexpr uint32_t SIZE_OF_DAVERTEX = 12U;
+    static constexpr uint32_t SIZE_OF_DACOLOR = 4U;
+    static constexpr uint32_t SIZE_OF_DAGREENCOLOR = 2U;
+    static constexpr uint32_t SIZE_OF_MASKED_COLOR = 1U;
+           
+    static constexpr uint32_t KB = 1024U;
+           
+    static constexpr float GUI_ANT_MEGA_ASPECT_RATIO = 1.333f;
 
-	static const uint8_t TURN_MASK			= 16U;	//0001 0000
-	static const uint8_t COLOR_INDEX_MASK	= 15U;	//0000 1111
+    static constexpr bool CLEAR_SCREEN      = true;
+    static constexpr bool NO_CLEAR_SCREEN   = false;
 
-	static const uint8_t LEFT				= 0U;	//0000 0000
-	static const uint8_t RIGHT				= 16U;	//0001 0000
+    static constexpr bool PUSH_TO_SCREEN    = true;
+    static constexpr bool NO_PUSH_TO_SCREEN = false;
 
-    const static uint32_t SIZE_OF_VERTEX        = 20U;
-    const static uint32_t SIZE_OF_DAVERTEX      = 12U;
-    const static uint32_t SIZE_OF_DACOLOR       = 4U;
-    const static uint32_t SIZE_OF_DAGREENCOLOR  = 2U;
-    const static uint32_t SIZE_OF_MASKED_COLOR  = 1U;
-
-    const static uint32_t KB = 1024U;
 }
 
 namespace daTypes 

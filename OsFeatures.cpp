@@ -1,22 +1,16 @@
 #include <windows.h>
 #include <thread>   
 
-#include "WindowsFeatures.hpp"
+#include "OsFeatures.hpp"
 #include "DrawingAppConstants.hpp"
 
 // Use to convert bytes to KB
 
 namespace da 
 {
-	WindowsFeatures::WindowsFeatures()
-	{
-	}
+#ifdef _WIN64
 
-	WindowsFeatures::~WindowsFeatures()
-	{
-	}
-
-	uint64_t WindowsFeatures::GetFreeMemoryInKB()
+	uint64_t OsFeatures::GetFreeMemoryInKB()
 	{
 		MEMORYSTATUSEX statex;
 
@@ -27,7 +21,7 @@ namespace da
 		return statex.ullAvailPhys / daConstants::KB;
 	}
 
-	uint32_t WindowsFeatures::GetThreadCountForMeshSize(uint64_t windowWidth, uint64_t windowHeight)
+	uint32_t OsFeatures::GetThreadCountForMeshSize(uint64_t windowWidth, uint64_t windowHeight)
 	{
 		uint32_t processor_count = std::thread::hardware_concurrency();
 
@@ -42,13 +36,13 @@ namespace da
 		return processor_count;
 	}
 
-	bool WindowsFeatures::IsEnoughFreeMemory(uint64_t windowWidth, uint64_t windowHeight, uint64_t sizeOfItem)
+	bool OsFeatures::IsEnoughFreeMemory(uint64_t windowWidth, uint64_t windowHeight, uint64_t sizeOfItem)
 	{
 		uint64_t TakenMemory = windowWidth * windowHeight * sizeOfItem / daConstants::KB;
-		if (TakenMemory > WindowsFeatures::GetFreeMemoryInKB())
+		if (TakenMemory > OsFeatures::GetFreeMemoryInKB())
 		{
 			std::cout << " Not enough free memory for this mesh size" << std::endl;
-			std::cout << " Free memory in KB: " << WindowsFeatures::GetFreeMemoryInKB() << std::endl;
+			std::cout << " Free memory in KB: " << OsFeatures::GetFreeMemoryInKB() << std::endl;
 			std::cout << " Memory to be allocated in KB: " << TakenMemory << std::endl;
 			return false;
 		}
@@ -56,7 +50,7 @@ namespace da
 		return true;
 	}
 
-	std::string WindowsFeatures::GenerateProgressBar(float progress, uint8_t barLength)
+	std::string OsFeatures::GenerateProgressBar(float progress, uint8_t barLength)
 	{
 		m_ProgressBar.clear();
 		m_ProgressBar.push_back(185U);
@@ -78,15 +72,7 @@ namespace da
 		return m_ProgressBar;
 	}
 
-	void WindowsFeatures::AntMovesAndProgressBar(uint64_t moves, float progress, uint8_t barLength)
-	{
-		m_Output.str("");
-
-		m_Output << "\x1b[2k\x1b[A" << "\x1b[2k\x1b[A" << "\x1b[2k\x1b[A" << " Simulation threshold in: " << floor(progress * 100.0f) << "%" << "\n\r" << GenerateProgressBar(progress, barLength) << "\n\r" << " Ant moves: " << moves << std::endl << "\r";
-		std::cout << m_Output.str();
-	}
-
-	void WindowsFeatures::SetConsoleModeToVTP()
+	void OsFeatures::SetConsoleModeToVTP()
 	{
 		// Set output mode to handle virtual terminal sequences
 		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -116,7 +102,7 @@ namespace da
 		}
 	}
 
-	void WindowsFeatures::RestoreOldConsoleMode()
+	void OsFeatures::RestoreOldConsoleMode()
 	{
 		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 		if (hOut == INVALID_HANDLE_VALUE)
@@ -133,7 +119,7 @@ namespace da
 		}
 	}
 
-	void WindowsFeatures::InitTerminalForThreads(uint16_t threadMax)
+	void OsFeatures::InitTerminalForThreads(uint32_t threadMax)
 	{
 		for (size_t i = 0; i < threadMax; ++i)
 		{
@@ -141,7 +127,7 @@ namespace da
 		}
 	}
 
-	void WindowsFeatures::ThreadProgressGeneretor(uint16_t threadNumber, const std::string& infoUpdate)
+	void OsFeatures::ThreadProgressGeneretor(uint16_t threadNumber, const std::string& infoUpdate)
 	{
 		for (int i = 0; i < threadNumber; ++i)
 		{
@@ -155,11 +141,13 @@ namespace da
 		}
 	}
 
-	std::stringstream WindowsFeatures::m_Output;
-	std::string WindowsFeatures::m_ProgressBar = std::string("");
+#endif
 
+#ifdef __linux
 
+#endif
 
-
+	std::stringstream OsFeatures::m_Output;
+	std::string OsFeatures::m_ProgressBar = std::string("");
 }
 

@@ -1,5 +1,5 @@
 #include "Mesh.hpp"
-#include "WindowsFeatures.hpp"
+#include "OsFeatures.hpp"
 
 #include <filesystem>   // Creation of folder
 
@@ -27,12 +27,11 @@ namespace da
 		return (uint64_t(y) * uint64_t(m_FieldWidth) + uint64_t(x));
 	}
 
-	void Mesh::DrawMesh()//unsafe for generating without Window
+	void Mesh::DrawMesh(bool clearScreen, bool pushToScreen)//unsafe for generating without Window
 	{
+		if (clearScreen) m_pWindow->clear(sf::Color::Black);
 		m_pWindow->draw(*m_pfieldVertex);
-		m_pWindow->display();
-		m_pWindow->draw(*m_pfieldVertex);
-		m_pWindow->display();
+		if(pushToScreen) m_pWindow->display();
 	}
 
 	void Mesh::InitField(uint8_t encodedInitialPixel)
@@ -52,7 +51,8 @@ namespace da
 
 			m_pWindow->clear(sf::Color::Black);
 
-			DrawMesh();
+			DrawMesh(false, true);
+			DrawMesh(false, true);
 				
 			m_pTexture->update(*m_pWindow);
 			

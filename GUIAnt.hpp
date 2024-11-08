@@ -21,11 +21,11 @@ namespace da
 	private:
 
 	public:
-		GUIAnt(uint32_t windowWidth, uint32_t windowHeight);
+		GUIAnt(uint32_t windowWidth, uint32_t windowHeight, sf::RenderWindow* pExistingWindow);
 		~GUIAnt();
 
 		virtual void FetchDataForGUI(uint8_t msgCountPerFetch) override;
-		void Redraw() override;
+		void Redraw(bool clearScreen, bool pushToScreen) override;
 
 	private:
 

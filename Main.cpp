@@ -5,7 +5,7 @@
 #include "GUIAnt.hpp"               // GUIAnt with seperate window
 #include "GUIAntMega.hpp"           // GUIAntMega with seperate window
 #include "InputParser.hpp"          // Main function argument parrser
-#include "WindowsFeatures.hpp"      // Windows winapi features
+#include "OsFeatures.hpp"      // Windows winapi features
 #include "IPC.hpp"
 
 #include <chrono>
@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
         GENERATION_TYPE = da::MenuOptions::EXIT;
     }
 
-    da::WindowsFeatures::SetConsoleModeToVTP();
+    da::OsFeatures::SetConsoleModeToVTP();
 
     std::ifstream infile(ANT_PATHS_FILE_PATH);
 
@@ -118,29 +118,26 @@ int main(int argc, char* argv[])
         OUTPUT_PATH_VAR += buffer;
     }
 
-#pragma region Window
-    
     switch (GENERATION_TYPE)
     {
         case da::ANT_GUI:
         {
-            if ( !da::WindowsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_VERTEX) ) break;
+            if ( !da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_VERTEX) ) break;
             
-            da::GUIAnt windowGUI(MESH_WIDTH, MESH_HEIGHT);
+            sf::Event eventAnt; // for windowAnt event pool and GUI window
+            sf::RenderWindow windowAnt(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
+
+            da::GUIAnt windowGUI(MESH_WIDTH, MESH_HEIGHT, &windowAnt);
             windowGUI.UpdateText(da::GUIAnt::PATH,          ANT_PATH_FROM_CL);
             windowGUI.UpdateText(da::GUIAnt::SPEED,         std::string("Speed: " + std::to_string(da::KeyboardMethods::m_RenderStepCount)));
             windowGUI.UpdateText(da::GUIAnt::MOVES,         std::string("Moves: " + std::to_string(0U)));
             windowGUI.UpdateText(da::GUIAnt::EXIT_INFO,     std::string("\n"));
-            windowGUI.Redraw();
-
-            sf::Event eventAnt; // for windowAnt event pool and GUI window
-            sf::RenderWindow windowAnt(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
+            windowGUI.Redraw(daConstants::CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
 
             daTypes::GreenColor* greenColors = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL);
             da::Ant ant(&windowAnt, greenColors, MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL);
 
             windowAnt.setActive(true);
-
 
             uint64_t antMoves = 0U;
             bool exit = false;
@@ -157,7 +154,7 @@ int main(int argc, char* argv[])
                         case sf::Keyboard::Escape:
                         {
                             windowGUI.UpdateTextAfter(da::GUIAnt::EXIT_INFO, 2U, std::string("Escape clicked\nClick any key to exit."));
-                            windowGUI.Redraw();
+                            windowGUI.Redraw(daConstants::CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
                             exit = true;
                             continue;
                         }break;
@@ -165,13 +162,13 @@ int main(int argc, char* argv[])
                         {
                             da::KeyboardMethods::SpeedUpRender();
                             windowGUI.UpdateTextAfter(da::GUIAnt::SPEED, 8U, std::to_string(da::KeyboardMethods::m_RenderStepCount));
-                            windowGUI.Redraw();
+                            windowGUI.Redraw(daConstants::CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
                         }break;
                         case sf::Keyboard::Left:
                         {
                             da::KeyboardMethods::SpeedDownRender();
                             windowGUI.UpdateTextAfter(da::GUIAnt::SPEED, 8U, std::to_string(da::KeyboardMethods::m_RenderStepCount));
-                            windowGUI.Redraw();
+                            windowGUI.Redraw(daConstants::CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
                         }break;
                         }
                     }break;
@@ -191,15 +188,15 @@ int main(int argc, char* argv[])
                     antMoves += movesLeft;
                     windowGUI.UpdateTextAfter(da::GUIAnt::MOVES,        8U, std::to_string(antMoves));
                     windowGUI.UpdateTextAfter(da::GUIAnt::EXIT_INFO,    2U, std::string("Ant reached border\nClick any key to exit."));
-                    windowGUI.Redraw();
+                    windowGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::NO_PUSH_TO_SCREEN);
                     break;
                 } 
 
-                ant.DrawMesh();
-                windowGUI.Redraw();
+                ant.DrawMesh(daConstants::NO_CLEAR_SCREEN, daConstants::NO_PUSH_TO_SCREEN);
+                windowGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
             }
 
-            ant.DrawMesh();
+            ant.DrawMesh(daConstants::CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
             ant.DumpToFile(OUTPUT_PATH_VAR);
             delete[] greenColors;
 
@@ -222,13 +219,13 @@ int main(int argc, char* argv[])
 
         case da::ANT_PARALLEL_FILE: 
         {
-            if (!da::WindowsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_VERTEX)) break;
+            if (!da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_VERTEX)) break;
 
             std::mutex mtxCout, mtxDumpFile;
             std::thread* threads;
             bool* threadsStatus;
 
-            uint16_t Thread_count = da::WindowsFeatures::GetThreadCountForMeshSize(MESH_WIDTH, MESH_HEIGHT);
+            uint32_t Thread_count = da::OsFeatures::GetThreadCountForMeshSize(MESH_WIDTH, MESH_HEIGHT);
 
             threads = new std::thread[Thread_count];
             threadsStatus = new bool[Thread_count];
@@ -236,7 +233,7 @@ int main(int argc, char* argv[])
             sf::RenderWindow window(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
             window.setActive(false);
 
-            da::WindowsFeatures::InitTerminalForThreads(Thread_count);
+            da::OsFeatures::InitTerminalForThreads(Thread_count);
 
             std::vector< std::pair<std::string, daTypes::GreenColor* > > paths;
 
@@ -268,7 +265,7 @@ int main(int argc, char* argv[])
                 std::string sThreadID = Output.str();
 
                 pMutexAnt->lock();
-                    da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Entering Thread : [" + sThreadID + "]"));
+                    da::OsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Entering Thread : [" + sThreadID + "]"));
                 pMutexAnt->unlock();
               
                 uint16_t fileNumer = 0U;
@@ -302,8 +299,8 @@ int main(int argc, char* argv[])
                             threadText.replace(0U, sThreadID.length(), sThreadID);
 
                             Output.str("");
-                            Output<<da::WindowsFeatures::GenerateProgressBar((float(progress) / SIMULATION_STEPS_THRESHOLD), 28) << " Thread: [" << threadText<<"] File number: " << fileNumer;
-                            da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, Output.str());
+                            Output<<da::OsFeatures::GenerateProgressBar((float(progress) / SIMULATION_STEPS_THRESHOLD), 28) << " Thread: [" << threadText<<"] File number: " << fileNumer;
+                            da::OsFeatures::ThreadProgressGeneretor(threadIndex, Output.str());
                         
                        pMutexAnt->unlock();
 
@@ -338,7 +335,7 @@ int main(int argc, char* argv[])
                     std::string threadText(6U, ' ');
                     threadText.replace(0, sThreadID.length(), sThreadID);
                     
-                    da::WindowsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Thread: [" + threadText + "] Done generating                                            "));
+                    da::OsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Thread: [" + threadText + "] Done generating                                            "));
 
                 pMutexAnt->unlock();   
 
@@ -390,7 +387,7 @@ int main(int argc, char* argv[])
 
          case da::ANT_NOGUI_LARGE_FILE:
          {
-             if (!da::WindowsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_MASKED_COLOR)) break;
+             if (!da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_MASKED_COLOR)) break;
 
              auto start = std::chrono::high_resolution_clock::now();
 
@@ -403,7 +400,7 @@ int main(int argc, char* argv[])
              std::atomic_bool exit = false;
              uint64_t megaAntRenderStepCount = 50000000U;
 
-             auto LambdaThread = []( 
+             auto GUIThread = []( 
                  std::atomic_uint64_t* pProgress, 
                  std::atomic_uint64_t* pAntMoves, 
                  std::atomic_bool* pExit)
@@ -411,10 +408,10 @@ int main(int argc, char* argv[])
                      using namespace std::chrono_literals;
                      auto start = std::chrono::high_resolution_clock::now();
 
-                     da::GUIAntMega AntMegaGUI(1280U, 960U, ANT_PATH_FROM_CL);///to do: get monitor resolution
+                     da::GUIAntMega AntMegaGUI( 1000U, ANT_PATH_FROM_CL);///to do: get monitor resolution
                     
                      AntMegaGUI.UpdateText(da::GUIAntMega::INFO, std::string(" Mesh size: ") + std::to_string(MESH_WIDTH) + "x" + std::to_string(MESH_HEIGHT));
-                     AntMegaGUI.Redraw();
+                     AntMegaGUI.Redraw(daConstants::CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
 
                      sf::Event eventGUI;
                      bool exitLoop = false;
@@ -443,9 +440,7 @@ int main(int argc, char* argv[])
                                     default:
                                         break;
                                     }
-                                     
                                 }break;
-                            
                             }
                         }
 
@@ -473,12 +468,12 @@ int main(int argc, char* argv[])
                             AntMegaGUI.SetProgressThreshold(thresholdPercent);
                         }
                         
-                        AntMegaGUI.Redraw();
+                        AntMegaGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
                         std::this_thread::sleep_for(33ms);
                      }
                  };
 
-             std::thread threadGUI = std::thread(LambdaThread, &progress, &antMoves, &exit);
+             std::thread threadGUI = std::thread(GUIThread, &progress, &antMoves, &exit);
 
              while (!exit)
              {
@@ -533,9 +528,8 @@ int main(int argc, char* argv[])
             std::cout << "Unknown argument: " + std::string(argv[1]) << std::endl;
         } break;
     }
-#pragma endregion
 
-    da::WindowsFeatures::RestoreOldConsoleMode();
+    da::OsFeatures::RestoreOldConsoleMode();
 
 	return 0;
 }

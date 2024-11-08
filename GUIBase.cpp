@@ -9,6 +9,7 @@ namespace da
 		, m_pGUITexts(			enumCount > 0U ? new sf::Text[enumCount]	: nullptr)
 		, m_pGUITextsStrings(	enumCount > 0U ? new std::string[enumCount] : nullptr)
 		, m_FontConsolas()
+		, m_ExternalWindowPointer(false)
 	{
 		m_pWindow->setPosition(sf::Vector2i(0, 0));
 
@@ -17,12 +18,26 @@ namespace da
 		if (!m_FontTahomaBold.loadFromFile("./Fonts/TahomaBold.ttf"))	assert(false);
 	}
 
+	da::GUIBase::GUIBase(uint32_t windowWidth, uint32_t windowHeight, uint16_t enumCount, sf::RenderWindow* pExistingWindow)
+		: m_WindowWidth(windowWidth)
+		, m_WindowHeight(windowHeight)
+		, m_pWindow(pExistingWindow)
+		, m_pGUITexts(enumCount > 0U ? new sf::Text[enumCount] : nullptr)
+		, m_pGUITextsStrings(enumCount > 0U ? new std::string[enumCount] : nullptr)
+		, m_FontConsolas()
+		, m_ExternalWindowPointer(true)
+	{
+		if (!m_FontConsolas.loadFromFile("./Fonts/Consolas.ttf"))		assert(false);
+		if (!m_FontTahoma.loadFromFile("./Fonts/Tahoma.ttf"))			assert(false);
+		if (!m_FontTahomaBold.loadFromFile("./Fonts/TahomaBold.ttf"))	assert(false);
+	}
+
 	GUIBase::~GUIBase()
 	{
 		if(m_pGUITextsStrings != nullptr)	delete[] m_pGUITextsStrings;
 		if(m_pGUITexts != nullptr)			delete[] m_pGUITexts;
 
-		delete m_pWindow;
+		if( !m_ExternalWindowPointer )		delete m_pWindow;
 	}
 
 	void GUIBase::UpdateText(uint16_t name, const std::string& text)

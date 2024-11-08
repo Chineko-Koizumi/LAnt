@@ -51,7 +51,7 @@
     <ClCompile Include="InputParser.cpp">
       <Filter>DrawingApp\InputParser</Filter>
     </ClCompile>
-    <ClCompile Include="WindowsFeatures.cpp">
+    <ClCompile Include="OsFeatures.cpp">
       <Filter>DrawingApp\WindowsFeatures</Filter>
     </ClCompile>
     <ClCompile Include="MeshBase.cpp">
@@ -89,7 +89,7 @@
     <ClInclude Include="InputParser.hpp">
       <Filter>DrawingApp\InputParser</Filter>
     </ClInclude>
-    <ClInclude Include="WindowsFeatures.hpp">
+    <ClInclude Include="OsFeatures.hpp">
       <Filter>DrawingApp\WindowsFeatures</Filter>
     </ClInclude>
     <ClInclude Include="DrawingAppConstants.hpp">
