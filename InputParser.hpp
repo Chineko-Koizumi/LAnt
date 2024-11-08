@@ -20,7 +20,7 @@ namespace da
 		static daTypes::GreenColor* CreateDaGreenColorArrayFromCL(const std::string& data);
 
 	private:
-		InputParser() {};
-		~InputParser() {};
+		InputParser() = delete;
+		~InputParser() = delete;
 	};
 }

@@ -2,8 +2,11 @@
 #include "Mesh.hpp"                 // Field for ant and ant itself
 #include "Ant.hpp"                  // Ant backend
 #include "AntMega.hpp"              // Ant Mega backend
-#include "GUIAnt.hpp"               // GUIAnt with seperate window
+
+#include "GUIAnt.hpp"               // GUIAnt window
 #include "GUIAntMega.hpp"           // GUIAntMega with seperate window
+#include "GUIAntParallel.hpp"       // GUIAntParallel with seperate window
+
 #include "InputParser.hpp"          // Main function argument parrser
 #include "OsFeatures.hpp"      // Windows winapi features
 #include "IPC.hpp"
@@ -134,8 +137,7 @@ int main(int argc, char* argv[])
             windowGUI.UpdateText(da::GUIAnt::EXIT_INFO,     std::string("\n"));
             windowGUI.Redraw(daConstants::CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
 
-            daTypes::GreenColor* greenColors = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL);
-            da::Ant ant(&windowAnt, greenColors, MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL);
+            da::Ant ant(&windowAnt, MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL);
 
             windowAnt.setActive(true);
 
@@ -198,7 +200,6 @@ int main(int argc, char* argv[])
 
             ant.DrawMesh(daConstants::CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
             ant.DumpToFile(OUTPUT_PATH_VAR);
-            delete[] greenColors;
 
             exit = false;
             while ( !exit )
@@ -235,24 +236,19 @@ int main(int argc, char* argv[])
 
             da::OsFeatures::InitTerminalForThreads(Thread_count);
 
-            std::vector< std::pair<std::string, daTypes::GreenColor* > > paths;
+            std::vector< std::string > paths;
 
             std::string line;
             while (!infile.eof())
             {
                 std::getline(infile, line);
-
-                daTypes::GreenColor* pColor = da::InputParser::CreateDaGreenColorArrayFromCL(line);
-                if (pColor != nullptr) 
-                {
-                    paths.push_back({ line, pColor });
-                }
+                paths.push_back(line);  
             }
             
             auto LambdaThread = [](
                 uint16_t threadIndex,
                 bool* thrStatus, 
-                std::vector< std::pair<std::string, daTypes::GreenColor* >>* pVectorPaths,
+                std::vector< std::string>* pVectorPaths,
                 uint64_t SimulationStepsThreshold, 
                 std::mutex* pMutexAnt, 
                 std::mutex* pMutexDump, 
@@ -281,11 +277,12 @@ int main(int argc, char* argv[])
                             break;
                         }
 
-                        daTypes::GreenColor* pGreenColor = pVectorPaths->back().second;
-                        da::Ant ant(pWindow, pGreenColor, MESH_WIDTH, MESH_HEIGHT, pVectorPaths->back().first);
+                        da::Ant ant(pWindow, MESH_WIDTH, MESH_HEIGHT, pVectorPaths->back());
 
                         pVectorPaths->pop_back();
                     pMutexAnt->unlock();
+
+                    if( ant.IsPathAlreadyGenereted() ) continue;
 
                     lambdaRenderStepCount = 10000000U;
                     progress = 0U;
@@ -324,11 +321,6 @@ int main(int argc, char* argv[])
 
                     fileNumer++;
 
-                    if (pGreenColor != nullptr) 
-                    {
-                        delete[] pGreenColor;
-                        pGreenColor = nullptr;
-                    }
                 }
                 pMutexAnt->lock();
 
@@ -352,6 +344,8 @@ int main(int argc, char* argv[])
 
             sf::Event event; // for windows event pool
             bool IsAllDetached = false;
+
+            da::GUIAntParallel parallelGUI(MESH_WIDTH, MESH_WIDTH);
 
             while (window.isOpen())
             {
@@ -378,6 +372,8 @@ int main(int argc, char* argv[])
                     }  
                 }
                 if (IsAllDetached)window.close();
+
+                parallelGUI.Redraw(daConstants::PUSH_TO_SCREEN, daConstants::CLEAR_SCREEN);
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
             delete[] threads;
@@ -390,10 +386,8 @@ int main(int argc, char* argv[])
              if (!da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_MASKED_COLOR)) break;
 
              auto start = std::chrono::high_resolution_clock::now();
-
-             daTypes::GreenColor* daGreenColors = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL); // parsed colors for mesh from arguments
      
-             da::AntMega megaAnt(MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL, daGreenColors);
+             da::AntMega megaAnt(MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL);
 
              std::atomic_uint64_t progress = 0U;
              std::atomic_uint64_t antMoves = 0U;
@@ -519,7 +513,6 @@ int main(int argc, char* argv[])
 
              IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, std::string(" Whole operation took: " + std::to_string(duration.count()) + "[ms]"));
 
-             delete[] daGreenColors;
              threadGUI.join();
          }break;
 

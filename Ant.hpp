@@ -16,7 +16,6 @@ namespace da
 	public:
 		Ant(
 			sf::RenderWindow* window,
-			daTypes::GreenColor* DaGreenColorTransitionArray,
 			uint32_t Width,
 			uint32_t Height,
 			const std::string& rAntPath

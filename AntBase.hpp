@@ -33,13 +33,10 @@ protected:
 	int32_t		m_DistanceToXWall;
 	int32_t		m_NextCheck;
 
+	bool m_PathAlreadyGenerated;
+
 public:
-	AntBase(
-		daTypes::GreenColor* pDaGreenColorTransitionArray,
-		uint32_t Width,
-		uint32_t Height,
-		const std::string& rAntPath
-	);
+	AntBase(uint32_t Width, uint32_t Height, const std::string& rAntPath);
 
 	virtual ~AntBase();
 
@@ -48,6 +45,8 @@ public:
 
 	void SetOffset(uint32_t x, uint32_t y);
 	void SetOffset(daTypes::PointUI32 p);
+
+	bool IsPathAlreadyGenereted();
 
 private:
 

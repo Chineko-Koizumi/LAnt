@@ -72,6 +72,9 @@
     <ClCompile Include="Animation.cpp">
       <Filter>DrawingApp\GUI\Animation</Filter>
     </ClCompile>
+    <ClCompile Include="GUIAntParallel.cpp">
+      <Filter>DrawingApp\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mesh.hpp">
@@ -115,6 +118,9 @@
     </ClInclude>
     <ClInclude Include="Animation.hpp">
       <Filter>DrawingApp\GUI\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="GUIAntParallel.hpp">
+      <Filter>DrawingApp\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

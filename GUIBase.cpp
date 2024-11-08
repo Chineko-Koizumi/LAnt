@@ -22,8 +22,8 @@ namespace da
 		: m_WindowWidth(windowWidth)
 		, m_WindowHeight(windowHeight)
 		, m_pWindow(pExistingWindow)
-		, m_pGUITexts(enumCount > 0U ? new sf::Text[enumCount] : nullptr)
-		, m_pGUITextsStrings(enumCount > 0U ? new std::string[enumCount] : nullptr)
+		, m_pGUITexts(			enumCount > 0U ? new sf::Text[enumCount]	: nullptr)
+		, m_pGUITextsStrings(	enumCount > 0U ? new std::string[enumCount] : nullptr)
 		, m_FontConsolas()
 		, m_ExternalWindowPointer(true)
 	{

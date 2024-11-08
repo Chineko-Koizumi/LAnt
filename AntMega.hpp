@@ -18,8 +18,7 @@ namespace da
 		AntMega(
 			uint32_t Width
 			, uint32_t Height
-			, std::string& antPath
-			, daTypes::GreenColor* DaGreenColorTransitionArray);
+			, std::string& antPath);
 
 		~AntMega();
 

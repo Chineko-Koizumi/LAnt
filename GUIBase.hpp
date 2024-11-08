@@ -22,7 +22,6 @@ namespace da
 		sf::Font m_FontTahoma;
 		sf::Font m_FontTahomaBold;
 
-		sf::Color m_ColorWindowsGreen{ 73U, 158U, 157U };
 		sf::Color m_ColorWindowsBlack{ 6U, 8U, 12U };
 		sf::Color m_ColorWindowsLightBlack{ 19U, 21U, 25U };
 

@@ -170,6 +170,7 @@
     <ClCompile Include="AntBase.cpp" />
     <ClCompile Include="AntMega.cpp" />
     <ClCompile Include="GUIAntMega.cpp" />
+    <ClCompile Include="GUIAntParallel.cpp" />
     <ClCompile Include="InputParser.cpp" />
     <ClCompile Include="GUIAnt.cpp" />
     <ClCompile Include="GUIBase.cpp" />
@@ -189,6 +190,7 @@
     <ClInclude Include="AntMega.hpp" />
     <ClInclude Include="DrawingAppConstants.hpp" />
     <ClInclude Include="GUIAntMega.hpp" />
+    <ClInclude Include="GUIAntParallel.hpp" />
     <ClInclude Include="InputParser.hpp" />
     <ClInclude Include="GUIAnt.hpp" />
     <ClInclude Include="GUIBase.hpp" />
