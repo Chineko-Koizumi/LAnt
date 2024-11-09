@@ -25,6 +25,6 @@ namespace da
 
 	void AntMega::DumpToFile(const std::string& outputPath)
 	{
-		m_pMegaMesh->DumpToFile(outputPath);
+		m_pMegaMesh->DumpToFile(outputPath, m_pDaGreenColorTransitionArray);
 	}
 }

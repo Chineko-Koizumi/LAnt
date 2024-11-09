@@ -18,15 +18,13 @@ namespace da
 	private:
 		sf::RenderWindow* m_pWindow;
 
-		sf::Texture* m_pTexture;
-
 	public:
 		Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window);
 		virtual ~Mesh();
 
 		void DrawMesh(bool clearScreen, bool pushToScreen);
 
-		void DumpToFile(const std::string& outputPath)	override;
+		void DumpToFile(const std::string& outputPath, daTypes::GreenColor* pGreenArrayForColorDecoding)	override;
 		void InitField(uint8_t encodedInitialPixel)		override;
 
 	private:

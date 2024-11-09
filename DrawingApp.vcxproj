@@ -128,7 +128,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>H:\LangtonAnt\Libs\SFML-2.6.1\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>H:\LangtonAnt\Libs\SFML-2.6.1\include;H:\LangtonAnt\Libs\png++;H:\LangtonAnt\Libs\libpng;H:\LangtonAnt\Libs\zlib</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <Optimization>Custom</Optimization>
@@ -136,8 +136,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>H:\LangtonAnt\Libs\SFML-2.6.1\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>H:\LangtonAnt\Libs\SFML-2.6.1\lib\openal32.lib;H:\LangtonAnt\Libs\SFML-2.6.1\lib\sfml-graphics-d.lib;H:\LangtonAnt\Libs\SFML-2.6.1\lib\sfml-system-d.lib;H:\LangtonAnt\Libs\SFML-2.6.1\lib\sfml-window-d.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>H:\LangtonAnt\Libs\SFML-2.6.1\lib;H:\LangtonAnt\Libs\zlib\Release;H:\LangtonAnt\Libs\libpng\Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>H:\LangtonAnt\Libs\SFML-2.6.1\lib\openal32.lib;H:\LangtonAnt\Libs\zlib\Release\zlib.lib;H:\LangtonAnt\Libs\libpng\Release\libpng16.lib;H:\LangtonAnt\Libs\SFML-2.6.1\lib\sfml-graphics-d.lib;H:\LangtonAnt\Libs\SFML-2.6.1\lib\sfml-system-d.lib;H:\LangtonAnt\Libs\SFML-2.6.1\lib\sfml-window-d.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -148,7 +148,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>H:\LangtonAnt\Libs\SFML-2.6.1\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>H:\LangtonAnt\Libs\SFML-2.6.1\include;H:\LangtonAnt\Libs\png++;H:\LangtonAnt\Libs\libpng;H:\LangtonAnt\Libs\zlib</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
@@ -161,8 +161,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>H:\LangtonAnt\Libs\SFML-2.6.1\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>H:\LangtonAnt\Libs\SFML-2.6.1\lib\openal32.lib;H:\LangtonAnt\Libs\SFML-2.6.1\lib\sfml-graphics.lib;H:\LangtonAnt\Libs\SFML-2.6.1\lib\sfml-system.lib;H:\LangtonAnt\Libs\SFML-2.6.1\lib\sfml-window.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>H:\LangtonAnt\Libs\SFML-2.6.1\lib;H:\LangtonAnt\Libs\zlib\Release;H:\LangtonAnt\Libs\libpng\Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>H:\LangtonAnt\Libs\SFML-2.6.1\lib\openal32.lib;H:\LangtonAnt\Libs\zlib\Release\zlib.lib;H:\LangtonAnt\Libs\libpng\Release\libpng16.lib;H:\LangtonAnt\Libs\SFML-2.6.1\lib\sfml-graphics.lib;H:\LangtonAnt\Libs\SFML-2.6.1\lib\sfml-system.lib;H:\LangtonAnt\Libs\SFML-2.6.1\lib\sfml-window.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -28,7 +28,7 @@ namespace da
 		daTypes::PointUI32 GetCenterPoint();
 
 		virtual void InitField(uint8_t encodedInitialPixel)		= 0;
-		virtual void DumpToFile(const std::string& outputPath)	= 0;
+		virtual void DumpToFile(const std::string& outputPath, daTypes::GreenColor* pGreenArrayForColorDecoding)	= 0;
 	};
 }
 

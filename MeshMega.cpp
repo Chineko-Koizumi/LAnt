@@ -30,7 +30,7 @@ namespace da
 		}
 	}
 
-	void MeshMega::DumpToFile(const std::string& outputPath)
+	void MeshMega::DumpToFile(const std::string& outputPath, daTypes::GreenColor* pGreenArrayForColorDecoding)
 	{
 		std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + ".ppm");
 		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::OUTPUT_FILE, FileName);
@@ -54,17 +54,17 @@ namespace da
 		{
 			DumpSplitter += std::to_string(0);
 			DumpSplitter += " ";
-			DumpSplitter += std::to_string(m_pDaGreenColorTransitionArray[0x0F & m_pfield[i]].g); //0x0F <=> 0000 1111;
+			DumpSplitter += std::to_string(m_pDaGreenColorTransitionArray[ daConstants::COLOR_INDEX_MASK & m_pfield[i]].g ); //0x0F <=> 0000 1111;
 			DumpSplitter += " ";
 			DumpSplitter += std::to_string(0);
 			DumpSplitter += " ";
-			if ((i % 1000) == 0)
+			if ((i % m_FieldWidth) == 0)
 			{
 				SSDump << DumpSplitter;
 				DumpSplitter = "";
 
-				if ((i % 1000000) == 0) IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_PROGRESSBAR_UPDATE, static_cast<float>(i) / m_fieldSize);
 			}
+				if ((i % 1000000) == 0) IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_PROGRESSBAR_UPDATE, static_cast<float>(i) / m_fieldSize);
 		}
 
 		IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, GUIAntMega::COPY_PROGRESSBAR_UPDATE, 1.0f);

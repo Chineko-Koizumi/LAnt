@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
         {
             if (!da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_VERTEX)) break;
 
-            std::mutex mtxCout, mtxDumpFile;
+            std::mutex mtxCout, mtxDumpFile, mtxGUIDraw;
             std::thread* threads;
             bool* threadsStatus;
 
@@ -233,6 +233,9 @@ int main(int argc, char* argv[])
 
             sf::RenderWindow window(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
             window.setActive(false);
+
+            da::GUIAntParallel parallelGUI(MESH_WIDTH, MESH_WIDTH, &window);
+            parallelGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
 
             da::OsFeatures::InitTerminalForThreads(Thread_count);
 
@@ -251,8 +254,10 @@ int main(int argc, char* argv[])
                 std::vector< std::string>* pVectorPaths,
                 uint64_t SimulationStepsThreshold, 
                 std::mutex* pMutexAnt, 
-                std::mutex* pMutexDump, 
-                sf::RenderWindow* pWindow)
+                std::mutex* pMutexDump,
+                std::mutex* pMutexGUIDraw,
+                sf::RenderWindow* pWindow,
+                da::GUIAntParallel* pGUI)
             {
                 std::thread::id thread_id = std::this_thread::get_id();
 
@@ -315,6 +320,18 @@ int main(int argc, char* argv[])
                         progress++;
                     }
 
+                    pMutexGUIDraw->lock();
+
+                        pWindow->setActive(true);
+
+                        ant.DrawMesh(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
+                        ant.DrawMesh(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
+                        pGUI->Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
+
+                        pWindow->setActive(false);
+
+                    pMutexGUIDraw->unlock();
+
                     pMutexDump->lock();
                         ant.DumpToFile(OUTPUT_PATH_VAR);
                     pMutexDump->unlock();
@@ -338,14 +355,12 @@ int main(int argc, char* argv[])
             {
                 threadsStatus[i] = true;
 
-                threads[i] = std::thread(LambdaThread, i, threadsStatus, &paths, SIMULATION_STEPS_THRESHOLD, &mtxCout, &mtxDumpFile, &window);
+                threads[i] = std::thread(LambdaThread, i, threadsStatus, &paths, SIMULATION_STEPS_THRESHOLD, &mtxCout, &mtxDumpFile, &mtxGUIDraw, &window, &parallelGUI);
                 threads[i].detach();
             }
 
             sf::Event event; // for windows event pool
             bool IsAllDetached = false;
-
-            da::GUIAntParallel parallelGUI(MESH_WIDTH, MESH_WIDTH, &window);
 
             while (window.isOpen())
             {
@@ -373,9 +388,13 @@ int main(int argc, char* argv[])
                 }
                 if (IsAllDetached)window.close();
 
-                mtxDumpFile.lock();
+                mtxGUIDraw.lock();
+                window.setActive(true);
+
                     parallelGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
-                mtxDumpFile.unlock();
+
+                window.setActive(false);
+                mtxGUIDraw.unlock();
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }

@@ -29,7 +29,7 @@ namespace da
 
 	void Ant::DumpToFile(const std::string& outputPath)
 	{
-		m_pMesh->DumpToFile(outputPath);
+		m_pMesh->DumpToFile(outputPath, m_pDaGreenColorTransitionArray);
 	}
 
 	void Ant::DrawMesh(bool clearScreen, bool pushToScreen)

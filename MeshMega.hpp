@@ -21,7 +21,7 @@ namespace da
 		virtual ~MeshMega();
 
 		void InitField(uint8_t encodedInitialPixel)			override;
-		void DumpToFile(const std::string& outputPath)	override;
+		void DumpToFile(const std::string& outputPath, daTypes::GreenColor* pGreenArrayForColorDecoding)	override;
 
 	private:
 

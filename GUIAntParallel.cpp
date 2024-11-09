@@ -19,15 +19,9 @@ namespace da
 
 	void GUIAntParallel::Redraw(bool clearScreen, bool pushToScreen)
 	{
-		m_pWindow->setActive(true);
-
-			if (clearScreen) m_pWindow->clear(sf::Color::Black);
-
-				m_pWindow->draw(m_BackgroundSprite);
-
-			if (pushToScreen) m_pWindow->display();
-
-		m_pWindow->setActive(false);
+		if (clearScreen) m_pWindow->clear(sf::Color::Black);
+			m_pWindow->draw(m_BackgroundSprite);
+		if (pushToScreen) m_pWindow->display();
 	}
 
 	void GUIAntParallel::InitBackground()

@@ -1,7 +1,7 @@
 #include "Mesh.hpp"
 #include "OsFeatures.hpp"
 
-//#include "png++/png.hpp"
+#include "png.hpp"
 
 #include <filesystem>   // Creation of folder
 
@@ -11,17 +11,13 @@ namespace da
 		: MeshBase(width, height)
 		, m_pWindow(window)
 		, m_pfieldVertex( new sf::VertexArray(sf::Points, uint64_t(height) * uint64_t(width)) )
-		, m_pTexture( new sf::Texture )
 	{
 		InitFieldPossition();
-
-		m_pTexture->create(m_pWindow->getSize().x, m_pWindow->getSize().y);
 	}
 
 	Mesh::~Mesh()
 	{
 		delete m_pfieldVertex;
-		delete m_pTexture;
 	}
 
 	uint64_t Mesh::TwoDimensionalIndextoOneDimensionalIndex(uint32_t x, uint32_t y)
@@ -45,40 +41,24 @@ namespace da
 		}
 	}
 
-	void Mesh::DumpToFile(const std::string& outputPath)
+	void Mesh::DumpToFile(const std::string& outputPath, daTypes::GreenColor* pGreenArrayForColorDecoding)
 	{
-		if (m_pWindow == nullptr)return;
-
-		/*png::image< png::rgb_pixel > pngImage(m_FieldWidth, m_FieldHeight);
+		png::image< png::rgb_pixel > pngImage(m_FieldWidth, m_FieldHeight);
 		for (png::uint_32 y = 0; y < pngImage.get_height(); ++y)
 		{
 			for (png::uint_32 x = 0; x < pngImage.get_width(); ++x)
 			{
-				sf::Vertex temp = m_pfieldVertex->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y));
+				uint16_t decodedIndex = m_pfield[TwoDimensionalIndextoOneDimensionalIndex(x, y)] & daConstants::COLOR_INDEX_MASK;
 
-				pngImage[y][x] = png::rgb_pixel(temp.color.r, temp.color.g, temp.color.b);
+				daTypes::GreenColor temp = pGreenArrayForColorDecoding[decodedIndex];
+
+				pngImage[y][x] = png::rgb_pixel(0U, temp.g, 0U);
 			}
 		}
-		pngImage.write(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + ".png");*/
-
-		m_pWindow->setActive(true);
-
-			m_pWindow->clear(sf::Color::Black);
-
-			DrawMesh(false, true);
-			DrawMesh(false, true);
-				
-			m_pTexture->update(*m_pWindow);
-			
-			sf::Image img = m_pTexture->copyToImage();
-
-			std::filesystem::create_directories(outputPath);
-
-			std::string FileName(outputPath + m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + ".png");
 		
-			img.saveToFile(FileName);
-		
-		m_pWindow->setActive(false);
+		std::filesystem::create_directories(outputPath);
+
+		pngImage.write(outputPath + m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + ".png");
 	}
 
 	void Mesh::InitFieldPossition()
