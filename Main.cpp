@@ -345,7 +345,7 @@ int main(int argc, char* argv[])
             sf::Event event; // for windows event pool
             bool IsAllDetached = false;
 
-            da::GUIAntParallel parallelGUI(MESH_WIDTH, MESH_WIDTH);
+            da::GUIAntParallel parallelGUI(MESH_WIDTH, MESH_WIDTH, &window);
 
             while (window.isOpen())
             {
@@ -373,7 +373,10 @@ int main(int argc, char* argv[])
                 }
                 if (IsAllDetached)window.close();
 
-                parallelGUI.Redraw(daConstants::PUSH_TO_SCREEN, daConstants::CLEAR_SCREEN);
+                mtxDumpFile.lock();
+                    parallelGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
+                mtxDumpFile.unlock();
+
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
             delete[] threads;

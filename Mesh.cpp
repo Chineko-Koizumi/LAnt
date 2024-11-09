@@ -1,6 +1,8 @@
 #include "Mesh.hpp"
 #include "OsFeatures.hpp"
 
+//#include "png++/png.hpp"
+
 #include <filesystem>   // Creation of folder
 
 namespace da 
@@ -46,6 +48,18 @@ namespace da
 	void Mesh::DumpToFile(const std::string& outputPath)
 	{
 		if (m_pWindow == nullptr)return;
+
+		/*png::image< png::rgb_pixel > pngImage(m_FieldWidth, m_FieldHeight);
+		for (png::uint_32 y = 0; y < pngImage.get_height(); ++y)
+		{
+			for (png::uint_32 x = 0; x < pngImage.get_width(); ++x)
+			{
+				sf::Vertex temp = m_pfieldVertex->operator[](TwoDimensionalIndextoOneDimensionalIndex(x, y));
+
+				pngImage[y][x] = png::rgb_pixel(temp.color.r, temp.color.g, temp.color.b);
+			}
+		}
+		pngImage.write(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + ".png");*/
 
 		m_pWindow->setActive(true);
 

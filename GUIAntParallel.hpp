@@ -22,7 +22,7 @@ namespace da
 		sf::Sprite m_BackgroundSprite;
 
 	public:
-		GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight);
+		GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight, sf::RenderWindow* pWindow);
 		~GUIAntParallel();
 
 		virtual void FetchDataForGUI(uint8_t msgCountPerFetch);

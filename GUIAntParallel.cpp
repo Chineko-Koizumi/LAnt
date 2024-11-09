@@ -3,8 +3,8 @@
 
 namespace da
 {
-	GUIAntParallel::GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight)
-		: GUIBase(windowWidth, windowHeight, Names::LAST)
+	GUIAntParallel::GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight, sf::RenderWindow* pWindow)
+		: GUIBase(windowWidth/2.5f, windowHeight/ 2.5f, Names::LAST, pWindow)
 	{
 		InitBackground();
 	}
@@ -19,11 +19,15 @@ namespace da
 
 	void GUIAntParallel::Redraw(bool clearScreen, bool pushToScreen)
 	{
-		if (clearScreen) m_pWindow->clear(sf::Color::Black);
+		m_pWindow->setActive(true);
 
-		m_pWindow->draw(m_BackgroundSprite);
+			if (clearScreen) m_pWindow->clear(sf::Color::Black);
 
-		if (pushToScreen) m_pWindow->display();
+				m_pWindow->draw(m_BackgroundSprite);
+
+			if (pushToScreen) m_pWindow->display();
+
+		m_pWindow->setActive(false);
 	}
 
 	void GUIAntParallel::InitBackground()
