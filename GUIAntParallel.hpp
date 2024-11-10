@@ -18,11 +18,15 @@ namespace da
 		};
 
 	private:
-		sf::Texture m_BackgroundTexture;
-		sf::Sprite m_BackgroundSprite;
+		uint16_t m_ThreadCount;
+
+		Background m_Background;
+
+		ProgressBar m_PathsProgress;
+		ProgressBar* m_pThreadProgressBars;
 
 	public:
-		GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight, sf::RenderWindow* pWindow);
+		GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight, uint16_t threadCount, sf::RenderWindow* pWindow);
 		~GUIAntParallel();
 
 		virtual void FetchDataForGUI(uint8_t msgCountPerFetch);
@@ -30,7 +34,7 @@ namespace da
 
 	private:
 		void InitBackground();
-
+		void InitBars();
 	};
 }
 

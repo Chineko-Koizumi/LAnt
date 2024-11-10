@@ -234,7 +234,7 @@ int main(int argc, char* argv[])
             sf::RenderWindow window(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
             window.setActive(false);
 
-            da::GUIAntParallel parallelGUI(MESH_WIDTH, MESH_WIDTH, &window);
+            da::GUIAntParallel parallelGUI(MESH_WIDTH, MESH_WIDTH, Thread_count, &window);
             parallelGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
 
             da::OsFeatures::InitTerminalForThreads(Thread_count);
@@ -481,7 +481,8 @@ int main(int argc, char* argv[])
                             snprintf(temp, sizeof(temp), "%3.0f", thresholdPercent * 100.0f);
 
                             AntMegaGUI.UpdateTextAfter(da::GUIAntMega::THRESHOLD, 23U, std::string(temp) + "%");
-                            AntMegaGUI.SetProgressThreshold(thresholdPercent);
+
+                            AntMegaGUI.m_ThreasholdBar.SetProgress(thresholdPercent, 1.0f);
                         }
                         
                         AntMegaGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);

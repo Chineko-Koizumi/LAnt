@@ -10,6 +10,74 @@ namespace da
 	class GUIBase
 	{
 	protected:
+		struct ProgressBar
+		{
+			sf::RenderTexture renderTexture;
+
+			sf::Texture insideTexture;
+			sf::Texture outsideTexture;
+
+			uint16_t progressBarWidth{ 0U };
+			uint16_t progressBarHeight{ 0U };
+
+			sf::Sprite insideSprite;
+			sf::Sprite outsideSprite;
+			 
+			void Init(
+				uint16_t windowWidth, 
+				uint16_t windowHeight, 
+				const std::string& sInsideTexture, 
+				const std::string& sOtsideTexture,
+				float scalingFactorCorrection,
+				float scalingX,
+				float scalingY,
+				float posXIn,	//relative to window
+				float posYIn,	//relative to window
+				float posXOut,	//relative to window
+				float posYOut	//relative to window
+				)
+			{
+				if (!insideTexture.loadFromFile(sInsideTexture))	assert(false);
+				if (!outsideTexture.loadFromFile(sOtsideTexture))	assert(false);
+
+				progressBarWidth = static_cast<uint16_t>(outsideTexture.getSize().x);
+				progressBarHeight = static_cast<uint16_t>(outsideTexture.getSize().y);
+
+				insideTexture.setSmooth(true);
+				outsideTexture.setSmooth(true);
+
+				insideSprite.setTexture(insideTexture);
+				outsideSprite.setTexture(outsideTexture);
+
+				float scalingFactor = static_cast<float>(windowWidth) / progressBarWidth;
+				scalingFactor *= scalingFactorCorrection;
+
+				insideSprite.setScale(scalingFactor		* scalingX, scalingFactor * scalingY);
+				outsideSprite.setScale(scalingFactor	* scalingX, scalingFactor * scalingY);
+
+				insideSprite.setPosition(static_cast<float>(windowWidth)	* posXIn, static_cast<float>(windowHeight)	* posYIn);
+				outsideSprite.setPosition(static_cast<float>(windowWidth)	* posXOut, static_cast<float>(windowHeight) * posYOut);
+
+				renderTexture.create(windowWidth, windowHeight);
+			}
+
+			void SetProgress(float progressInPercent, float scaleX)
+			{
+				insideSprite.setTextureRect(sf::IntRect(
+					0,
+					0,
+					static_cast<int>(progressBarWidth * scaleX * progressInPercent),
+					static_cast<int>(progressBarHeight)));
+			}
+		};
+
+		struct Background
+		{
+			sf::Texture texture;
+			sf::Sprite sprite;
+
+		};
+
 		sf::RenderWindow* m_pWindow;
 
 		uint32_t m_WindowWidth;
