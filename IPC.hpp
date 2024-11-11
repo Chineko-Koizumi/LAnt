@@ -39,13 +39,25 @@ namespace IPC
         _G_MSG_Mutex.unlock();
     }
 
+    inline void SendMessege(messageType type, uint16_t valueName)
+    {
+        Message msg;
+
+        msg.messageType = type;
+        msg.valueName = valueName;
+
+        _G_MSG_Mutex.lock();
+            _G_MSG_Queue.push(msg);
+        _G_MSG_Mutex.unlock();
+    }
+
     inline void SendMessege(messageType type, uint16_t valueName, const void* pData, uint8_t dataSize)
     {
         Message msg;
 
         msg.messageType = type;
         msg.valueName = valueName;
-        memcpy_s(msg.message, dataSize, pData, dataSize);
+        if( dataSize > 0U ) memcpy_s(msg.message, dataSize, pData, dataSize);
 
         _G_MSG_Mutex.lock();
             _G_MSG_Queue.push(msg);
@@ -87,7 +99,7 @@ namespace IPC
         memcpy_s(msg.message, sizeof(float), &valueFloat, sizeof(float));
 
         _G_MSG_Mutex.lock();
-        _G_MSG_Queue.push(msg);
+            _G_MSG_Queue.push(msg);
         _G_MSG_Mutex.unlock();
     }
 
@@ -96,8 +108,10 @@ namespace IPC
         if (_G_MSG_Queue.empty()) return false;
 
         _G_MSG_Mutex.lock();
-            *pMsg = _G_MSG_Queue.front();
+
+            memcpy_s(pMsg, sizeof(Message), &_G_MSG_Queue.front(), sizeof(Message));
             _G_MSG_Queue.pop();
+
         _G_MSG_Mutex.unlock();
 
         return true;

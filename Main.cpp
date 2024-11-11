@@ -227,27 +227,34 @@ int main(int argc, char* argv[])
             bool* threadsStatus;
 
             uint32_t Thread_count = da::OsFeatures::GetThreadCountForMeshSize(MESH_WIDTH, MESH_HEIGHT);
-
             threads = new std::thread[Thread_count];
             threadsStatus = new bool[Thread_count];
 
             sf::RenderWindow window(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
             window.setActive(false);
 
-            da::GUIAntParallel parallelGUI(MESH_WIDTH, MESH_WIDTH, Thread_count, &window);
-            parallelGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
-
             da::OsFeatures::InitTerminalForThreads(Thread_count);
 
             std::vector< std::string > paths;
-
             std::string line;
+
             while (!infile.eof())
             {
                 std::getline(infile, line);
                 paths.push_back(line);  
             }
             
+            auto start = std::chrono::high_resolution_clock::now();
+            auto stop = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+
+            da::GUIAntParallel parallelGUI(MESH_WIDTH, MESH_WIDTH, Thread_count, &window);
+            parallelGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
+            parallelGUI.SetPathsCount(paths.size());
+            parallelGUI.UpdateText(da::GUIAntParallel::TITLE, ANT_PATHS_FILE_PATH);
+            parallelGUI.UpdateText(da::GUIAntParallel::RECENTLY_STARTED_PATH, "Last Started: " + paths.back());
+            parallelGUI.UpdateText(da::GUIAntParallel::CURRENT_TIME, "Elapsed time: " + std::to_string(duration.count()) + "s");
+
             auto LambdaThread = [](
                 uint16_t threadIndex,
                 bool* thrStatus, 
@@ -283,11 +290,17 @@ int main(int argc, char* argv[])
                         }
 
                         da::Ant ant(pWindow, MESH_WIDTH, MESH_HEIGHT, pVectorPaths->back());
+                        IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntParallel::RECENTLY_STARTED_PATH, pVectorPaths->back());
 
                         pVectorPaths->pop_back();
                     pMutexAnt->unlock();
 
-                    if( ant.IsPathAlreadyGenereted() ) continue;
+                    if (ant.IsPathAlreadyGenereted())
+                    {
+                        IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, da::GUIAntParallel::PATHS_PROGRESSBAR_UPDATE);
+                        IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntParallel::CURRENT_PATH_STATUS, nullptr, 0);
+                        continue;
+                    }
 
                     lambdaRenderStepCount = 10000000U;
                     progress = 0U;
@@ -323,6 +336,9 @@ int main(int argc, char* argv[])
                     pMutexGUIDraw->lock();
 
                         pWindow->setActive(true);
+
+                        IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, da::GUIAntParallel::PATHS_PROGRESSBAR_UPDATE);
+                        IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE,  da::GUIAntParallel::CURRENT_PATH_STATUS, nullptr, 0);
 
                         ant.DrawMesh(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
                         ant.DrawMesh(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
@@ -391,6 +407,12 @@ int main(int argc, char* argv[])
                 mtxGUIDraw.lock();
                 window.setActive(true);
 
+
+                    stop = std::chrono::high_resolution_clock::now();
+                    duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+
+                    IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntParallel::CURRENT_TIME,        std::to_string(duration.count()) + "s ");
+                    parallelGUI.FetchDataForGUI( 5U );
                     parallelGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
 
                 window.setActive(false);
