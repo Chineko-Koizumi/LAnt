@@ -12,8 +12,8 @@ namespace da
 		return name;
 	}
 
-	GUIAntParallel::GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight, uint16_t threadCount, sf::RenderWindow* pWindow)
-		: GUIBase(windowWidth / 2.0f, windowHeight/ 2.0f, Names::LAST, pWindow)
+	GUIAntParallel::GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight, uint16_t threadCount)
+		: GUIBase(windowWidth / 2.0f, windowHeight/ 2.0f, Names::LAST)
 		, m_ThreadCount(threadCount)
 		, m_pThreadProgressBars(new ProgressBar[threadCount])
 		, m_PathsCount(0U)
@@ -77,7 +77,7 @@ namespace da
 				{
 				case PATHS_PROGRESSBAR_UPDATE:
 				{
-					if(m_PathsGenerated <= m_PathsCount) ++m_PathsGenerated;
+					if(m_PathsGenerated < m_PathsCount) ++m_PathsGenerated;
 					m_PathsProgress.SetProgress(static_cast<float>( m_PathsGenerated) / m_PathsCount, 1.0f);
 				}break;
 
@@ -113,6 +113,21 @@ namespace da
 				m_pWindow->draw(m_pGUITexts[name]);
 			}
 
+			for (size_t i = 0; i < m_ThreadCount; i++)
+			{
+				m_pThreadProgressBars->Init(GUIBase::m_WindowWidth, GUIBase::m_WindowHeight, "./Sprites/GUI/AntMega/ProgressBarInside.png", "./Sprites/GUI/AntMega/ProgressBarOutside.png",
+					0.33f, 2.93f, 1.0f, 0.025f + static_cast<float>(i) / m_ThreadCount, 0.125f, 0.025f + static_cast<float>(i) / m_ThreadCount, 0.125f);
+				m_pThreadProgressBars->SetProgress(0.5f, 1.0f);
+
+				m_pThreadProgressBars->renderTexture.draw(m_PathsProgress.outsideSprite);
+				m_pThreadProgressBars->renderTexture.draw(m_PathsProgress.insideSprite);
+				m_pThreadProgressBars->renderTexture.display();
+
+				sf::Sprite outputThresholdSprite(m_pThreadProgressBars->renderTexture.getTexture());
+
+				m_pWindow->draw(outputThresholdSprite);
+			}
+
 		if (pushToScreen) m_pWindow->display();
 	}
 
@@ -132,6 +147,13 @@ namespace da
 			0.33f, 2.93f, 1.0f, 0.0175f, 0.125f, 0.0175f, 0.125f);
 
 		m_PathsProgress.SetProgress(0.0f, 1.0f);
+
+		for (size_t i = 0; i < m_ThreadCount; i++)
+		{
+			m_pThreadProgressBars->Init(GUIBase::m_WindowWidth, GUIBase::m_WindowHeight, "./Sprites/GUI/AntMega/ProgressBarInside.png", "./Sprites/GUI/AntMega/ProgressBarOutside.png",
+				0.33f, 2.93f, 1.0f, 0.025f + static_cast<float>(i)/ m_ThreadCount, 0.125f, 0.025f + static_cast<float>(i) / m_ThreadCount, 0.125f);
+			m_pThreadProgressBars->SetProgress(0.5f, 1.0f);
+		}
 	}
 
 	void GUIAntParallel::InitText()

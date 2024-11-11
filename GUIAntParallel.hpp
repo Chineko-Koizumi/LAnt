@@ -42,7 +42,7 @@ namespace da
 		ProgressBar* m_pThreadProgressBars;
 
 	public:
-		GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight, uint16_t threadCount, sf::RenderWindow* pWindow);
+		GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight, uint16_t threadCount);
 		~GUIAntParallel();
 
 		virtual void FetchDataForGUI(uint8_t msgCountPerFetch);

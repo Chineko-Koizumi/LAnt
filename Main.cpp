@@ -3,9 +3,9 @@
 #include "Ant.hpp"                  // Ant backend
 #include "AntMega.hpp"              // Ant Mega backend
 
-#include "GUIAnt.hpp"               // GUIAnt window
-#include "GUIAntMega.hpp"           // GUIAntMega with seperate window
-#include "GUIAntParallel.hpp"       // GUIAntParallel with seperate window
+#include "GUIAnt.hpp"               // GUIAnt windowParallelAnt
+#include "GUIAntMega.hpp"           // GUIAntMega with seperate windowParallelAnt
+#include "GUIAntParallel.hpp"       // GUIAntParallel with seperate windowParallelAnt
 
 #include "InputParser.hpp"          // Main function argument parrser
 #include "OsFeatures.hpp"      // Windows winapi features
@@ -127,7 +127,7 @@ int main(int argc, char* argv[])
         {
             if ( !da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_VERTEX) ) break;
             
-            sf::Event eventAnt; // for windowAnt event pool and GUI window
+            sf::Event eventAnt; // for windowAnt event pool and GUI windowParallelAnt
             sf::RenderWindow windowAnt(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
 
             da::GUIAnt windowGUI(MESH_WIDTH, MESH_HEIGHT, &windowAnt);
@@ -139,7 +139,7 @@ int main(int argc, char* argv[])
 
             da::Ant ant(&windowAnt, MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL);
 
-            windowAnt.setActive(true);
+            windowAnt.setActive(false);
 
             uint64_t antMoves = 0U;
             bool exit = false;
@@ -222,16 +222,17 @@ int main(int argc, char* argv[])
         {
             if (!da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_VERTEX)) break;
 
-            std::mutex mtxCout, mtxDumpFile, mtxGUIDraw;
+            std::mutex mtxAnt, mtxDumpFile, mtxDraw;
             std::thread* threads;
             bool* threadsStatus;
+            sf::Event eventParallelAnt; // for windows event pool
 
             uint32_t Thread_count = da::OsFeatures::GetThreadCountForMeshSize(MESH_WIDTH, MESH_HEIGHT);
             threads = new std::thread[Thread_count];
             threadsStatus = new bool[Thread_count];
 
-            sf::RenderWindow window(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
-            window.setActive(false);
+            sf::RenderWindow windowParallelAnt(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
+            windowParallelAnt.setActive(false);
 
             da::OsFeatures::InitTerminalForThreads(Thread_count);
 
@@ -248,7 +249,7 @@ int main(int argc, char* argv[])
             auto stop = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
 
-            da::GUIAntParallel parallelGUI(MESH_WIDTH, MESH_WIDTH, Thread_count, &window);
+            da::GUIAntParallel parallelGUI(MESH_WIDTH, MESH_WIDTH, Thread_count);
             parallelGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
             parallelGUI.SetPathsCount(paths.size());
             parallelGUI.UpdateText(da::GUIAntParallel::TITLE, ANT_PATHS_FILE_PATH);
@@ -262,9 +263,8 @@ int main(int argc, char* argv[])
                 uint64_t SimulationStepsThreshold, 
                 std::mutex* pMutexAnt, 
                 std::mutex* pMutexDump,
-                std::mutex* pMutexGUIDraw,
-                sf::RenderWindow* pWindow,
-                da::GUIAntParallel* pGUI)
+                std::mutex* pMutexDraw,
+                sf::RenderWindow* pWindow)
             {
                 std::thread::id thread_id = std::this_thread::get_id();
 
@@ -333,20 +333,15 @@ int main(int argc, char* argv[])
                         progress++;
                     }
 
-                    pMutexGUIDraw->lock();
+                    IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, da::GUIAntParallel::PATHS_PROGRESSBAR_UPDATE);
+                    IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntParallel::CURRENT_PATH_STATUS, nullptr, 0);
 
-                        pWindow->setActive(true);
-
-                        IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, da::GUIAntParallel::PATHS_PROGRESSBAR_UPDATE);
-                        IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE,  da::GUIAntParallel::CURRENT_PATH_STATUS, nullptr, 0);
-
+                    pMutexDraw->lock();
+                    pWindow->setActive(true);
                         ant.DrawMesh(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
                         ant.DrawMesh(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
-                        pGUI->Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
-
-                        pWindow->setActive(false);
-
-                    pMutexGUIDraw->unlock();
+                    pWindow->setActive(false);
+                    pMutexDraw->unlock();
 
                     pMutexDump->lock();
                         ant.DumpToFile(OUTPUT_PATH_VAR);
@@ -371,22 +366,20 @@ int main(int argc, char* argv[])
             {
                 threadsStatus[i] = true;
 
-                threads[i] = std::thread(LambdaThread, i, threadsStatus, &paths, SIMULATION_STEPS_THRESHOLD, &mtxCout, &mtxDumpFile, &mtxGUIDraw, &window, &parallelGUI);
+                threads[i] = std::thread(LambdaThread, i, threadsStatus, &paths, SIMULATION_STEPS_THRESHOLD, &mtxAnt, &mtxDumpFile, &mtxDraw, &windowParallelAnt);
                 threads[i].detach();
             }
 
-            sf::Event event; // for windows event pool
             bool IsAllDetached = false;
-
-            while (window.isOpen())
+            while ( !IsAllDetached )
             {
-                if (window.pollEvent(event))
+                if (windowParallelAnt.pollEvent(eventParallelAnt))
                 {
-                    switch (event.type)
+                    switch (eventParallelAnt.type)
                     {
                         case sf::Event::Closed: 
                         {
-                            window.close();
+                            windowParallelAnt.close();
                         }break;
 
                         default: break;
@@ -402,24 +395,34 @@ int main(int argc, char* argv[])
                         break;
                     }  
                 }
-                if (IsAllDetached)window.close();
 
-                mtxGUIDraw.lock();
-                window.setActive(true);
+                stop = std::chrono::high_resolution_clock::now();
+                duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
 
+                IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE,  da::GUIAntParallel::CURRENT_TIME, std::to_string(duration.count()) + "s ");
 
-                    stop = std::chrono::high_resolution_clock::now();
-                    duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-
-                    IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntParallel::CURRENT_TIME,        std::to_string(duration.count()) + "s ");
-                    parallelGUI.FetchDataForGUI( 5U );
-                    parallelGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
-
-                window.setActive(false);
-                mtxGUIDraw.unlock();
+                parallelGUI.FetchDataForGUI( 5U );
+                parallelGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
+
+            bool exit = false;
+            while (!exit)
+            {
+                if (windowParallelAnt.pollEvent(eventParallelAnt))
+                {
+                    switch (eventParallelAnt.type)
+                    {
+                    case sf::Event::KeyPressed:
+                    {
+                        exit = true;
+                        continue;
+                    }break;
+                    }
+                }
+            }
+
             delete[] threads;
             delete[] threadsStatus;
 
