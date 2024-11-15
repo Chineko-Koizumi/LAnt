@@ -15,7 +15,7 @@ namespace da
 	GUIAntParallel::GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight, uint16_t threadCount)
 		: GUIBase(windowWidth / 2.0f, windowHeight/ 2.0f, Names::LAST)
 		, m_ThreadCount(threadCount)
-		, m_pThreadProgressBars(new ProgressBar[threadCount])
+		, m_aThreadProgressBars(new ProgressBar[threadCount])
 		, m_PathsCount(0U)
 		, m_PathsGenerated(0U)
 	{
@@ -26,8 +26,8 @@ namespace da
 
 	GUIAntParallel::~GUIAntParallel()
 	{
-		delete[] m_pThreadProgressBars;
-		m_pThreadProgressBars = nullptr;
+		delete[] m_aThreadProgressBars;
+		m_aThreadProgressBars = nullptr;
 	}
 
 	void GUIAntParallel::SetPathsCount(uint16_t pathsCount)
@@ -81,6 +81,11 @@ namespace da
 					m_PathsProgress.SetProgress(static_cast<float>( m_PathsGenerated) / m_PathsCount, 1.0f);
 				}break;
 
+				case THREADS_PROGRESSBAR_UPDATE: 
+				{
+					m_aThreadProgressBars[*reinterpret_cast<uint16_t*>(msg.message)].SetProgress(*reinterpret_cast<float*>(&msg.message[2]), 1.0f);
+				}break;
+
 				default:
 					break;
 				}
@@ -115,15 +120,11 @@ namespace da
 
 			for (size_t i = 0; i < m_ThreadCount; i++)
 			{
-				m_pThreadProgressBars->Init(GUIBase::m_WindowWidth, GUIBase::m_WindowHeight, "./Sprites/GUI/AntMega/ProgressBarInside.png", "./Sprites/GUI/AntMega/ProgressBarOutside.png",
-					0.33f, 2.93f, 1.0f, 0.025f + static_cast<float>(i) / m_ThreadCount, 0.125f, 0.025f + static_cast<float>(i) / m_ThreadCount, 0.125f);
-				m_pThreadProgressBars->SetProgress(0.5f, 1.0f);
+				m_aThreadProgressBars[i].renderTexture.draw(m_aThreadProgressBars[i].outsideSprite);
+				m_aThreadProgressBars[i].renderTexture.draw(m_aThreadProgressBars[i].insideSprite);
+				m_aThreadProgressBars[i].renderTexture.display();
 
-				m_pThreadProgressBars->renderTexture.draw(m_PathsProgress.outsideSprite);
-				m_pThreadProgressBars->renderTexture.draw(m_PathsProgress.insideSprite);
-				m_pThreadProgressBars->renderTexture.display();
-
-				sf::Sprite outputThresholdSprite(m_pThreadProgressBars->renderTexture.getTexture());
+				sf::Sprite outputThresholdSprite(m_aThreadProgressBars[i].renderTexture.getTexture());
 
 				m_pWindow->draw(outputThresholdSprite);
 			}
@@ -133,7 +134,7 @@ namespace da
 
 	void GUIAntParallel::InitBackground()
 	{
-		m_Background.texture.loadFromFile("./Sprites/GUI/AntMega/BackgroundParallel.png");
+		m_Background.texture.loadFromFile("./Sprites/GUI/AntParallel/Background.png");
 		m_Background.sprite.setTexture(m_Background.texture);
 
 		float scalingFactor = static_cast<float>(m_WindowWidth) / m_Background.texture.getSize().x;
@@ -143,16 +144,36 @@ namespace da
 
 	void GUIAntParallel::InitBars()
 	{
-		m_PathsProgress.Init(GUIBase::m_WindowWidth, GUIBase::m_WindowHeight, "./Sprites/GUI/AntMega/ProgressBarInside.png", "./Sprites/GUI/AntMega/ProgressBarOutside.png",
-			0.33f, 2.93f, 1.0f, 0.0175f, 0.125f, 0.0175f, 0.125f);
+	
+		m_PathsProgress.Init(GUIBase::m_WindowWidth, GUIBase::m_WindowHeight, "./Sprites/GUI/ProgressBarInside.png", "./Sprites/GUI/ProgressBarOutside.png",
+			0.963f,
+			0.33f);
+
+		m_PathsProgress.SetPossition(
+			0.0175f, 
+			0.125f,
+			0.0175f, 
+			0.125f);
 
 		m_PathsProgress.SetProgress(0.0f, 1.0f);
 
+
 		for (size_t i = 0; i < m_ThreadCount; i++)
 		{
-			m_pThreadProgressBars->Init(GUIBase::m_WindowWidth, GUIBase::m_WindowHeight, "./Sprites/GUI/AntMega/ProgressBarInside.png", "./Sprites/GUI/AntMega/ProgressBarOutside.png",
-				0.33f, 2.93f, 1.0f, 0.025f + static_cast<float>(i)/ m_ThreadCount, 0.125f, 0.025f + static_cast<float>(i) / m_ThreadCount, 0.125f);
-			m_pThreadProgressBars->SetProgress(0.5f, 1.0f);
+			m_aThreadProgressBars[i].Init(GUIBase::m_WindowWidth, GUIBase::m_WindowHeight, "./Sprites/GUI/ProgressBarInside.png", "./Sprites/GUI/ProgressBarOutside.png",
+				0.971f,
+				0.38f);
+
+			float barRelativeHeight = static_cast<float>(m_aThreadProgressBars[i].progressBarHeight * m_aThreadProgressBars[i].insideSprite.getScale().y) / GUIBase::m_WindowWidth;
+			barRelativeHeight *= 1.15; //10% margin
+
+			m_aThreadProgressBars[i].SetPossition(
+				0.0150f,
+				0.173f + barRelativeHeight * i,
+				0.0150f,
+				0.173f + barRelativeHeight * i);
+
+			m_aThreadProgressBars[i].SetProgress(0.0f, 1.0f);
 		}
 	}
 

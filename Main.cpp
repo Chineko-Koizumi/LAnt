@@ -14,7 +14,7 @@
 #include <chrono>
 #include <thread>
 #include <mutex>
-#include <fstream>      // Getting path data from file
+#include <fstream>      // Getting path progressBarData from file
 #include <time.h>       /* time_t, struct tm, time, localtime, strftime */
 #include <queue>
 
@@ -101,8 +101,6 @@ int main(int argc, char* argv[])
     {
         GENERATION_TYPE = da::MenuOptions::EXIT;
     }
-
-    da::OsFeatures::SetConsoleModeToVTP();
 
     std::ifstream infile(ANT_PATHS_FILE_PATH);
 
@@ -225,6 +223,7 @@ int main(int argc, char* argv[])
             std::mutex mtxAnt, mtxDumpFile, mtxDraw;
             std::thread* threads;
             bool* threadsStatus;
+
             sf::Event eventParallelAnt; // for windows event pool
 
             uint32_t Thread_count = da::OsFeatures::GetThreadCountForMeshSize(MESH_WIDTH, MESH_HEIGHT);
@@ -233,8 +232,6 @@ int main(int argc, char* argv[])
 
             sf::RenderWindow windowParallelAnt(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
             windowParallelAnt.setActive(false);
-
-            da::OsFeatures::InitTerminalForThreads(Thread_count);
 
             std::vector< std::string > paths;
             std::string line;
@@ -250,13 +247,23 @@ int main(int argc, char* argv[])
             auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
 
             da::GUIAntParallel parallelGUI(MESH_WIDTH, MESH_WIDTH, Thread_count);
-            parallelGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
             parallelGUI.SetPathsCount(paths.size());
             parallelGUI.UpdateText(da::GUIAntParallel::TITLE, ANT_PATHS_FILE_PATH);
             parallelGUI.UpdateText(da::GUIAntParallel::RECENTLY_STARTED_PATH, "Last Started: " + paths.back());
             parallelGUI.UpdateText(da::GUIAntParallel::CURRENT_TIME, "Elapsed time: " + std::to_string(duration.count()) + "s");
+            parallelGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
 
-            auto LambdaThread = [](
+            auto LambdaIPCThresholdSend = [](uint16_t threadIndex, float barPercent)
+                {
+                    uint8_t progressBarData[sizeof(uint16_t) + sizeof(float)];
+
+                    memcpy_s(progressBarData, sizeof(progressBarData), &threadIndex, sizeof(uint16_t));
+                    memcpy_s(progressBarData + sizeof(uint16_t), sizeof(progressBarData), &barPercent, sizeof(float));
+
+                    IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, da::GUIAntParallel::THREADS_PROGRESSBAR_UPDATE, progressBarData, sizeof(progressBarData));
+                };
+
+            auto LambdaThread = [&](
                 uint16_t threadIndex,
                 bool* thrStatus, 
                 std::vector< std::string>* pVectorPaths,
@@ -266,17 +273,6 @@ int main(int argc, char* argv[])
                 std::mutex* pMutexDraw,
                 sf::RenderWindow* pWindow)
             {
-                std::thread::id thread_id = std::this_thread::get_id();
-
-                std::stringstream Output;
-                Output << thread_id;
-                std::string sThreadID = Output.str();
-
-                pMutexAnt->lock();
-                    da::OsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Entering Thread : [" + sThreadID + "]"));
-                pMutexAnt->unlock();
-              
-                uint16_t fileNumer = 0U;
                 uint64_t lambdaRenderStepCount = 0U;
                 uint64_t progress = 0U;
                 uint64_t antMoves = 0U;
@@ -295,10 +291,13 @@ int main(int argc, char* argv[])
                         pVectorPaths->pop_back();
                     pMutexAnt->unlock();
 
+                    LambdaIPCThresholdSend(threadIndex, 0.0f);
+
                     if (ant.IsPathAlreadyGenereted())
                     {
                         IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, da::GUIAntParallel::PATHS_PROGRESSBAR_UPDATE);
                         IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntParallel::CURRENT_PATH_STATUS, nullptr, 0);
+
                         continue;
                     }
 
@@ -307,17 +306,8 @@ int main(int argc, char* argv[])
                     while (true)
                     {
                         if (progress > SimulationStepsThreshold) break;
-                        
-                        pMutexAnt->lock();
-
-                            std::string threadText(6U, ' ');
-                            threadText.replace(0U, sThreadID.length(), sThreadID);
-
-                            Output.str("");
-                            Output<<da::OsFeatures::GenerateProgressBar((float(progress) / SIMULATION_STEPS_THRESHOLD), 28) << " Thread: [" << threadText<<"] File number: " << fileNumer;
-                            da::OsFeatures::ThreadProgressGeneretor(threadIndex, Output.str());
-                        
-                       pMutexAnt->unlock();
+                                            
+                        LambdaIPCThresholdSend(threadIndex, float(progress) / SIMULATION_STEPS_THRESHOLD);
 
                         uint64_t movesLeft = ant.NextMove(lambdaRenderStepCount);
                         if (movesLeft == 0)
@@ -346,18 +336,9 @@ int main(int argc, char* argv[])
                     pMutexDump->lock();
                         ant.DumpToFile(OUTPUT_PATH_VAR);
                     pMutexDump->unlock();
-
-                    fileNumer++;
-
                 }
-                pMutexAnt->lock();
 
-                    std::string threadText(6U, ' ');
-                    threadText.replace(0, sThreadID.length(), sThreadID);
-                    
-                    da::OsFeatures::ThreadProgressGeneretor(threadIndex, std::string(" Thread: [" + threadText + "] Done generating                                            "));
-
-                pMutexAnt->unlock();   
+                LambdaIPCThresholdSend(threadIndex, 100.0f);
 
                 thrStatus[threadIndex] = false;
             };
@@ -401,7 +382,7 @@ int main(int argc, char* argv[])
 
                 IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE,  da::GUIAntParallel::CURRENT_TIME, std::to_string(duration.count()) + "s ");
 
-                parallelGUI.FetchDataForGUI( 5U );
+                parallelGUI.FetchDataForGUI(Thread_count * 2U);
                 parallelGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -569,8 +550,6 @@ int main(int argc, char* argv[])
             std::cout << "Unknown argument: " + std::string(argv[1]) << std::endl;
         } break;
     }
-
-    da::OsFeatures::RestoreOldConsoleMode();
 
 	return 0;
 }

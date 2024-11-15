@@ -20,7 +20,8 @@ namespace da
 
 		enum Updates : uint16_t
 		{
-			PATHS_PROGRESSBAR_UPDATE = 0U
+			PATHS_PROGRESSBAR_UPDATE = 0U,
+			THREADS_PROGRESSBAR_UPDATE
 		};
 
 	private:
@@ -39,7 +40,7 @@ namespace da
 		Background m_Background;
 
 		ProgressBar m_PathsProgress;
-		ProgressBar* m_pThreadProgressBars;
+		ProgressBar* m_aThreadProgressBars;
 
 	public:
 		GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight, uint16_t threadCount);

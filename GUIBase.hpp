@@ -28,14 +28,8 @@ namespace da
 				uint16_t windowHeight, 
 				const std::string& sInsideTexture, 
 				const std::string& sOtsideTexture,
-				float scalingFactorCorrection,
 				float scalingX,
-				float scalingY,
-				float posXIn,	//relative to window
-				float posYIn,	//relative to window
-				float posXOut,	//relative to window
-				float posYOut	//relative to window
-				)
+				float scalingY)
 			{
 				if (!insideTexture.loadFromFile(sInsideTexture))	assert(false);
 				if (!outsideTexture.loadFromFile(sOtsideTexture))	assert(false);
@@ -50,17 +44,18 @@ namespace da
 				outsideSprite.setTexture(outsideTexture);
 
 				float scalingFactor = static_cast<float>(windowWidth) / progressBarWidth;
-				scalingFactor *= scalingFactorCorrection;
 
 				insideSprite.setScale(scalingFactor		* scalingX, scalingFactor * scalingY);
 				outsideSprite.setScale(scalingFactor	* scalingX, scalingFactor * scalingY);
 
-				insideSprite.setPosition(static_cast<float>(windowWidth)	* posXIn, static_cast<float>(windowHeight)	* posYIn);
-				outsideSprite.setPosition(static_cast<float>(windowWidth)	* posXOut, static_cast<float>(windowHeight) * posYOut);
-
 				renderTexture.create(windowWidth, windowHeight);
 			}
 
+			void SetPossition(float xNormalizedIn, float yNormalizedIn, float xNormalizedOut, float yNormalizedOut)
+			{
+				insideSprite.setPosition(static_cast<float>(renderTexture.getSize().x) * xNormalizedIn, static_cast<float>(renderTexture.getSize().y) * yNormalizedIn);
+				outsideSprite.setPosition(static_cast<float>(renderTexture.getSize().x) * xNormalizedOut, static_cast<float>(renderTexture.getSize().y) * yNormalizedOut);
+			}
 			void SetProgress(float progressInPercent, float scaleX)
 			{
 				insideSprite.setTextureRect(sf::IntRect(

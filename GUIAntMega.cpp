@@ -76,12 +76,18 @@ namespace da
 
 	void GUIAntMega::InitBars()
 	{
-		m_ThreasholdBar.Init(GUIBase::m_WindowWidth, GUIBase::m_WindowHeight, "./Sprites/GUI/AntMega/ProgressBarInside.png", "./Sprites/GUI/AntMega/ProgressBarOutside.png",
-			0.33f, 1.53f, 1.0f, 0.069f, 0.211f, 0.069f, 0.211f);
+		m_ThreasholdBar.Init(GUIBase::m_WindowWidth, GUIBase::m_WindowHeight, "./Sprites/GUI/ProgressBarInside.png", "./Sprites/GUI/ProgressBarOutside.png",
+			0.51f,
+			0.33f);
+			
+		m_ThreasholdBar.SetPossition(0.069f, 0.211f, 0.069f, 0.211f);
 		m_ThreasholdBar.SetProgress(0.0f, 1.0f);
 
 		m_CopyBar.Init(GUIBase::m_WindowWidth, GUIBase::m_WindowHeight, "./Sprites/GUI/AntMega/CopingProgressBar.png", "./Sprites/GUI/AntMega/CopingFileBackground.png",
-			0.50f, 1.0f, 1.0f, 0.375f, 0.400f, 0.355f, 0.400f);
+			0.5f,
+			0.5f);
+
+		m_CopyBar.SetPossition(0.375f, 0.400f, 0.355f, 0.400f);
 		m_CopyBar.SetProgress(0.0f, 0.734f);
 	}
 
