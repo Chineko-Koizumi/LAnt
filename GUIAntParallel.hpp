@@ -21,7 +21,8 @@ namespace da
 		enum Updates : uint16_t
 		{
 			PATHS_PROGRESSBAR_UPDATE = 0U,
-			THREADS_PROGRESSBAR_UPDATE
+			THREADS_PROGRESSBAR_UPDATE,
+			THREADS_PATH_UPDATE
 		};
 
 	private:

@@ -10,7 +10,6 @@ namespace da
 	class MeshMega : public MeshBase
 	{
 	private:
-		daTypes::GreenColor* m_pDaGreenColorTransitionArray;
 
 	public:
 		MeshMega(
@@ -21,7 +20,7 @@ namespace da
 		virtual ~MeshMega();
 
 		void InitField(uint8_t encodedInitialPixel)			override;
-		void DumpToFile(const std::string& outputPath, daTypes::GreenColor* pGreenArrayForColorDecoding)	override;
+		void DumpToFile(const std::string& outputPath)	override;
 
 	private:
 

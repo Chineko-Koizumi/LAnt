@@ -7,8 +7,8 @@
 
 namespace da 
 {
-	Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window)
-		: MeshBase(width, height)
+	Mesh::Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, daTypes::GreenColor* pDaGreenColorTransitionArray)
+		: MeshBase(width, height, pDaGreenColorTransitionArray)
 		, m_pWindow(window)
 		, m_pfieldVertex( new sf::VertexArray(sf::Points, uint64_t(height) * uint64_t(width)) )
 	{
@@ -41,7 +41,7 @@ namespace da
 		}
 	}
 
-	void Mesh::DumpToFile(const std::string& outputPath, daTypes::GreenColor* pGreenArrayForColorDecoding)
+	void Mesh::DumpToFile(const std::string& outputPath)
 	{
 		png::image< png::rgb_pixel > pngImage(m_FieldWidth, m_FieldHeight);
 		for (png::uint_32 y = 0; y < pngImage.get_height(); ++y)
@@ -50,7 +50,7 @@ namespace da
 			{
 				uint16_t decodedIndex = m_pfield[TwoDimensionalIndextoOneDimensionalIndex(x, y)] & daConstants::COLOR_INDEX_MASK;
 
-				daTypes::GreenColor temp = pGreenArrayForColorDecoding[decodedIndex];
+				daTypes::GreenColor temp = m_pDaGreenColorTransitionArray[decodedIndex];
 
 				pngImage[y][x] = png::rgb_pixel(0U, temp.g, 0U);
 			}

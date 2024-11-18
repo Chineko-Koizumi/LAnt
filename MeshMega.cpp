@@ -15,8 +15,7 @@ namespace da
 		  uint32_t width 
 		, uint32_t height 
 		, daTypes::GreenColor* daGreenColorTransitionArray /* Green color with encoded data one alpa channel*/)
-			: MeshBase(width, height)
-			, m_pDaGreenColorTransitionArray(daGreenColorTransitionArray)
+			: MeshBase(width, height, daGreenColorTransitionArray)
 	{}
 
 	MeshMega::~MeshMega()
@@ -30,7 +29,7 @@ namespace da
 		}
 	}
 
-	void MeshMega::DumpToFile(const std::string& outputPath, daTypes::GreenColor* pGreenArrayForColorDecoding)
+	void MeshMega::DumpToFile(const std::string& outputPath)
 	{
 		std::string FileName(m_FilePrefix + std::to_string(m_FieldWidth) + "x" + std::to_string(m_FieldHeight) + ".ppm");
 		IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, GUIAntMega::OUTPUT_FILE, FileName);

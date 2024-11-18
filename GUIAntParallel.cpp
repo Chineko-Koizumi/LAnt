@@ -13,7 +13,7 @@ namespace da
 	}
 
 	GUIAntParallel::GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight, uint16_t threadCount)
-		: GUIBase(windowWidth / 2.0f, windowHeight/ 2.0f, Names::LAST)
+		: GUIBase(windowWidth , windowHeight, Names::LAST)
 		, m_ThreadCount(threadCount)
 		, m_aThreadProgressBars(new ProgressBar[threadCount])
 		, m_PathsCount(0U)
@@ -86,6 +86,11 @@ namespace da
 					m_aThreadProgressBars[*reinterpret_cast<uint16_t*>(msg.message)].SetProgress(*reinterpret_cast<float*>(&msg.message[2]), 1.0f);
 				}break;
 
+				case THREADS_PATH_UPDATE: 
+				{
+					m_aThreadProgressBars[*reinterpret_cast<uint16_t*>(msg.message)].progressBarLabel.setString(reinterpret_cast<char*>(&msg.message[2]));
+				}break;
+
 				default:
 					break;
 				}
@@ -104,14 +109,7 @@ namespace da
 		if (clearScreen) m_pWindow->clear(sf::Color::Black);
 
 			m_pWindow->draw(m_Background.sprite);
-
-			m_PathsProgress.renderTexture.draw(m_PathsProgress.outsideSprite);
-			m_PathsProgress.renderTexture.draw(m_PathsProgress.insideSprite);
-			m_PathsProgress.renderTexture.display();
-
-			sf::Sprite outputThresholdSprite(m_PathsProgress.renderTexture.getTexture());
-
-			m_pWindow->draw(outputThresholdSprite);
+			m_pWindow->draw(m_PathsProgress.DrawnSprite());
 
 			for (Names name = FIRST; name < LAST; ++name)
 			{
@@ -120,13 +118,7 @@ namespace da
 
 			for (size_t i = 0; i < m_ThreadCount; i++)
 			{
-				m_aThreadProgressBars[i].renderTexture.draw(m_aThreadProgressBars[i].outsideSprite);
-				m_aThreadProgressBars[i].renderTexture.draw(m_aThreadProgressBars[i].insideSprite);
-				m_aThreadProgressBars[i].renderTexture.display();
-
-				sf::Sprite outputThresholdSprite(m_aThreadProgressBars[i].renderTexture.getTexture());
-
-				m_pWindow->draw(outputThresholdSprite);
+				m_pWindow->draw(m_aThreadProgressBars[i].DrawnSprite());
 			}
 
 		if (pushToScreen) m_pWindow->display();
@@ -144,34 +136,33 @@ namespace da
 
 	void GUIAntParallel::InitBars()
 	{
-	
 		m_PathsProgress.Init(GUIBase::m_WindowWidth, GUIBase::m_WindowHeight, "./Sprites/GUI/ProgressBarInside.png", "./Sprites/GUI/ProgressBarOutside.png",
 			0.963f,
 			0.33f);
 
 		m_PathsProgress.SetPossition(
-			0.0175f, 
-			0.125f,
-			0.0175f, 
-			0.125f);
+			0.023f, 
+			0.130f,
+			0.023f, 
+			0.130f);
 
 		m_PathsProgress.SetProgress(0.0f, 1.0f);
 
-
 		for (size_t i = 0; i < m_ThreadCount; i++)
 		{
-			m_aThreadProgressBars[i].Init(GUIBase::m_WindowWidth, GUIBase::m_WindowHeight, "./Sprites/GUI/ProgressBarInside.png", "./Sprites/GUI/ProgressBarOutside.png",
-				0.971f,
+			m_aThreadProgressBars[i].InitLabel(m_FontTahomaBold, m_ColorWindowsLightBlack, "No Path");
+			m_aThreadProgressBars[i].Init(GUIBase::m_WindowWidth, GUIBase::m_WindowHeight, "./Sprites/GUI/ProgressBarInside.png", "./Sprites/GUI/ProgressBarOutsideWhite.png",
+				0.96f,
 				0.38f);
 
-			float barRelativeHeight = static_cast<float>(m_aThreadProgressBars[i].progressBarHeight * m_aThreadProgressBars[i].insideSprite.getScale().y) / GUIBase::m_WindowWidth;
-			barRelativeHeight *= 1.15; //10% margin
+			float barRelativeHeight = static_cast<float>( m_aThreadProgressBars[i].insideSprite.getGlobalBounds().height) / GUIBase::m_WindowWidth;
+			barRelativeHeight *= 1.20; //20% margin
 
 			m_aThreadProgressBars[i].SetPossition(
-				0.0150f,
-				0.173f + barRelativeHeight * i,
-				0.0150f,
-				0.173f + barRelativeHeight * i);
+				0.018f,
+				0.178f + barRelativeHeight * i,
+				0.018f,
+				0.178f + barRelativeHeight * i);
 
 			m_aThreadProgressBars[i].SetProgress(0.0f, 1.0f);
 		}

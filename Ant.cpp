@@ -10,7 +10,7 @@ namespace da
 		const std::string& rAntPath
 	) 
 		: AntBase( Width, Height, rAntPath )
-		, m_pMesh( new Mesh(Width, Height, window) )
+		, m_pMesh( new Mesh(Width, Height, window, m_pDaGreenColorTransitionArray) )
 	{
 		SetOffset(m_pMesh->GetCenterPoint());
 
@@ -29,7 +29,7 @@ namespace da
 
 	void Ant::DumpToFile(const std::string& outputPath)
 	{
-		m_pMesh->DumpToFile(outputPath, m_pDaGreenColorTransitionArray);
+		m_pMesh->DumpToFile(outputPath);
 	}
 
 	void Ant::DrawMesh(bool clearScreen, bool pushToScreen)

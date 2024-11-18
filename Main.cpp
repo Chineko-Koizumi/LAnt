@@ -255,15 +255,27 @@ int main(int argc, char* argv[])
 
             auto LambdaIPCThresholdSend = [](uint16_t threadIndex, float barPercent)
                 {
+                    size_t bufferSize =     sizeof(uint16_t) + sizeof(float);
                     uint8_t progressBarData[sizeof(uint16_t) + sizeof(float)];
 
-                    memcpy_s(progressBarData, sizeof(progressBarData), &threadIndex, sizeof(uint16_t));
-                    memcpy_s(progressBarData + sizeof(uint16_t), sizeof(progressBarData), &barPercent, sizeof(float));
+                    memcpy_s(progressBarData,                       bufferSize, &threadIndex,   sizeof(uint16_t));
+                    memcpy_s(progressBarData + sizeof(uint16_t),    bufferSize, &barPercent,    sizeof(float));
 
-                    IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, da::GUIAntParallel::THREADS_PROGRESSBAR_UPDATE, progressBarData, sizeof(progressBarData));
+                    IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, da::GUIAntParallel::THREADS_PROGRESSBAR_UPDATE, progressBarData, bufferSize);
                 };
 
-            auto LambdaThread = [&](
+            auto LambdaIPCPathSend = [](uint16_t threadIndex,const std::string& path)
+                {
+                    size_t bufferSize = sizeof(uint16_t) + path.size() + 1U;
+                    uint8_t* progressBarData = reinterpret_cast<uint8_t*>( alloca(bufferSize) );
+
+                    memcpy_s(progressBarData,                       bufferSize, &threadIndex, sizeof(uint16_t));
+                    memcpy_s(progressBarData + sizeof(uint16_t),    bufferSize, path.c_str(), path.size() + 1U);
+
+                    IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, da::GUIAntParallel::THREADS_PATH_UPDATE, progressBarData, bufferSize);
+                };
+
+            auto LambdaThread = [&LambdaIPCThresholdSend, &LambdaIPCPathSend](
                 uint16_t threadIndex,
                 bool* thrStatus, 
                 std::vector< std::string>* pVectorPaths,
@@ -287,7 +299,9 @@ int main(int argc, char* argv[])
 
                         da::Ant ant(pWindow, MESH_WIDTH, MESH_HEIGHT, pVectorPaths->back());
                         IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntParallel::RECENTLY_STARTED_PATH, pVectorPaths->back());
-
+                        LambdaIPCThresholdSend(threadIndex, 1.0f);
+                        LambdaIPCPathSend(threadIndex, pVectorPaths->back());
+                        
                         pVectorPaths->pop_back();
                     pMutexAnt->unlock();
 
@@ -338,7 +352,7 @@ int main(int argc, char* argv[])
                     pMutexDump->unlock();
                 }
 
-                LambdaIPCThresholdSend(threadIndex, 100.0f);
+                LambdaIPCThresholdSend(threadIndex, 1.0f);
 
                 thrStatus[threadIndex] = false;
             };
@@ -409,141 +423,141 @@ int main(int argc, char* argv[])
 
         }break;
 
-         case da::ANT_NOGUI_LARGE_FILE:
-         {
-             if (!da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_MASKED_COLOR)) break;
+        case da::ANT_NOGUI_LARGE_FILE:
+        {
+            if (!da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_MASKED_COLOR)) break;
 
-             auto start = std::chrono::high_resolution_clock::now();
+            auto start = std::chrono::high_resolution_clock::now();
      
-             da::AntMega megaAnt(MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL);
+            da::AntMega megaAnt(MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL);
 
-             std::atomic_uint64_t progress = 0U;
-             std::atomic_uint64_t antMoves = 0U;
-             std::atomic_bool exit = false;
-             uint64_t megaAntRenderStepCount = 50000000U;
+            std::atomic_uint64_t progress = 0U;
+            std::atomic_uint64_t antMoves = 0U;
+            std::atomic_bool exit = false;
+            uint64_t megaAntRenderStepCount = 50000000U;
 
-             auto GUIThread = []( 
-                 std::atomic_uint64_t* pProgress, 
-                 std::atomic_uint64_t* pAntMoves, 
-                 std::atomic_bool* pExit)
-                 {
-                     using namespace std::chrono_literals;
-                     auto start = std::chrono::high_resolution_clock::now();
+            auto GUIThread = []( 
+                std::atomic_uint64_t* pProgress, 
+                std::atomic_uint64_t* pAntMoves, 
+                std::atomic_bool* pExit)
+                {
+                    using namespace std::chrono_literals;
+                    auto start = std::chrono::high_resolution_clock::now();
 
-                     da::GUIAntMega AntMegaGUI( 1000U, ANT_PATH_FROM_CL);///to do: get monitor resolution
+                    da::GUIAntMega AntMegaGUI( 1000U, ANT_PATH_FROM_CL);///to do: get monitor resolution
                     
-                     AntMegaGUI.UpdateText(da::GUIAntMega::INFO, std::string(" Mesh size: ") + std::to_string(MESH_WIDTH) + "x" + std::to_string(MESH_HEIGHT));
-                     AntMegaGUI.Redraw(daConstants::CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
+                    AntMegaGUI.UpdateText(da::GUIAntMega::INFO, std::string(" Mesh size: ") + std::to_string(MESH_WIDTH) + "x" + std::to_string(MESH_HEIGHT));
+                    AntMegaGUI.Redraw(daConstants::CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
 
-                     sf::Event eventGUI;
-                     bool exitLoop = false;
+                    sf::Event eventGUI;
+                    bool exitLoop = false;
 
-                     while ( !exitLoop )
-                     {
-                        if (AntMegaGUI.GetWindowPtr()->pollEvent(eventGUI))
+                    while ( !exitLoop )
+                    {
+                    if (AntMegaGUI.GetWindowPtr()->pollEvent(eventGUI))
+                    {
+                        switch (eventGUI.type)  
                         {
-                            switch (eventGUI.type)  
+                            case sf::Event::KeyPressed:
                             {
-                                case sf::Event::KeyPressed:
+                                switch (eventGUI.key.code)
                                 {
-                                    switch (eventGUI.key.code)
-                                    {
-                                    case sf::Keyboard::Enter:
-                                    {
-                                        *pExit = true;
-                                    }break;
-                                    case sf::Keyboard::Escape:
-                                    {
-                                        if ( *pExit )
-                                        {
-                                            exitLoop = true;
-                                        }  
-                                    }break;
-                                    default:
-                                        break;
-                                    }
+                                case sf::Keyboard::Enter:
+                                {
+                                    *pExit = true;
                                 }break;
-                            }
+                                case sf::Keyboard::Escape:
+                                {
+                                    if ( *pExit )
+                                    {
+                                        exitLoop = true;
+                                    }  
+                                }break;
+                                default:
+                                    break;
+                                }
+                            }break;
                         }
+                    }
 
-                        AntMegaGUI.FetchDataForGUI( 5U );
+                    AntMegaGUI.FetchDataForGUI( 5U );
 
-                        if ( AntMegaGUI.GetState() == da::GUIAntMega::States::GENERATING)
-                        {
-                            auto timeStamp = std::chrono::high_resolution_clock::now();
-                            auto cycleTime = std::chrono::duration_cast<std::chrono::milliseconds>(timeStamp - start);
+                    if ( AntMegaGUI.GetState() == da::GUIAntMega::States::GENERATING)
+                    {
+                        auto timeStamp = std::chrono::high_resolution_clock::now();
+                        auto cycleTime = std::chrono::duration_cast<std::chrono::milliseconds>(timeStamp - start);
 
-                            uint64_t pxPerSec = *pAntMoves / (cycleTime.count() + 1U) * 1000U;
-                            AntMegaGUI.setPxPerS(pxPerSec);
+                        uint64_t pxPerSec = *pAntMoves / (cycleTime.count() + 1U) * 1000U;
+                        AntMegaGUI.setPxPerS(pxPerSec);
 
-                            std::string formatNumber(std::to_string(*pAntMoves));
+                        std::string formatNumber(std::to_string(*pAntMoves));
 
-                            daFunctions::AddCommasToStringNumber(formatNumber);
+                        daFunctions::AddCommasToStringNumber(formatNumber);
 
-                            AntMegaGUI.UpdateTextAfter(da::GUIAntMega::MOVES, 8U, formatNumber);
+                        AntMegaGUI.UpdateTextAfter(da::GUIAntMega::MOVES, 8U, formatNumber);
 
-                            float thresholdPercent = static_cast<float>(*pProgress) / SIMULATION_STEPS_THRESHOLD;
-                            char temp[10];
-                            snprintf(temp, sizeof(temp), "%3.0f", thresholdPercent * 100.0f);
+                        float thresholdPercent = static_cast<float>(*pProgress) / SIMULATION_STEPS_THRESHOLD;
+                        char temp[10];
+                        snprintf(temp, sizeof(temp), "%3.0f", thresholdPercent * 100.0f);
 
-                            AntMegaGUI.UpdateTextAfter(da::GUIAntMega::THRESHOLD, 23U, std::string(temp) + "%");
+                        AntMegaGUI.UpdateTextAfter(da::GUIAntMega::THRESHOLD, 23U, std::string(temp) + "%");
 
-                            AntMegaGUI.m_ThreasholdBar.SetProgress(thresholdPercent, 1.0f);
-                        }
+                        AntMegaGUI.m_ThreasholdBar.SetProgress(thresholdPercent, 1.0f);
+                    }
                         
-                        AntMegaGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
-                        std::this_thread::sleep_for(33ms);
-                     }
-                 };
+                    AntMegaGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
+                    std::this_thread::sleep_for(33ms);
+                    }
+                };
 
-             std::thread threadGUI = std::thread(GUIThread, &progress, &antMoves, &exit);
+            std::thread threadGUI = std::thread(GUIThread, &progress, &antMoves, &exit);
 
-             while (!exit)
-             {
-                 uint64_t movesLeft = megaAnt.NextMove(megaAntRenderStepCount);
-                 if (movesLeft == 0)
-                 {
-                     antMoves += megaAntRenderStepCount;
-                 }
-                 else
-                 {
-                     antMoves += movesLeft;
+            while (!exit)
+            {
+                uint64_t movesLeft = megaAnt.NextMove(megaAntRenderStepCount);
+                if (movesLeft == 0)
+                {
+                    antMoves += megaAntRenderStepCount;
+                }
+                else
+                {
+                    antMoves += movesLeft;
 
-                     std::string formatedMoves = std::to_string(antMoves);
-                     daFunctions::AddCommasToStringNumber(formatedMoves);
+                    std::string formatedMoves = std::to_string(antMoves);
+                    daFunctions::AddCommasToStringNumber(formatedMoves);
 
-                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, std::string(" Ant hit wall, moves: " + formatedMoves));
-                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::MOVES, formatedMoves);
-                     break;
-                 }
+                    IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, std::string(" Ant hit wall, moves: " + formatedMoves));
+                    IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::MOVES, formatedMoves);
+                    break;
+                }
                  
-                 ++progress;
-                 if (progress == SIMULATION_STEPS_THRESHOLD)
-                 {
-                     std::string formatedMoves = std::to_string(antMoves);
+                ++progress;
+                if (progress == SIMULATION_STEPS_THRESHOLD)
+                {
+                    std::string formatedMoves = std::to_string(antMoves);
 
-                     daFunctions::AddCommasToStringNumber(formatedMoves);
+                    daFunctions::AddCommasToStringNumber(formatedMoves);
 
-                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, std::string(" Reached simulation limit, moves: " + formatedMoves));
-                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::MOVES, formatedMoves);
-                     IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::THRESHOLD, std::string("100%"));
+                    IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, std::string(" Reached simulation limit, moves: " + formatedMoves));
+                    IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::MOVES, formatedMoves);
+                    IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::THRESHOLD, std::string("100%"));
 
-                     float thresholdFloat = 100.0f;
-                     IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, da::GUIAntMega::THRESHOLD_PROGRESSBAR_UPDATE, static_cast<const void*>(&thresholdFloat), sizeof(float));
+                    float thresholdFloat = 100.0f;
+                    IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, da::GUIAntMega::THRESHOLD_PROGRESSBAR_UPDATE, static_cast<const void*>(&thresholdFloat), sizeof(float));
 
-                     break;
-                 }
-             }
+                    break;
+                }
+            }
 
-             megaAnt.DumpToFile(OUTPUT_PATH_VAR);
+            megaAnt.DumpToFile(OUTPUT_PATH_VAR);
 
-             auto stop = std::chrono::high_resolution_clock::now();
-             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+            auto stop = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-             IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, std::string(" Whole operation took: " + std::to_string(duration.count()) + "[ms]"));
+            IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, std::string(" Whole operation took: " + std::to_string(duration.count()) + "[ms]"));
 
-             threadGUI.join();
-         }break;
+            threadGUI.join();
+        }break;
 
         default: 
         {

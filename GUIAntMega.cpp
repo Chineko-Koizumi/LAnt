@@ -214,27 +214,13 @@ namespace da
 		if(clearScreen) m_pWindow->clear(sf::Color::Black);
 	
 		m_pWindow->draw(m_Background.sprite);
-
-				m_ThreasholdBar.renderTexture.draw(m_ThreasholdBar.outsideSprite);
-				m_ThreasholdBar.renderTexture.draw(m_ThreasholdBar.insideSprite);
-				m_ThreasholdBar.renderTexture.display();
-
-				sf::Sprite outputThresholdSprite(m_ThreasholdBar.renderTexture.getTexture());
-
-			m_pWindow->draw(outputThresholdSprite);
+		m_pWindow->draw(m_ThreasholdBar.DrawnSprite());
 
 			switch (m_CurrentState)
 			{
 				case COPING:
 				{
-					m_CopyBar.renderTexture.draw(m_CopyBar.outsideSprite);
-					m_CopyBar.renderTexture.draw(m_CopyBar.insideSprite);
-					m_CopyBar.renderTexture.display();
-
-					sf::Sprite outputCopySprite(m_CopyBar.renderTexture.getTexture());
-
-					m_pWindow->draw(outputCopySprite);
-
+					m_pWindow->draw(m_CopyBar.DrawnSprite());
 					m_pWindow->draw(m_CopyAnimation.GetCurrentFrame());	
 				}break;
 			}

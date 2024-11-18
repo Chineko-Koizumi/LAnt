@@ -17,12 +17,22 @@ namespace da
 			sf::Texture insideTexture;
 			sf::Texture outsideTexture;
 
-			uint16_t progressBarWidth{ 0U };
-			uint16_t progressBarHeight{ 0U };
+			uint16_t progressBarTextureWidth{ 0U };
+			uint16_t progressBarTextureHeight{ 0U };
 
 			sf::Sprite insideSprite;
 			sf::Sprite outsideSprite;
-			 
+			sf::Sprite outputSprite;
+			sf::Text progressBarLabel;
+
+			void InitLabel(const sf::Font& font, const sf::Color& color, const std::string& label) 
+			{
+				progressBarLabel.setFont(font);
+				progressBarLabel.setFillColor(color);
+				progressBarLabel.setOutlineColor(color);
+				progressBarLabel.setString(label);
+			}
+
 			void Init(
 				uint16_t windowWidth, 
 				uint16_t windowHeight, 
@@ -31,11 +41,12 @@ namespace da
 				float scalingX,
 				float scalingY)
 			{
+
 				if (!insideTexture.loadFromFile(sInsideTexture))	assert(false);
 				if (!outsideTexture.loadFromFile(sOtsideTexture))	assert(false);
 
-				progressBarWidth = static_cast<uint16_t>(outsideTexture.getSize().x);
-				progressBarHeight = static_cast<uint16_t>(outsideTexture.getSize().y);
+				progressBarTextureWidth = static_cast<uint16_t>(outsideTexture.getSize().x);
+				progressBarTextureHeight = static_cast<uint16_t>(outsideTexture.getSize().y);
 
 				insideTexture.setSmooth(true);
 				outsideTexture.setSmooth(true);
@@ -43,26 +54,40 @@ namespace da
 				insideSprite.setTexture(insideTexture);
 				outsideSprite.setTexture(outsideTexture);
 
-				float scalingFactor = static_cast<float>(windowWidth) / progressBarWidth;
+				float scalingFactor = static_cast<float>(windowWidth) / progressBarTextureWidth;
 
 				insideSprite.setScale(scalingFactor		* scalingX, scalingFactor * scalingY);
 				outsideSprite.setScale(scalingFactor	* scalingX, scalingFactor * scalingY);
 
 				renderTexture.create(windowWidth, windowHeight);
+				outputSprite.setTexture(renderTexture.getTexture());
+
+				progressBarLabel.setCharacterSize(insideSprite.getGlobalBounds().height * 1.15f);
 			}
 
 			void SetPossition(float xNormalizedIn, float yNormalizedIn, float xNormalizedOut, float yNormalizedOut)
 			{
-				insideSprite.setPosition(static_cast<float>(renderTexture.getSize().x) * xNormalizedIn, static_cast<float>(renderTexture.getSize().y) * yNormalizedIn);
-				outsideSprite.setPosition(static_cast<float>(renderTexture.getSize().x) * xNormalizedOut, static_cast<float>(renderTexture.getSize().y) * yNormalizedOut);
+				insideSprite.setPosition(	xNormalizedIn *		renderTexture.getSize().x, yNormalizedIn *	renderTexture.getSize().y);
+				outsideSprite.setPosition(	xNormalizedOut *	renderTexture.getSize().x, yNormalizedOut * renderTexture.getSize().y);
+
+				progressBarLabel.setPosition(insideSprite.getGlobalBounds().left, insideSprite.getGlobalBounds().top - progressBarLabel.getGlobalBounds().height / 4.0f);
 			}
 			void SetProgress(float progressInPercent, float scaleX)
 			{
 				insideSprite.setTextureRect(sf::IntRect(
 					0,
 					0,
-					static_cast<int>(progressBarWidth * scaleX * progressInPercent),
-					static_cast<int>(progressBarHeight)));
+					static_cast<int>(progressBarTextureWidth * scaleX * progressInPercent),
+					static_cast<int>(progressBarTextureHeight)));
+			}
+			sf::Sprite& DrawnSprite() 
+			{
+				renderTexture.draw(outsideSprite);
+				renderTexture.draw(insideSprite);
+				renderTexture.draw(progressBarLabel);
+				renderTexture.display();
+
+				return outputSprite;
 			}
 		};
 

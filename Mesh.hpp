@@ -19,12 +19,12 @@ namespace da
 		sf::RenderWindow* m_pWindow;
 
 	public:
-		Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window);
+		Mesh(uint32_t width, uint32_t height, sf::RenderWindow* window, daTypes::GreenColor* pDaGreenColorTransitionArray);
 		virtual ~Mesh();
 
 		void DrawMesh(bool clearScreen, bool pushToScreen);
 
-		void DumpToFile(const std::string& outputPath, daTypes::GreenColor* pGreenArrayForColorDecoding)	override;
+		void DumpToFile(const std::string& outputPath)	override;
 		void InitField(uint8_t encodedInitialPixel)		override;
 
 	private:

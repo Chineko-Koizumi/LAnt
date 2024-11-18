@@ -11,6 +11,8 @@ namespace da
 	class MeshBase
 	{
 	protected:
+		daTypes::GreenColor* m_pDaGreenColorTransitionArray;
+
 		uint32_t m_FieldWidth;
 		uint32_t m_FieldHeight;
 
@@ -20,7 +22,7 @@ namespace da
 		std::string m_FilePrefix;
 
 	public:
-		MeshBase(uint32_t width, uint32_t height);
+		MeshBase(uint32_t width, uint32_t height, daTypes::GreenColor* pDaGreenColorTransitionArray);
 		virtual ~MeshBase();
 
 		uint8_t* GetFieldPtr();
@@ -28,7 +30,7 @@ namespace da
 		daTypes::PointUI32 GetCenterPoint();
 
 		virtual void InitField(uint8_t encodedInitialPixel)		= 0;
-		virtual void DumpToFile(const std::string& outputPath, daTypes::GreenColor* pGreenArrayForColorDecoding)	= 0;
+		virtual void DumpToFile(const std::string& outputPath)	= 0;
 	};
 }
 
