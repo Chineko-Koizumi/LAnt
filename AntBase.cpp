@@ -6,13 +6,14 @@ namespace da
 	da::AntBase::AntBase(
 		uint32_t Width,
 		uint32_t Height,
-		const std::string& rAntPath)
+		const std::string& rAntPath,
+		daTypes::GreenColor* pEncodedColorArray)
 					: m_pMeshFieldCopy(nullptr)
 					, m_CurrentAntColorMaskedCount( rAntPath.size() )
 					, m_pColorMaskedTransitionArray( new uint8_t[m_CurrentAntColorMaskedCount] )
 					, m_CurrentAntColorMasked(0U)
 					, m_CurrentTurn(0U)
-					, m_pDaGreenColorTransitionArray(InputParser::CreateDaGreenColorArrayFromCL(rAntPath))
+					, m_pDaGreenColorTransitionArray( pEncodedColorArray )
 					, m_x(0)
 					, m_y(0)
 					, m_Width(Width)
@@ -22,14 +23,7 @@ namespace da
 					, m_DistanceToYWall(0)
 					, m_DistanceToXWall(0)
 					, m_NextCheck(0)
-					, m_PathAlreadyGenerated(false)
 	{
-		if (m_pDaGreenColorTransitionArray == nullptr) 
-		{
-			m_PathAlreadyGenerated = true;
-			return;
-		} 
-
 		for (size_t i = 0U; i < m_CurrentAntColorMaskedCount; i++)
 		{
 			m_pColorMaskedTransitionArray[i] = daConstants::TURN_MASK & m_pDaGreenColorTransitionArray[i].a;
@@ -39,7 +33,6 @@ namespace da
 	da::AntBase::~AntBase()
 	{
 		delete[] m_pColorMaskedTransitionArray;
-		delete[] m_pDaGreenColorTransitionArray;
 	}
 
 	void AntBase::SetOffset(uint32_t x, uint32_t y)
@@ -52,10 +45,5 @@ namespace da
 	{
 		m_x = p.x;
 		m_y = p.y;
-	}
-
-	bool AntBase::IsPathAlreadyGenereted()
-	{
-		return m_PathAlreadyGenerated;
 	}
 }

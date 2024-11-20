@@ -4,11 +4,12 @@
 namespace da 
 {
 	AntMega::AntMega(
-		  uint32_t Width
-		, uint32_t Height
-		, std::string& antPath)
-			: AntBase( Width, Height, antPath)
-			, m_pMegaMesh(new MeshMega(Width, Height, m_pDaGreenColorTransitionArray))
+		uint32_t Width,
+		uint32_t Height,
+		std::string& antPath,
+		daTypes::GreenColor* pEncodedColorArray)
+			: AntBase( Width, Height, antPath, pEncodedColorArray)
+			, m_pMegaMesh(new MeshMega(Width, Height, pEncodedColorArray))
 	{
 		SetOffset(m_pMegaMesh->GetCenterPoint());
 

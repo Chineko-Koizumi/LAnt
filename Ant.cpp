@@ -7,10 +7,11 @@ namespace da
 		sf::RenderWindow* window,
 		uint32_t Width,
 		uint32_t Height,
-		const std::string& rAntPath
+		const std::string& rAntPath,
+		daTypes::GreenColor* pEncodedColorArray
 	) 
-		: AntBase( Width, Height, rAntPath )
-		, m_pMesh( new Mesh(Width, Height, window, m_pDaGreenColorTransitionArray) )
+		: AntBase( Width, Height, rAntPath, pEncodedColorArray)
+		, m_pMesh( new Mesh(Width, Height, window, pEncodedColorArray) )
 	{
 		SetOffset(m_pMesh->GetCenterPoint());
 

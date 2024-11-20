@@ -135,7 +135,9 @@ int main(int argc, char* argv[])
             windowGUI.UpdateText(da::GUIAnt::EXIT_INFO,     std::string("\n"));
             windowGUI.Redraw(daConstants::CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
 
-            da::Ant ant(&windowAnt, MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL);
+            daTypes::GreenColor* pGreenColorArray = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL);
+
+            da::Ant ant(&windowAnt, MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL, pGreenColorArray);
 
             windowAnt.setActive(false);
 
@@ -214,6 +216,8 @@ int main(int argc, char* argv[])
                     }
                 }
             }
+
+            delete[] pGreenColorArray;
         }break;
 
         case da::ANT_PARALLEL_FILE: 
@@ -291,29 +295,35 @@ int main(int argc, char* argv[])
                 while (true)
                 {
                     pMutexAnt->lock();
-                        if (pVectorPaths->empty())
-                        {
-                            pMutexAnt->unlock();
-                            break;
-                        }
+                    if (pVectorPaths->empty())
+                    {
+                        pMutexAnt->unlock();
 
-                        da::Ant ant(pWindow, MESH_WIDTH, MESH_HEIGHT, pVectorPaths->back());
-                        IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntParallel::RECENTLY_STARTED_PATH, pVectorPaths->back());
-                        LambdaIPCThresholdSend(threadIndex, 1.0f);
-                        LambdaIPCPathSend(threadIndex, pVectorPaths->back());
-                        
-                        pVectorPaths->pop_back();
+                        break;
+                    }
+
+                    std::string tempPath = pVectorPaths->back();
+                    pVectorPaths->pop_back();
+
                     pMutexAnt->unlock();
 
-                    LambdaIPCThresholdSend(threadIndex, 0.0f);
+                    daTypes::GreenColor* pGreenColorArray = da::InputParser::CreateDaGreenColorArrayFromCL(tempPath);
 
-                    if (ant.IsPathAlreadyGenereted())
+                    if (pGreenColorArray == nullptr) 
                     {
                         IPC::SendMessege(IPC::GUI_MESSAGE_VALUE_UPDATE, da::GUIAntParallel::PATHS_PROGRESSBAR_UPDATE);
                         IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntParallel::CURRENT_PATH_STATUS, nullptr, 0);
+                        LambdaIPCThresholdSend(threadIndex, 1.0f);
 
                         continue;
                     }
+
+                    da::Ant ant(pWindow, MESH_WIDTH, MESH_HEIGHT, tempPath, pGreenColorArray);
+
+                    IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntParallel::RECENTLY_STARTED_PATH, tempPath);
+
+                    LambdaIPCPathSend(threadIndex, tempPath);
+                    LambdaIPCThresholdSend(threadIndex, 0.0f);
 
                     lambdaRenderStepCount = 10000000U;
                     progress = 0U;
@@ -350,6 +360,8 @@ int main(int argc, char* argv[])
                     pMutexDump->lock();
                         ant.DumpToFile(OUTPUT_PATH_VAR);
                     pMutexDump->unlock();
+
+                   delete[] pGreenColorArray;
                 }
 
                 LambdaIPCThresholdSend(threadIndex, 1.0f);
@@ -429,7 +441,9 @@ int main(int argc, char* argv[])
 
             auto start = std::chrono::high_resolution_clock::now();
      
-            da::AntMega megaAnt(MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL);
+            daTypes::GreenColor* pGreenColor = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL);
+
+            da::AntMega megaAnt(MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL, pGreenColor);
 
             std::atomic_uint64_t progress = 0U;
             std::atomic_uint64_t antMoves = 0U;
@@ -557,6 +571,8 @@ int main(int argc, char* argv[])
             IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE, da::GUIAntMega::INFO, std::string(" Whole operation took: " + std::to_string(duration.count()) + "[ms]"));
 
             threadGUI.join();
+
+            delete[] pGreenColor;
         }break;
 
         default: 

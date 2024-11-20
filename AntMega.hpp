@@ -16,9 +16,10 @@ namespace da
 
 	public:
 		AntMega(
-			uint32_t Width
-			, uint32_t Height
-			, std::string& antPath);
+			uint32_t Width,
+			uint32_t Height,
+			std::string& antPath,
+			daTypes::GreenColor* pEncodedColorArray);
 
 		~AntMega();
 

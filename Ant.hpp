@@ -18,8 +18,8 @@ namespace da
 			sf::RenderWindow* window,
 			uint32_t Width,
 			uint32_t Height,
-			const std::string& rAntPath
-		);
+			const std::string& rAntPath,
+			daTypes::GreenColor* pEncodedColorArray);
 
 		virtual ~Ant();
 
