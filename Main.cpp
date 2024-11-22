@@ -230,22 +230,26 @@ int main(int argc, char* argv[])
 
             sf::Event eventParallelAnt; // for windows event pool
 
-            uint32_t Thread_count = da::OsFeatures::GetThreadCountForMeshSize(MESH_WIDTH, MESH_HEIGHT);
-            threads = new std::thread[Thread_count];
-            threadsStatus = new bool[Thread_count];
-
-            sf::RenderWindow windowParallelAnt(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
-            windowParallelAnt.setActive(false);
-
             std::vector< std::string > paths;
             std::string line;
 
             while (!infile.eof())
             {
                 std::getline(infile, line);
-                paths.push_back(line);  
+                paths.push_back(line);
             }
-            
+
+            uint32_t Thread_count = da::OsFeatures::GetThreadCountForMeshSize(MESH_WIDTH, MESH_HEIGHT);
+
+            if (Thread_count > paths.size()) Thread_count = paths.size();
+
+            threads = new std::thread[Thread_count];
+            threadsStatus = new bool[Thread_count];
+
+            sf::RenderWindow windowParallelAnt(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
+            windowParallelAnt.setActive(false);
+            windowParallelAnt.setPosition(sf::Vector2i(0,0));
+
             auto start = std::chrono::high_resolution_clock::now();
             auto stop = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
@@ -408,7 +412,7 @@ int main(int argc, char* argv[])
 
                 IPC::SendMessege(IPC::GUI_MESSAGE_TEXT_UPDATE,  da::GUIAntParallel::CURRENT_TIME, std::to_string(duration.count()) + "s ");
 
-                parallelGUI.FetchDataForGUI(Thread_count * 2U);
+                parallelGUI.FetchDataForGUI(Thread_count * 4U);
                 parallelGUI.Redraw(daConstants::NO_CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));

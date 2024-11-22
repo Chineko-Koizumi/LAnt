@@ -70,7 +70,7 @@ namespace da
 				insideSprite.setPosition(	xNormalizedIn *		renderTexture.getSize().x, yNormalizedIn *	renderTexture.getSize().y);
 				outsideSprite.setPosition(	xNormalizedOut *	renderTexture.getSize().x, yNormalizedOut * renderTexture.getSize().y);
 
-				progressBarLabel.setPosition(insideSprite.getGlobalBounds().left, insideSprite.getGlobalBounds().top - progressBarLabel.getGlobalBounds().height / 4.0f);
+				progressBarLabel.setPosition(insideSprite.getGlobalBounds().left, insideSprite.getGlobalBounds().top - insideSprite.getGlobalBounds().height/4.0f);
 			}
 			void SetProgress(float progressInPercent, float scaleX)
 			{
@@ -95,7 +95,6 @@ namespace da
 		{
 			sf::Texture texture;
 			sf::Sprite sprite;
-
 		};
 
 		sf::RenderWindow* m_pWindow;
@@ -107,6 +106,7 @@ namespace da
 		std::string*	m_pGUITextsStrings;
 
 		sf::Font m_FontConsolas;
+		sf::Font m_FontConsolasBold;
 		sf::Font m_FontTahoma;
 		sf::Font m_FontTahomaBold;
 

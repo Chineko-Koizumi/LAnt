@@ -39,6 +39,72 @@ namespace da
 	{
 		IPC::Message msg;
 
+		if (msgCountPerFetch == 0) 
+		{
+			while (IPC::GetMessage(&msg)) 
+			{
+				switch (msg.messageType)
+				{
+				case IPC::messageType::GUI_MESSAGE_TEXT_UPDATE:
+				{
+					switch (msg.valueName)
+					{
+					case RECENTLY_STARTED_PATH:
+					{
+						UpdateTextAfter(msg.valueName, 15U, reinterpret_cast<char*>(msg.message));
+					}break;
+
+					case CURRENT_TIME:
+					{
+						UpdateTextAfter(msg.valueName, 15U, std::string(reinterpret_cast<char*>(msg.message)));
+					}break;
+
+					case CURRENT_PATH_STATUS:
+					{
+						UpdateText(msg.valueName, std::to_string(m_PathsGenerated) + "/" + std::to_string(m_PathsCount));
+					}break;
+
+					default:
+					{
+						UpdateText(msg.valueName, reinterpret_cast<char*>(msg.message));
+					}break;
+					}
+
+				}break;
+				case IPC::messageType::GUI_MESSAGE_VALUE_UPDATE:
+				{
+					switch (msg.valueName)
+					{
+					case PATHS_PROGRESSBAR_UPDATE:
+					{
+						if (m_PathsGenerated < m_PathsCount) ++m_PathsGenerated;
+						m_PathsProgress.SetProgress(static_cast<float>(m_PathsGenerated) / m_PathsCount, 1.0f);
+					}break;
+
+					case THREADS_PROGRESSBAR_UPDATE:
+					{
+						m_aThreadProgressBars[*reinterpret_cast<uint16_t*>(msg.message)].SetProgress(*reinterpret_cast<float*>(&msg.message[2]), 1.0f);
+					}break;
+
+					case THREADS_PATH_UPDATE:
+					{
+						m_aThreadProgressBars[*reinterpret_cast<uint16_t*>(msg.message)].progressBarLabel.setString(reinterpret_cast<char*>(&msg.message[2]));
+					}break;
+
+					default:
+						break;
+					}
+
+				}break;
+				default:
+				{
+					IPC::SendMessege(&msg);
+				}break;
+				}
+			}
+			return;
+		}
+
 		for (uint8_t i = 0U; i < msgCountPerFetch; ++i)
 		{
 			if (!IPC::GetMessage(&msg)) break;
@@ -150,7 +216,7 @@ namespace da
 
 		for (size_t i = 0; i < m_ThreadCount; i++)
 		{
-			m_aThreadProgressBars[i].InitLabel(m_FontTahomaBold, m_ColorWindowsLightBlack, "No Path");
+			m_aThreadProgressBars[i].InitLabel(m_FontConsolasBold, m_ColorWindowsLightBlack, "NoPath");
 			m_aThreadProgressBars[i].Init(GUIBase::m_WindowWidth, GUIBase::m_WindowHeight, "./Sprites/GUI/ProgressBarInside.png", "./Sprites/GUI/ProgressBarOutsideWhite.png",
 				0.96f,
 				0.38f);

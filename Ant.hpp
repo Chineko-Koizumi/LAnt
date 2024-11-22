@@ -67,11 +67,11 @@ namespace da
 
 				if (m_NextCheck <= 0)
 				{
-					if (m_x == m_Width - 1)		return i;
-					else if (m_x == 0)			return i;
+					if (m_x >= m_Width - 1)		return i;
+					else if (m_x <= 0)			return i;
 													   
-					if (m_y == m_Height - 1)	return i;
-					else if (m_y == 0)			return i;
+					if (m_y >= m_Height - 1)	return i;
+					else if (m_y <= 0)			return i;
 
 					m_DistanceToYWall = m_x < m_Width - 1 - m_x ? m_x : m_Width - 1 - m_x;
 					m_DistanceToXWall = m_y < m_Height - 1 - m_y ? m_y : m_Height - 1 - m_y;

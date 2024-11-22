@@ -11,11 +11,13 @@ namespace da
 		, m_FontConsolas()
 		, m_ExternalWindowPointer(false)
 	{
-		m_pWindow->setPosition(sf::Vector2i(0, 0));
+		m_pWindow->setPosition(sf::Vector2i(windowWidth-120, 0));
 
-		if(!m_FontConsolas.loadFromFile("./Fonts/Consolas.ttf"))		assert(false);
-		if(!m_FontTahoma.loadFromFile("./Fonts/Tahoma.ttf"))			assert(false);
-		if (!m_FontTahomaBold.loadFromFile("./Fonts/TahomaBold.ttf"))	assert(false);
+		if(!m_FontConsolas.loadFromFile(	"./Fonts/Consolas.ttf"))		assert(false);
+		if(!m_FontTahoma.loadFromFile(		"./Fonts/Tahoma.ttf"))			assert(false);
+		if(!m_FontTahomaBold.loadFromFile(	"./Fonts/TahomaBold.ttf"))		assert(false);
+		if(!m_FontConsolasBold.loadFromFile("./Fonts/ConsolasBold.ttf"))	assert(false);
+		
 	}
 
 	da::GUIBase::GUIBase(uint32_t windowWidth, uint32_t windowHeight, uint16_t enumCount, sf::RenderWindow* pExistingWindow)
@@ -27,9 +29,10 @@ namespace da
 		, m_FontConsolas()
 		, m_ExternalWindowPointer(true)
 	{
-		if (!m_FontConsolas.loadFromFile("./Fonts/Consolas.ttf"))		assert(false);
-		if (!m_FontTahoma.loadFromFile("./Fonts/Tahoma.ttf"))			assert(false);
-		if (!m_FontTahomaBold.loadFromFile("./Fonts/TahomaBold.ttf"))	assert(false);
+		if (!m_FontConsolas.loadFromFile(		"./Fonts/Consolas.ttf"))		assert(false);
+		if (!m_FontTahoma.loadFromFile(			"./Fonts/Tahoma.ttf"))			assert(false);
+		if (!m_FontTahomaBold.loadFromFile(		"./Fonts/TahomaBold.ttf"))		assert(false);
+		if (!m_FontConsolasBold.loadFromFile(	"./Fonts/ConsolasBold.ttf"))	assert(false);
 	}
 
 	GUIBase::~GUIBase()
