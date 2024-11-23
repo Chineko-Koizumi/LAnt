@@ -8,18 +8,14 @@
 namespace daConstants 
 {
     static constexpr uint8_t COLOR_RANGE_8BIT = 255U;
-    static constexpr uint8_t ALFA_BASE_VALUE = 224U;	//1110 0000
            
-    static constexpr uint8_t TURN_MASK = 16U;	//0001 0000
-    static constexpr uint8_t COLOR_INDEX_MASK = 15U;	//0000 1111
+    static constexpr uint8_t TURN_MASK = 128U;	        //1000 0000
+    static constexpr uint8_t COLOR_INDEX_MASK = 127U;	//0111 1111
            
-    static constexpr uint8_t LEFT = 0U;	//0000 0000
-    static constexpr uint8_t RIGHT = 16U;	//0001 0000
+    static constexpr uint8_t LEFT = 0U;	                //0000 0000
+    static constexpr uint8_t RIGHT = 128U;	            //1000 0000
            
     static constexpr uint32_t SIZE_OF_VERTEX = 20U;
-    static constexpr uint32_t SIZE_OF_DAVERTEX = 12U;
-    static constexpr uint32_t SIZE_OF_DACOLOR = 4U;
-    static constexpr uint32_t SIZE_OF_DAGREENCOLOR = 2U;
     static constexpr uint32_t SIZE_OF_MASKED_COLOR = 1U;
            
     static constexpr uint32_t KB = 1024U;

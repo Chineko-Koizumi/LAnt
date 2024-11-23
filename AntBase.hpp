@@ -13,12 +13,12 @@ protected:
 	uint8_t* m_pMeshFieldCopy;
 
 	uint64_t m_CurrentAntColorMaskedCount;
-	uint8_t* m_pColorMaskedTransitionArray;
+	uint8_t* m_pTurnsFromColor;
 
 	uint8_t m_CurrentAntColorMasked;
 	uint8_t m_CurrentTurn;
 
-	daTypes::GreenColor* m_pDaGreenColorTransitionArray;
+	daTypes::GreenColor* m_pDaGreenColorAndTurns;
 
 	int64_t		m_x;
 	int64_t		m_y;

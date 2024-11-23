@@ -15,9 +15,9 @@ namespace da
 	{
 		SetOffset(m_pMesh->GetCenterPoint());
 
-		if (m_pDaGreenColorTransitionArray == nullptr) return; //path was allready generated
+		if (m_pDaGreenColorAndTurns == nullptr) return; //path was allready generated
 
-		m_pMesh->InitField( m_pDaGreenColorTransitionArray[0].a );
+		m_pMesh->InitField( m_pDaGreenColorAndTurns[0].a );
 		m_pMesh->SetFilePrefix(rAntPath);
 		
 		m_pMeshFieldCopy = m_pMesh->GetFieldPtr();

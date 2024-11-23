@@ -29,14 +29,14 @@ namespace da
 		{
 			for (uint64_t i = repetition; i; --i)
 			{
-				m_CurrentAntColorMasked = m_pMeshFieldCopy[m_y * m_Width + m_x]; //current ant location 
-				m_CurrentTurn = m_CurrentAntColorMasked & daConstants::TURN_MASK; // decoding next turn
+				m_CurrentAntColorMasked = m_pMeshFieldCopy[m_y * m_Width + m_x];	//current ant location 
+				m_CurrentTurn = m_CurrentAntColorMasked & daConstants::TURN_MASK;	// decoding next turn
 
-				m_CurrentAntColorMasked &= daConstants::COLOR_INDEX_MASK; // decoding current color
-				++m_CurrentAntColorMasked; //incrementing to get next color from path
+				m_CurrentAntColorMasked &= daConstants::COLOR_INDEX_MASK;			// decoding current color
+				++m_CurrentAntColorMasked;											//incrementing to get next color from path
 				if (m_CurrentAntColorMasked == m_CurrentAntColorMaskedCount) m_CurrentAntColorMasked = 0; // check for bounds
 
-				m_pMeshFieldCopy[m_y * m_Width + m_x] = m_pColorMaskedTransitionArray[m_CurrentAntColorMasked] + m_CurrentAntColorMasked; //changing color
+				m_pMeshFieldCopy[m_y * m_Width + m_x] = m_pTurnsFromColor[m_CurrentAntColorMasked] | m_CurrentAntColorMasked; //changing color
 
 				switch (m_CurrentTurn)
 				{

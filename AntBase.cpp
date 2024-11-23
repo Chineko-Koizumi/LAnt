@@ -10,10 +10,10 @@ namespace da
 		daTypes::GreenColor* pEncodedColorArray)
 					: m_pMeshFieldCopy(nullptr)
 					, m_CurrentAntColorMaskedCount( rAntPath.size() )
-					, m_pColorMaskedTransitionArray( new uint8_t[m_CurrentAntColorMaskedCount] )
+					, m_pTurnsFromColor( new uint8_t[m_CurrentAntColorMaskedCount] )
 					, m_CurrentAntColorMasked(0U)
 					, m_CurrentTurn(0U)
-					, m_pDaGreenColorTransitionArray( pEncodedColorArray )
+					, m_pDaGreenColorAndTurns( pEncodedColorArray )
 					, m_x(0)
 					, m_y(0)
 					, m_Width(Width)
@@ -26,13 +26,13 @@ namespace da
 	{
 		for (size_t i = 0U; i < m_CurrentAntColorMaskedCount; i++)
 		{
-			m_pColorMaskedTransitionArray[i] = daConstants::TURN_MASK & m_pDaGreenColorTransitionArray[i].a;
+			m_pTurnsFromColor[i] = daConstants::TURN_MASK & m_pDaGreenColorAndTurns[i].a;
 		}
 	}
 
 	da::AntBase::~AntBase()
 	{
-		delete[] m_pColorMaskedTransitionArray;
+		delete[] m_pTurnsFromColor;
 	}
 
 	void AntBase::SetOffset(uint64_t x, uint64_t y)

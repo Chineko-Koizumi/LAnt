@@ -87,8 +87,8 @@ int main(int argc, char* argv[])
         SIMULATION_STEPS_THRESHOLD  = atoi(argv[4]);
         ANT_PATHS_FILE_PATH         = std::string(argv[5]);
 
-        if (!strcmp(argv[6], "--N")) GENERATION_TYPE = da::MenuOptions::ANT_NOGUI_PARALLEL_FILE;
-        else                         GENERATION_TYPE = da::MenuOptions::ANT_PARALLEL_FILE;
+        if (argc == 7) GENERATION_TYPE = da::MenuOptions::ANT_NOGUI_PARALLEL_FILE;
+        else           GENERATION_TYPE = da::MenuOptions::ANT_PARALLEL_FILE;
     }
     else if (!strcmp(argv[1], "-CLMG")) //generete mega file from command line
     {
@@ -97,8 +97,8 @@ int main(int argc, char* argv[])
         SIMULATION_STEPS_THRESHOLD  = atoi(argv[4]);
         ANT_PATH_FROM_CL            = std::string(argv[5]);
 
-        if (!strcmp(argv[6], "--N")) GENERATION_TYPE = da::MenuOptions::ANT_NOGUI_LARGE_FILE;
-        else                         GENERATION_TYPE = da::MenuOptions::ANT_LARGE_FILE;
+        if (argc == 7) GENERATION_TYPE = da::MenuOptions::ANT_NOGUI_LARGE_FILE;
+        else           GENERATION_TYPE = da::MenuOptions::ANT_LARGE_FILE;
         
     }
     else 

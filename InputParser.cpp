@@ -55,7 +55,7 @@ namespace da
                 0U,
                 static_cast<uint8_t>(daConstants::COLOR_RANGE_8BIT * (static_cast<float>(i) / colorCount)),
                 0U,
-                static_cast<uint8_t>(daConstants::ALFA_BASE_VALUE + temp2 + temp));
+                static_cast<uint8_t>( temp2 | temp));
         }
 
         return pColorArray;
@@ -80,7 +80,7 @@ namespace da
 
             pGreenColorArray[i] = daTypes::GreenColor{
                                         static_cast<uint8_t>(daConstants::COLOR_RANGE_8BIT * (static_cast<float>(i) / colorCount)),
-                                        static_cast<uint8_t>(daConstants::ALFA_BASE_VALUE + temp2 + temp)
+                                        static_cast<uint8_t>(temp2 | temp)
             };
         }
 

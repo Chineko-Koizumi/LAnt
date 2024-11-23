@@ -14,7 +14,7 @@ namespace da
 		SetOffset(m_pMegaMesh->GetCenterPoint());
 
 		m_pMegaMesh->SetFilePrefix(antPath);
-		m_pMegaMesh->InitField(m_pColorMaskedTransitionArray[0]);
+		m_pMegaMesh->InitField(m_pTurnsFromColor[0]);
 
 		m_pMeshFieldCopy = m_pMegaMesh->GetFieldPtr();
 	}
