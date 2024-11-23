@@ -12,7 +12,7 @@ namespace da
 	}
 
 	GUIAntMega::GUIAntMega( uint32_t windowHeight, std::string& path)
-		: GUIBase(windowHeight* daConstants::GUI_ANT_MEGA_ASPECT_RATIO, windowHeight, LAST)
+		: GUIBase(static_cast<uint64_t>(windowHeight * daConstants::GUI_ANT_MEGA_ASPECT_RATIO), windowHeight, LAST)
 		, m_MaxPxPerSec(0U)
 		, m_CopyAnimation(26U, 50U, static_cast<float>(m_WindowWidth) * 0.370f, static_cast<float>(m_WindowHeight) * 0.435f, 1.75f, "./Sprites/GUI/AntMega/CopyAnimation.png")
 		, m_CurrentState(GENERATING)
@@ -137,7 +137,7 @@ namespace da
 		}
 	}
 
-	void GUIAntMega::FetchDataForGUI(uint8_t msgCountPerFetch)
+	void GUIAntMega::FetchDataForGUI(uint64_t msgCountPerFetch)
 	{
 		IPC::Message msg;
 

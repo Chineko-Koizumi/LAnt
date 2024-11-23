@@ -35,13 +35,13 @@ namespace da
 		delete[] m_pColorMaskedTransitionArray;
 	}
 
-	void AntBase::SetOffset(uint32_t x, uint32_t y)
+	void AntBase::SetOffset(uint64_t x, uint64_t y)
 	{
 		m_x = x;
 		m_y = y;
 	}
 
-	void AntBase::SetOffset(daTypes::PointUI32 p)
+	void AntBase::SetOffset(daTypes::PointUI64 p)
 	{
 		m_x = p.x;
 		m_y = p.y;

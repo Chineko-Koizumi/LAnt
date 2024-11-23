@@ -34,9 +34,9 @@ namespace da
 			, sf::Vector2f(static_cast<float>(m_WindowWidth) * 0.450f,	static_cast<float>(m_WindowHeight) * 0.078f)	/*CURRENT_PATH_STATUS*/
 		};
 
-		uint16_t m_ThreadCount;
-		uint16_t m_PathsCount;
-		uint16_t m_PathsGenerated;
+		uint64_t m_ThreadCount;
+		uint64_t m_PathsCount;
+		uint64_t m_PathsGenerated;
 
 		Background m_Background;
 
@@ -44,13 +44,13 @@ namespace da
 		ProgressBar* m_aThreadProgressBars;
 
 	public:
-		GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight, uint16_t threadCount);
+		GUIAntParallel(uint64_t windowWidth, uint64_t windowHeight, uint64_t threadCount);
 		~GUIAntParallel();
 
-		virtual void FetchDataForGUI(uint8_t msgCountPerFetch);
+		virtual void FetchDataForGUI(uint64_t msgCountPerFetch);
 		virtual void Redraw(bool clearScreen, bool pushToScreen);
 
-		void SetPathsCount(uint16_t pathsCount);
+		void SetPathsCount(uint64_t pathsCount);
 
 	private:
 		void InitBackground();

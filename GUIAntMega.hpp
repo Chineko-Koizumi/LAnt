@@ -75,7 +75,7 @@ namespace da
 		void SetState(uint16_t stateNum);
 		uint16_t GetState();
 
-		virtual void FetchDataForGUI(uint8_t msgCountPerFetch) override;
+		virtual void FetchDataForGUI(uint64_t msgCountPerFetch) override;
 		virtual void Redraw(bool clearScreen, bool pushToScreen) override;
 
 	private:

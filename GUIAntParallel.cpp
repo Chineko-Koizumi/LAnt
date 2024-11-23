@@ -12,7 +12,7 @@ namespace da
 		return name;
 	}
 
-	GUIAntParallel::GUIAntParallel(uint32_t windowWidth, uint32_t windowHeight, uint16_t threadCount)
+	GUIAntParallel::GUIAntParallel(uint64_t windowWidth, uint64_t windowHeight, uint64_t threadCount)
 		: GUIBase(windowWidth , windowHeight, Names::LAST)
 		, m_ThreadCount(threadCount)
 		, m_aThreadProgressBars(new ProgressBar[threadCount])
@@ -30,12 +30,12 @@ namespace da
 		m_aThreadProgressBars = nullptr;
 	}
 
-	void GUIAntParallel::SetPathsCount(uint16_t pathsCount)
+	void GUIAntParallel::SetPathsCount(uint64_t pathsCount)
 	{
 		m_PathsCount = pathsCount;
 	}
 
-	void GUIAntParallel::FetchDataForGUI(uint8_t msgCountPerFetch)
+	void GUIAntParallel::FetchDataForGUI(uint64_t msgCountPerFetch)
 	{
 		IPC::Message msg;
 
@@ -222,7 +222,7 @@ namespace da
 				0.38f);
 
 			float barRelativeHeight = static_cast<float>( m_aThreadProgressBars[i].insideSprite.getGlobalBounds().height) / GUIBase::m_WindowWidth;
-			barRelativeHeight *= 1.20; //20% margin
+			barRelativeHeight *= 1.20f; //20% margin
 
 			m_aThreadProgressBars[i].SetPossition(
 				0.018f,

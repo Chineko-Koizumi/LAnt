@@ -24,7 +24,7 @@ namespace da
 		GUIAnt(uint32_t windowWidth, uint32_t windowHeight, sf::RenderWindow* pExistingWindow);
 		~GUIAnt();
 
-		virtual void FetchDataForGUI(uint8_t msgCountPerFetch) override;
+		virtual void FetchDataForGUI(uint64_t msgCountPerFetch) override;
 		void Redraw(bool clearScreen, bool pushToScreen) override;
 
 	private:

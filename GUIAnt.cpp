@@ -28,7 +28,7 @@ namespace da
 
 	GUIAnt::~GUIAnt() {}
 
-	void GUIAnt::FetchDataForGUI(uint8_t msgCountPerFetch)
+	void GUIAnt::FetchDataForGUI(uint64_t msgCountPerFetch)
 	{
 		msgCountPerFetch;
 		//to do: implement body for message fetching 

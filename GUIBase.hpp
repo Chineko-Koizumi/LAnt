@@ -17,8 +17,8 @@ namespace da
 			sf::Texture insideTexture;
 			sf::Texture outsideTexture;
 
-			uint16_t progressBarTextureWidth{ 0U };
-			uint16_t progressBarTextureHeight{ 0U };
+			uint64_t progressBarTextureWidth{ 0U };
+			uint64_t progressBarTextureHeight{ 0U };
 
 			sf::Sprite insideSprite;
 			sf::Sprite outsideSprite;
@@ -34,8 +34,8 @@ namespace da
 			}
 
 			void Init(
-				uint16_t windowWidth, 
-				uint16_t windowHeight, 
+				uint64_t windowWidth, 
+				uint64_t windowHeight, 
 				const std::string& sInsideTexture, 
 				const std::string& sOtsideTexture,
 				float scalingX,
@@ -45,8 +45,8 @@ namespace da
 				if (!insideTexture.loadFromFile(sInsideTexture))	assert(false);
 				if (!outsideTexture.loadFromFile(sOtsideTexture))	assert(false);
 
-				progressBarTextureWidth = static_cast<uint16_t>(outsideTexture.getSize().x);
-				progressBarTextureHeight = static_cast<uint16_t>(outsideTexture.getSize().y);
+				progressBarTextureWidth = static_cast<uint64_t>(outsideTexture.getSize().x);
+				progressBarTextureHeight = static_cast<uint64_t>(outsideTexture.getSize().y);
 
 				insideTexture.setSmooth(true);
 				outsideTexture.setSmooth(true);
@@ -99,8 +99,8 @@ namespace da
 
 		sf::RenderWindow* m_pWindow;
 
-		uint32_t m_WindowWidth;
-		uint32_t m_WindowHeight;
+		uint64_t m_WindowWidth;
+		uint64_t m_WindowHeight;
 
 		sf::Text*		m_pGUITexts;
 		std::string*	m_pGUITextsStrings;
@@ -117,8 +117,8 @@ namespace da
 
 	public:
 
-		GUIBase(uint32_t windowWidth, uint32_t windowHeight, uint16_t enumCount);
-		GUIBase(uint32_t windowWidth, uint32_t windowHeight, uint16_t enumCount, sf::RenderWindow* pExistingWindow);
+		GUIBase(uint64_t windowWidth, uint64_t windowHeight, uint16_t enumCount);
+		GUIBase(uint64_t windowWidth, uint64_t windowHeight, uint16_t enumCount, sf::RenderWindow* pExistingWindow);
 
 		virtual ~GUIBase();
 
@@ -128,7 +128,7 @@ namespace da
 		void UpdateTextAfter(uint16_t name, uint16_t charactersToSkip, const std::string& text);
 		void AppendText(uint16_t name, const std::string& text);
 
-		virtual void FetchDataForGUI(uint8_t msgCountPerFetch) = 0;
+		virtual void FetchDataForGUI(uint64_t msgCountPerFetch) = 0;
 		virtual void Redraw(bool clearScreen, bool pushToScreen) = 0;
 
 	private:

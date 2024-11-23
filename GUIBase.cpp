@@ -2,7 +2,7 @@
 
 namespace da 
 {
-	GUIBase::GUIBase(uint32_t windowWidth, uint32_t windowHeight, uint16_t enumCount)
+	GUIBase::GUIBase(uint64_t windowWidth, uint64_t windowHeight, uint16_t enumCount)
 		: m_WindowWidth(windowWidth)
 		, m_WindowHeight(windowHeight)
 		, m_pWindow(new sf::RenderWindow(sf::VideoMode(windowWidth, windowHeight), "GUI", sf::Style::Titlebar))
@@ -20,7 +20,7 @@ namespace da
 		
 	}
 
-	da::GUIBase::GUIBase(uint32_t windowWidth, uint32_t windowHeight, uint16_t enumCount, sf::RenderWindow* pExistingWindow)
+	da::GUIBase::GUIBase(uint64_t windowWidth, uint64_t windowHeight, uint16_t enumCount, sf::RenderWindow* pExistingWindow)
 		: m_WindowWidth(windowWidth)
 		, m_WindowHeight(windowHeight)
 		, m_pWindow(pExistingWindow)

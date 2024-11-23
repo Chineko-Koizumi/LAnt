@@ -57,19 +57,20 @@ namespace da
 
     enum MenuOptions
     {
-        ANT_GUI = 0,
-        ANT_PARALLEL_FILE = 1,
-        ANT_NOGUI_LARGE_FILE = 2,
-        EXIT = 100
+        ANT = 0,
+        ANT_PARALLEL_FILE,
+        ANT_LARGE_FILE,
+        ANT_NOGUI_PARALLEL_FILE,
+        ANT_NOGUI_LARGE_FILE
     };
 }
 
 int main(int argc, char* argv[])
 {
 
-    if (argc < 2 || argc > 6)
+    if (argc < 2 || argc > 7)
     {
-        GENERATION_TYPE = da::MenuOptions::EXIT;
+        std::cout << "Incorrect number of arguments for: " + std::string(argv[1]) << std::endl;
     }
     else if (!strcmp(argv[1], "-CLG")) //generete from command line
     {
@@ -77,7 +78,7 @@ int main(int argc, char* argv[])
         MESH_HEIGHT               = atoi(argv[3]);
         ANT_PATH_FROM_CL            = std::string(argv[4]);
 
-        GENERATION_TYPE = da::MenuOptions::ANT_GUI;
+        GENERATION_TYPE = da::MenuOptions::ANT;
     }
     else if (!strcmp(argv[1], "-FPG")) //generete from file, parrallel
     {
@@ -86,7 +87,8 @@ int main(int argc, char* argv[])
         SIMULATION_STEPS_THRESHOLD  = atoi(argv[4]);
         ANT_PATHS_FILE_PATH         = std::string(argv[5]);
 
-        GENERATION_TYPE = da::MenuOptions::ANT_PARALLEL_FILE;
+        if (!strcmp(argv[6], "--N")) GENERATION_TYPE = da::MenuOptions::ANT_NOGUI_PARALLEL_FILE;
+        else                         GENERATION_TYPE = da::MenuOptions::ANT_PARALLEL_FILE;
     }
     else if (!strcmp(argv[1], "-CLMG")) //generete mega file from command line
     {
@@ -95,11 +97,13 @@ int main(int argc, char* argv[])
         SIMULATION_STEPS_THRESHOLD  = atoi(argv[4]);
         ANT_PATH_FROM_CL            = std::string(argv[5]);
 
-        GENERATION_TYPE = da::MenuOptions::ANT_NOGUI_LARGE_FILE;
+        if (!strcmp(argv[6], "--N")) GENERATION_TYPE = da::MenuOptions::ANT_NOGUI_LARGE_FILE;
+        else                         GENERATION_TYPE = da::MenuOptions::ANT_LARGE_FILE;
+        
     }
     else 
     {
-        GENERATION_TYPE = da::MenuOptions::EXIT;
+        std::cout << "Unknown argument: " + std::string(argv[1]) << std::endl;
     }
 
     std::ifstream infile(ANT_PATHS_FILE_PATH);
@@ -121,7 +125,7 @@ int main(int argc, char* argv[])
 
     switch (GENERATION_TYPE)
     {
-        case da::ANT_GUI:
+        case da::ANT:
         {
             if ( !da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_VERTEX) ) break;
             
@@ -239,7 +243,7 @@ int main(int argc, char* argv[])
                 paths.push_back(line);
             }
 
-            uint32_t Thread_count = da::OsFeatures::GetThreadCountForMeshSize(MESH_WIDTH, MESH_HEIGHT);
+            uint64_t Thread_count = da::OsFeatures::GetThreadCountForMeshSize(MESH_WIDTH, MESH_HEIGHT);
 
             if (Thread_count > paths.size()) Thread_count = paths.size();
 
@@ -263,7 +267,7 @@ int main(int argc, char* argv[])
 
             auto LambdaIPCThresholdSend = [](uint16_t threadIndex, float barPercent)
                 {
-                    size_t bufferSize =     sizeof(uint16_t) + sizeof(float);
+                    uint8_t bufferSize =     sizeof(uint16_t) + sizeof(float);
                     uint8_t progressBarData[sizeof(uint16_t) + sizeof(float)];
 
                     memcpy_s(progressBarData,                       bufferSize, &threadIndex,   sizeof(uint16_t));
@@ -274,7 +278,7 @@ int main(int argc, char* argv[])
 
             auto LambdaIPCPathSend = [](uint16_t threadIndex,const std::string& path)
                 {
-                    size_t bufferSize = sizeof(uint16_t) + path.size() + 1U;
+                    uint8_t bufferSize = sizeof(uint16_t) + path.size() + 1U;
                     uint8_t* progressBarData = reinterpret_cast<uint8_t*>( alloca(bufferSize) );
 
                     memcpy_s(progressBarData,                       bufferSize, &threadIndex, sizeof(uint16_t));
@@ -373,7 +377,7 @@ int main(int argc, char* argv[])
                 thrStatus[threadIndex] = false;
             };
 
-            for (uint16_t i = 0U; i < Thread_count; ++i)
+            for (uint64_t i = 0U; i < Thread_count; ++i)
             {
                 threadsStatus[i] = true;
 
@@ -398,7 +402,7 @@ int main(int argc, char* argv[])
                 }
 
                 IsAllDetached = true;
-                for (size_t i = 0; i < Thread_count; ++i)
+                for (uint64_t i = 0; i < Thread_count; ++i)
                 {
                     if (threadsStatus[i])
                     {
@@ -417,6 +421,9 @@ int main(int argc, char* argv[])
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
+
+            parallelGUI.FetchDataForGUI(0U); //0 means fetch until msg queue is empty;
+            parallelGUI.Redraw(daConstants::CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
 
             bool exit = false;
             while (!exit)
@@ -439,7 +446,7 @@ int main(int argc, char* argv[])
 
         }break;
 
-        case da::ANT_NOGUI_LARGE_FILE:
+        case da::ANT_LARGE_FILE:
         {
             if (!da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_MASKED_COLOR)) break;
 
@@ -579,10 +586,169 @@ int main(int argc, char* argv[])
             delete[] pGreenColor;
         }break;
 
-        default: 
+        case da::ANT_NOGUI_PARALLEL_FILE: 
         {
-            std::cout << "Unknown argument: " + std::string(argv[1]) << std::endl;
-        } break;
+            if (!da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_VERTEX)) break;
+
+            std::mutex mtxAnt, mtxDumpFile;
+            std::thread* threads;
+            bool* threadsStatus;
+
+            std::vector< std::string > paths;
+            std::string line;
+
+            while (!infile.eof())
+            {
+                std::getline(infile, line);
+                paths.push_back(line);
+            }
+
+            uint64_t Thread_count = da::OsFeatures::GetThreadCountForMeshSize(MESH_WIDTH, MESH_HEIGHT);
+
+            if (Thread_count > paths.size()) Thread_count = paths.size();
+
+            threads = new std::thread[Thread_count];
+            threadsStatus = new bool[Thread_count];
+
+            auto start = std::chrono::high_resolution_clock::now();
+            auto stop = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+
+
+            auto LambdaThread = [](
+                uint16_t threadIndex,
+                bool* thrStatus,
+                std::vector< std::string>* pVectorPaths,
+                uint64_t SimulationStepsThreshold,
+                std::mutex* pMutexAnt,
+                std::mutex* pMutexDump)
+                {
+                    uint64_t lambdaRenderStepCount = 0U;
+                    uint64_t progress = 0U;
+                    uint64_t antMoves = 0U;
+                    while (true)
+                    {
+                        pMutexAnt->lock();
+                        if (pVectorPaths->empty())
+                        {
+                            pMutexAnt->unlock();
+
+                            break;
+                        }
+
+                        std::string tempPath = pVectorPaths->back();
+                        pVectorPaths->pop_back();
+
+                        pMutexAnt->unlock();
+
+                        daTypes::GreenColor* pGreenColorArray = da::InputParser::CreateDaGreenColorArrayFromCL(tempPath);
+
+                        if (pGreenColorArray == nullptr) continue;
+                        
+                        da::Ant ant(nullptr, MESH_WIDTH, MESH_HEIGHT, tempPath, pGreenColorArray);
+
+                        lambdaRenderStepCount = 10000000U;
+                        progress = 0U;
+                        while (true)
+                        {
+                            if (progress > SimulationStepsThreshold) break;
+
+                            uint64_t movesLeft = ant.NextMove(lambdaRenderStepCount);
+                            if (movesLeft == 0)
+                            {
+                                antMoves += lambdaRenderStepCount;
+                            }
+                            else
+                            {
+                                antMoves += movesLeft;
+                                break;
+                            }
+
+                            progress++;
+                        }
+
+                        pMutexDump->lock();
+                            ant.DumpToFile(OUTPUT_PATH_VAR);
+                        pMutexDump->unlock();
+
+                        delete[] pGreenColorArray;
+                    }
+
+                    thrStatus[threadIndex] = false;
+                };
+
+            for (uint64_t i = 0U; i < Thread_count; ++i)
+            {
+                threadsStatus[i] = true;
+
+                threads[i] = std::thread(LambdaThread, i, threadsStatus, &paths, SIMULATION_STEPS_THRESHOLD, &mtxAnt, &mtxDumpFile);
+                threads[i].detach();
+            }
+
+            bool IsAllDetached = false;
+            while (!IsAllDetached)
+            {
+                IsAllDetached = true;
+                for (uint64_t i = 0; i < Thread_count; ++i)
+                {
+                    if (threadsStatus[i])
+                    {
+                        IsAllDetached = false;
+                        break;
+                    }
+                }
+
+                stop = std::chrono::high_resolution_clock::now();
+                duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+
+            delete[] threads;
+            delete[] threadsStatus;
+        }break;
+
+        case da::ANT_NOGUI_LARGE_FILE:
+        {
+            if (!da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_MASKED_COLOR)) break;
+
+            auto start = std::chrono::high_resolution_clock::now();
+
+            daTypes::GreenColor* pGreenColor = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL);
+
+            da::AntMega megaAnt(MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL, pGreenColor);
+
+            std::atomic_uint64_t progress = 0U;
+            std::atomic_uint64_t antMoves = 0U;
+            uint64_t megaAntRenderStepCount = 50000000U;
+
+            while (true)
+            {
+                uint64_t movesLeft = megaAnt.NextMove(megaAntRenderStepCount);
+                if (movesLeft == 0)
+                {
+                    antMoves += megaAntRenderStepCount;
+                }
+                else
+                {
+                    antMoves += movesLeft;
+                    break;
+                }
+
+                ++progress;
+                if (progress == SIMULATION_STEPS_THRESHOLD)
+                {
+                    break;
+                }
+            }
+
+            megaAnt.DumpToFile(OUTPUT_PATH_VAR);
+
+            auto stop = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+            delete[] pGreenColor;
+        }break;
     }
 
 	return 0;

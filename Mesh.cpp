@@ -43,7 +43,10 @@ namespace da
 
 	void Mesh::DumpToFile(const std::string& outputPath)
 	{
-		png::image< png::rgb_pixel > pngImage(m_FieldWidth, m_FieldHeight);
+		if (m_FieldWidth > UINT32_MAX)	assert(false);
+		if (m_FieldHeight > UINT32_MAX) assert(false);
+
+		png::image< png::rgb_pixel > pngImage( static_cast<uint32_t>(m_FieldWidth), static_cast<uint32_t>(m_FieldHeight));
 		for (png::uint_32 y = 0; y < pngImage.get_height(); ++y)
 		{
 			for (png::uint_32 x = 0; x < pngImage.get_width(); ++x)

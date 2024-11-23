@@ -2,7 +2,7 @@
 
 namespace da
 {
-	MeshBase::MeshBase(uint32_t width, uint32_t height, daTypes::GreenColor* pDaGreenColorTransitionArray)
+	MeshBase::MeshBase(uint64_t width, uint64_t height, daTypes::GreenColor* pDaGreenColorTransitionArray)
 		: m_FieldWidth(width)
 		, m_FieldHeight(height)
 		, m_fieldSize( width * height )
@@ -27,8 +27,8 @@ namespace da
 		m_FilePrefix.push_back('_');
 	}
 
-	daTypes::PointUI32 MeshBase::GetCenterPoint()
+	daTypes::PointUI64 MeshBase::GetCenterPoint()
 	{
-		return daTypes::PointUI32{ m_FieldWidth / 2U, m_FieldHeight / 2U };
+		return daTypes::PointUI64{ m_FieldWidth / 2U, m_FieldHeight / 2U };
 	}
 }

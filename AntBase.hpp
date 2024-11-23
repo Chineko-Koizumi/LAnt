@@ -12,7 +12,7 @@ class AntBase
 protected:
 	uint8_t* m_pMeshFieldCopy;
 
-	uint8_t m_CurrentAntColorMaskedCount;
+	uint64_t m_CurrentAntColorMaskedCount;
 	uint8_t* m_pColorMaskedTransitionArray;
 
 	uint8_t m_CurrentAntColorMasked;
@@ -20,18 +20,18 @@ protected:
 
 	daTypes::GreenColor* m_pDaGreenColorTransitionArray;
 
-	int32_t		m_x;
-	int32_t		m_y;
+	int64_t		m_x;
+	int64_t		m_y;
 
-	int32_t		m_Width;
-	int32_t		m_Height;
+	int64_t		m_Width;
+	int64_t		m_Height;
 
 	uint8_t		m_Facing;
 	uint8_t		m_NextTurn;
 
-	int32_t		m_DistanceToYWall;
-	int32_t		m_DistanceToXWall;
-	int32_t		m_NextCheck;
+	int64_t		m_DistanceToYWall;
+	int64_t		m_DistanceToXWall;
+	int64_t		m_NextCheck;
 
 public:
 	AntBase(uint32_t Width, uint32_t Height, const std::string& rAntPath, daTypes::GreenColor* pEncodedColorArray);
@@ -41,8 +41,8 @@ public:
 	virtual inline uint64_t NextMove(uint64_t repetition)	= 0;
 	virtual void DumpToFile(const std::string& outputPath)	= 0;
 
-	void SetOffset(uint32_t x, uint32_t y);
-	void SetOffset(daTypes::PointUI32 p);
+	void SetOffset(uint64_t x, uint64_t y);
+	void SetOffset(daTypes::PointUI64 p);
 
 private:
 
