@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <thread>   
+#include <cassert>
 
 #include "OsFeatures.hpp"
 #include "DrawingAppConstants.hpp"
@@ -46,17 +47,35 @@ namespace da
 			std::cout << " Memory to be allocated in KB: " << TakenMemory << std::endl;
 			return false;
 		}
-
 		return true;
 	}
+	void OsFeatures::ResolutionFromSystem(uint64_t& rScreenWidth, uint64_t& rScreenHeight)
+	{
+		HWND handle = GetActiveWindow();
+		HWND nextHandle = handle;
+
+		if (handle == NULL) assert(false);
+
+
+		while (nextHandle != NULL)
+		{
+			handle = nextHandle;
+			nextHandle = GetParent(handle);
+		}
+
+		HMONITOR monitor = MonitorFromWindow(handle, MONITOR_DEFAULTTONEAREST);
+		MONITORINFO info;
+		info.cbSize = sizeof(MONITORINFO);
+		GetMonitorInfo(monitor, &info);
+		rScreenWidth = info.rcMonitor.right - info.rcMonitor.left;
+		rScreenHeight = info.rcMonitor.bottom - info.rcMonitor.top;
+	}
+
 
 #endif
 
 #ifdef __linux
 
 #endif
-
-	std::stringstream OsFeatures::m_Output;
-	std::string OsFeatures::m_ProgressBar = std::string("");
 }
 

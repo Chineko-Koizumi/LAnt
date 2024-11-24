@@ -12,8 +12,8 @@ namespace da
 		return name;
 	}
 
-	GUIAntParallel::GUIAntParallel(uint64_t windowWidth, uint64_t windowHeight, uint64_t threadCount)
-		: GUIBase(windowWidth , windowHeight, Names::LAST)
+	GUIAntParallel::GUIAntParallel(uint64_t windowHeight, uint64_t threadCount)
+		: GUIBase(windowHeight, windowHeight, Names::LAST)
 		, m_ThreadCount(threadCount)
 		, m_aThreadProgressBars(new ProgressBar[threadCount])
 		, m_PathsCount(0U)

@@ -44,7 +44,7 @@ namespace da
 		ProgressBar* m_aThreadProgressBars;
 
 	public:
-		GUIAntParallel(uint64_t windowWidth, uint64_t windowHeight, uint64_t threadCount);
+		GUIAntParallel(uint64_t windowHeight, uint64_t threadCount);
 		~GUIAntParallel();
 
 		virtual void FetchDataForGUI(uint64_t msgCountPerFetch);

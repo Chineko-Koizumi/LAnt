@@ -18,10 +18,13 @@
 #include <time.h>       /* time_t, struct tm, time, localtime, strftime */
 #include <queue>
 
-static uint32_t MESH_WIDTH                = 0;
-static uint32_t MESH_HEIGHT               = 0;
-static uint64_t SIMULATION_STEPS_THRESHOLD  = 0;
-static uint8_t GENERATION_TYPE              = 0;
+static uint64_t MESH_WIDTH                  = 0U;
+static uint64_t MESH_HEIGHT                 = 0U;
+static uint64_t SCREEN_WIDTH                = 0U;
+static uint64_t SCREEN_HEIGHT               = 0U;
+
+static uint64_t SIMULATION_STEPS_THRESHOLD  = 0U;
+static uint8_t GENERATION_TYPE              = 0U;
 
 static std::string ANT_PATHS_FILE_PATH("EMPTY");
 static std::string ANT_PATH_FROM_CL("EMPTY");
@@ -65,18 +68,34 @@ namespace da
     };
 }
 
+void initMainVariables() 
+{
+    da::OsFeatures::ResolutionFromSystem(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    time_t rawtime;
+    struct tm timeinfo;
+    char buffer[80];
+
+    time(&rawtime);
+    localtime_s(&timeinfo, &rawtime);
+
+    strftime(buffer, 80, "%F(%Hh%Mm%Ss)/", &timeinfo);
+
+    OUTPUT_PATH_VAR += OUTPUT_PATH_CONST;
+    OUTPUT_PATH_VAR += buffer;
+}
+
 int main(int argc, char* argv[])
 {
 
     if (argc < 2 || argc > 7)
     {
         std::cout << "Incorrect number of arguments for: " + std::string(argv[1]) << std::endl;
+        return -1;
     }
     else if (!strcmp(argv[1], "-CLG")) //generete from command line
     {
-        MESH_WIDTH                = atoi(argv[2]);
-        MESH_HEIGHT               = atoi(argv[3]);
-        ANT_PATH_FROM_CL            = std::string(argv[4]);
+        ANT_PATH_FROM_CL            = std::string(argv[2]);
 
         GENERATION_TYPE = da::MenuOptions::ANT;
     }
@@ -104,35 +123,21 @@ int main(int argc, char* argv[])
     else 
     {
         std::cout << "Unknown argument: " + std::string(argv[1]) << std::endl;
+        return -1;
     }
+
+    initMainVariables();
 
     std::ifstream infile(ANT_PATHS_FILE_PATH);
-
-    {// no need to use those variables outside this braces
-
-        time_t rawtime;
-        struct tm timeinfo;
-        char buffer[80];
-
-        time(&rawtime);
-        localtime_s(&timeinfo, &rawtime);
-
-        strftime(buffer, 80, "%F(%Hh%Mm%Ss)/", &timeinfo);
-
-        OUTPUT_PATH_VAR += OUTPUT_PATH_CONST;
-        OUTPUT_PATH_VAR += buffer;
-    }
 
     switch (GENERATION_TYPE)
     {
         case da::ANT:
-        {
-            if ( !da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_VERTEX) ) break;
-            
+        {        
             sf::Event eventAnt; // for windowAnt event pool and GUI windowParallelAnt
-            sf::RenderWindow windowAnt(sf::VideoMode(MESH_WIDTH, MESH_HEIGHT), "Langton's Ant", sf::Style::None);
+            sf::RenderWindow windowAnt(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Langton's Ant", sf::Style::None);
 
-            da::GUIAnt windowGUI(MESH_WIDTH, MESH_HEIGHT, &windowAnt);
+            da::GUIAnt windowGUI(SCREEN_WIDTH, SCREEN_HEIGHT, &windowAnt);
             windowGUI.UpdateText(da::GUIAnt::PATH,          ANT_PATH_FROM_CL);
             windowGUI.UpdateText(da::GUIAnt::SPEED,         std::string("Speed: " + std::to_string(da::KeyboardMethods::m_RenderStepCount)));
             windowGUI.UpdateText(da::GUIAnt::MOVES,         std::string("Moves: " + std::to_string(0U)));
@@ -141,7 +146,7 @@ int main(int argc, char* argv[])
 
             daTypes::GreenColor* pGreenColorArray = da::InputParser::CreateDaGreenColorArrayFromCL(ANT_PATH_FROM_CL);
 
-            da::Ant ant(&windowAnt, MESH_WIDTH, MESH_HEIGHT, ANT_PATH_FROM_CL, pGreenColorArray);
+            da::Ant ant(&windowAnt, SCREEN_WIDTH, SCREEN_HEIGHT, ANT_PATH_FROM_CL, pGreenColorArray);
 
             windowAnt.setActive(false);
 
@@ -258,7 +263,7 @@ int main(int argc, char* argv[])
             auto stop = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
 
-            da::GUIAntParallel parallelGUI(MESH_WIDTH, MESH_WIDTH, Thread_count);
+            da::GUIAntParallel parallelGUI(SCREEN_HEIGHT, Thread_count);
             parallelGUI.SetPathsCount(paths.size());
             parallelGUI.UpdateText(da::GUIAntParallel::TITLE, ANT_PATHS_FILE_PATH);
             parallelGUI.UpdateText(da::GUIAntParallel::RECENTLY_STARTED_PATH, "Last Started: " + paths.back());
@@ -469,7 +474,7 @@ int main(int argc, char* argv[])
                     using namespace std::chrono_literals;
                     auto start = std::chrono::high_resolution_clock::now();
 
-                    da::GUIAntMega AntMegaGUI( 1000U, ANT_PATH_FROM_CL);///to do: get monitor resolution
+                    da::GUIAntMega AntMegaGUI( 1000U, ANT_PATH_FROM_CL);
                     
                     AntMegaGUI.UpdateText(da::GUIAntMega::INFO, std::string(" Mesh size: ") + std::to_string(MESH_WIDTH) + "x" + std::to_string(MESH_HEIGHT));
                     AntMegaGUI.Redraw(daConstants::CLEAR_SCREEN, daConstants::PUSH_TO_SCREEN);
@@ -588,7 +593,7 @@ int main(int argc, char* argv[])
 
         case da::ANT_NOGUI_PARALLEL_FILE: 
         {
-            if (!da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_VERTEX)) break;
+            if (!da::OsFeatures::IsEnoughFreeMemory(MESH_WIDTH, MESH_HEIGHT, daConstants::SIZE_OF_VERTEX)) break; //@to do separate argument list
 
             std::mutex mtxAnt, mtxDumpFile;
             std::thread* threads;
